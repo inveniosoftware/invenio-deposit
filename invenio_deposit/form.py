@@ -24,7 +24,8 @@ from wtforms import Field, FieldList, Form, FormField
 CFG_GROUPS_META = {
     'classes': None,
     'indication': None,
-    'description': None
+    'description': None,
+    'icon': None,
 }
 """Default group metadata."""
 

@@ -20,6 +20,9 @@
     <div class="panel-heading">
         <a data-toggle="collapse" class="panel-toggle{{ ' collapsed' if group.meta.classes is not none else '' }}" href="#collapse-{{ idx }}">
             <h3 class="panel-title">
+                {%- if group.meta.icon %}
+                    <span class=""><i class="{{ group.meta.icon }}"></i></span>
+                {%- endif %}
                 {{ group.name }}
                 {% if group.meta.indication %}
                     <span class="text-muted pull-right" style="padding-right: 10px;">&nbsp;{{ group.meta.indication }}</span>
