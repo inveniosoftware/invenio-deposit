@@ -1,0 +1,169 @@
+# Spanish translations for invenio-deposit.
+# Copyright (C) 2015 ORGANIZATION
+# This file is distributed under the same license as the invenio-deposit
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: invenio-deposit 0.1.0.dev20150000\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-08-14 09:50+0200\n"
+"PO-Revision-Date: 2015-08-14 09:50+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+#: invenio_deposit/templates/deposit/completed_base.html:28
+msgid "Edit"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/completed_base.html:30
+msgid "View"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/completed_base.html:37
+msgid "Preview"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/completed_base.html:41
+#, python-format
+msgid ""
+"This is a preview of your upload. The public version is available on "
+"%(x_link)s. If you want to remove your upload, please contact "
+"%(x_contact)s"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/deposition_type_base.html:27
+msgid "select or create deposit"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/deposition_type_base.html:30
+msgid "New Deposit"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/deposition_type_base.html:42
+#: invenio_deposit/templates/deposit/deposition_type_base.html:68
+#: invenio_deposit/templates/deposit/myview_base.html:35
+#: invenio_deposit/templates/deposit/myview_base.html:55
+msgid "Untitled"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/deposition_type_base.html:50
+msgid "There is no ongoing deposit."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/deposition_type_base.html:62
+msgid "Past depositions"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:20
+msgid "Discard changes."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:20
+msgid "Discard"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:24
+#: invenio_deposit/templates/deposit/run_action_bar_base.html:25
+msgid ""
+"Press \"Save\" to save your upload for editing later, as many times you "
+"like."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:24
+#: invenio_deposit/templates/deposit/run_action_bar_base.html:25
+msgid "Save"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:25
+msgid "Press \"Submit\" to persist your changes."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/edit_action_bar_base.html:25
+#: invenio_deposit/templates/deposit/run_action_bar_base.html:26
+msgid "Submit"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/error_base.html:27
+msgid "Error"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/index_base.html:24
+msgid "Select a Document Type"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/myview_base.html:21
+msgid "My uploads"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/myview_base.html:23
+msgid "You currently have no uploads."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/myview_base.html:28
+msgid "Unsubmitted"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/myview_base.html:48
+msgid "Submitted"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/run_action_bar_base.html:21
+msgid "Delete"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/run_action_bar_base.html:26
+msgid "Press \"Submit\" to finalize your upload."
+msgstr ""
+
+#: invenio_deposit/templates/deposit/widget_plupload_base.html:39
+msgid "Files"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/widget_plupload_base.html:44
+msgid "Filename"
+msgstr ""
+
+#: invenio_deposit/templates/deposit/widget_plupload_base.html:45
+msgid "Size"
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:79 invenio_deposit/views/deposit.py:190
+msgid "Invalid deposition type."
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:82
+msgid "Deposition does not exists."
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:85
+msgid "Deposition cannot be deleted."
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:88
+msgid "Invalid action."
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:97
+msgid "Not allowed."
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:117 invenio_deposit/views/deposit.py:118
+msgid "Deposit"
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:145
+msgid "Select or create"
+msgstr ""
+
+#: invenio_deposit/views/deposit.py:299
+#, python-format
+msgid "%(name)s deleted."
+msgstr ""
+
