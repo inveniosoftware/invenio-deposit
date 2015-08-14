@@ -2,7 +2,7 @@
  Invenio-Deposit v0.1.0
 ========================
 
-Invenio-Deposit v0.1.0 was released on TBD, 2015.
+Invenio-Deposit v0.1.0 was released on August 14, 2015.
 
 About
 -----
