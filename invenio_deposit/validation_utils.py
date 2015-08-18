@@ -21,9 +21,12 @@
 
 import re
 
-import idutils
-import six
 from flask import current_app
+
+import idutils
+
+import six
+
 from wtforms.validators import StopValidation, ValidationError
 
 
@@ -42,11 +45,13 @@ class ListLength(object):
 
     def __init__(self, min_num=None, max_num=None,
                  element_filter=lambda x: True):
+        """Initialize the validator."""
         self.min = min_num
         self.max = max_num
         self.element_filter = element_filter
 
     def __call__(self, form, field):
+        """Validate."""
         test_list = []
         if self.min or self.max:
             test_list = filter(self.element_filter, field.data)
@@ -74,11 +79,13 @@ class RequiredIf(object):
     """Require field if value of another field is set to a certain value."""
 
     def __init__(self, other_field_name, values, message=None):
+        """Initialize the validator."""
         self.other_field_name = other_field_name
         self.values = values
         self.message = message
 
     def __call__(self, form, field):
+        """Validate."""
         try:
             other_field = getattr(form, self.other_field_name)
             other_val = other_field.data
@@ -105,6 +112,7 @@ class NotRequiredIf(RequiredIf):
     """Do not require field if another field contains a certain value."""
 
     def __call__(self, form, field):
+        """Validate."""
         try:
             other_field = getattr(form, self.other_field_name)
             other_val = other_field.data
@@ -118,17 +126,22 @@ class NotRequiredIf(RequiredIf):
 
 class Unchangeable(object):
 
+    """Unchangeable validator."""
+
     def __call__(self, form, field):
+        """Validate."""
         field.data = field.object_data
 
 
 def number_validate(form, field, submit=False,
                     error_message='It must be a number!'):
+    """Number validator."""
     value = field.data or ''
     if value == "" or value.isspace():
         return
 
     def is_number(s):
+        """Decide whether argument is a number."""
         try:
             float(s)
             return True
@@ -183,13 +196,13 @@ class DOISyntaxValidator(object):
 
 
 class InvalidDOIPrefix(object):
-    """
-    Validates if DOI
-    """
+
+    """Validate if DOI."""
 
     def __init__(self, prefix='10.5072', message=None,
                  message_testing=None):
-        """
+        """Initialize validator.
+
         :param doi_prefix: DOI prefix, e.g. 10.5072
         """
         self.doi_prefix = prefix
@@ -215,6 +228,7 @@ class InvalidDOIPrefix(object):
         self.message_testing = self.message_testing % ctx
 
     def __call__(self, form, field):
+        """Validate."""
         value = field.data
 
         # Defined prefix
@@ -228,12 +242,12 @@ class InvalidDOIPrefix(object):
 
 
 class MintedDOIValidator(object):
-    """
-    Validates if DOI
-    """
+
+    """Validate if DOI."""
 
     def __init__(self, prefix='10.5072', message=None):
-        """
+        """Initialize validator.
+
         :param doi_prefix: DOI prefix, e.g. 10.5072
         """
         self.doi_prefix = prefix
@@ -251,23 +265,18 @@ class MintedDOIValidator(object):
         self.message = self.message % ctx
 
     def __call__(self, form, field):
-        if field.object_data and \
-           field.object_data.startswith("%s/" % self.doi_prefix):
-            # We have a DOI and it's our own DOI.
-            if field.data != field.object_data:
-                raise ValidationError(self.message)
-            else:
-                raise StopValidation()
-        else:
+        """Validate."""
+        if field.object_data and field.data != field.object_data:
             raise ValidationError(self.message)
+        raise StopValidation()
 
 
 class PreReservedDOI(object):
-    """
-    Validate that user did not edit pre-reserved DOI.
-    """
+
+    """Validate that user did not edit pre-reserved DOI."""
 
     def __init__(self, field_name, message=None, prefix='10.5072'):
+        """Initialize the validator."""
         self.field_name = field_name
         self.message = message or 'You are not allowed to edit a ' \
                                   'pre-reserved DOI. Click the Pre-reserve ' \
@@ -275,6 +284,7 @@ class PreReservedDOI(object):
         self.prefix = prefix
 
     def __call__(self, form, field):
+        """Validate."""
         attr_value = getattr(form, self.field_name).data
         if isinstance(attr_value, dict):
             attr_value = attr_value['doi']
@@ -287,11 +297,11 @@ class PreReservedDOI(object):
 
 
 class PidValidator(object):
-    """
-    Validate that value is a persistent identifier understood by us.
-    """
+
+    """Validate that value is a persistent identifier understood by us."""
 
     def __init__(self, message=None):
+        """Initialize the validator."""
         self.message = message or "Not a valid persistent identifier"
 
     def __call__(self, form, field):
