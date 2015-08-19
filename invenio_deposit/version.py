@@ -28,4 +28,4 @@ This file is imported by ``invenio_deposit.__init__``,
 and parsed by ``setup.py``.
 """
 
-__version__ = "0.1.1.dev20150814"
+__version__ = "0.2.0.dev20150819"
