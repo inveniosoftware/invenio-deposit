@@ -43,7 +43,7 @@ class MintedDOIValidatorTest(InvenioTestCase):
     """Test MitedDOIValidator."""
 
     def test_doi_new(self):
-        from invenio.modules.deposit.validation_utils import MintedDOIValidator
+        from invenio_deposit.validation_utils import MintedDOIValidator
 
         validator = MintedDOIValidator()
         field = Field("", LOCAL_DOI_PREFIX + "/test.77777")
@@ -56,7 +56,7 @@ class MintedDOIValidatorTest(InvenioTestCase):
             validator(form, field2)
 
     def test_matching_doi(self):
-        from invenio.modules.deposit.validation_utils import MintedDOIValidator
+        from invenio_deposit.validation_utils import MintedDOIValidator
 
         validator = MintedDOIValidator()
         field = Field(
@@ -73,7 +73,7 @@ class MintedDOIValidatorTest(InvenioTestCase):
             validator(form, field2)
 
     def test__different_doi_(self):
-        from invenio.modules.deposit.validation_utils import MintedDOIValidator
+        from invenio_deposit.validation_utils import MintedDOIValidator
 
         validator = MintedDOIValidator()
         field = Field(
