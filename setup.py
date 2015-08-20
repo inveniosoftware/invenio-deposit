@@ -38,6 +38,7 @@ requirements = [
     'six>=1.7.2',
     'idutils>=0.1.0',
     'invenio-formatter>=0.2.0',
+    'invenio-knowledge>=0.1.0',
     'invenio-oauth2server>=0.1.0',
     'invenio-pidstore>=0.1.0',
     'invenio-records>=0.3.0',

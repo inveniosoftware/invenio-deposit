@@ -31,7 +31,7 @@ def kb_autocomplete(name, mapper=None):
                    autocomplete entry.
     """
     def inner(dummy_form, dummy_field, term, limit=50):
-        from invenio.modules.knowledge.api import get_kb_mappings
+        from invenio_knowledge.api import get_kb_mappings
         result = get_kb_mappings(name, '', term, limit=limit)[:limit]
         return map(mapper, result) if mapper is not None else result
     return inner
@@ -45,7 +45,7 @@ def kb_dynamic_autocomplete(name, mapper=None):
                    autocomplete entry.
     """
     def inner(dummy_form, dummy_field, term, limit=50):
-        from invenio.modules.knowledge.api import get_kbd_values
+        from invenio_knowledge.api import get_kbd_values
         result = get_kbd_values(name, searchwith=term)[:limit]
         return map(mapper, result) if mapper is not None else result
     return inner
