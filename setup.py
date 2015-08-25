@@ -55,6 +55,20 @@ test_requirements = [
     'coverage>=3.7.1',
 ]
 
+extras_require = {
+    'docs': [
+        'Sphinx>=1.3',
+        'sphinx_rtd_theme>=0.1.7'
+    ],
+    'jsonschema': [
+        'invenio-jsonschemas>=0.0.0',
+        'jsonschema>=2.5.0',
+    ],
+    'tests': test_requirements
+}
+
+extras_require['tests'] += extras_require['jsonschema']
+
 
 class PyTest(TestCommand):
 
@@ -113,13 +127,7 @@ setup(
     include_package_data=True,
     platforms='any',
     install_requires=requirements,
-    extras_require={
-        'docs': [
-            'Sphinx>=1.3',
-            'sphinx_rtd_theme>=0.1.7'
-        ],
-        'tests': test_requirements
-    },
+    extras_require=extras_require,
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

@@ -184,7 +184,7 @@ class FormField(WebDepositField, wtforms.FormField):
 
     @property
     def json_data(self):
-        """Json data property."""
+        """JSON data property."""
         return self.form.json_data
 
     @property
@@ -337,7 +337,7 @@ class FieldList(WebDepositField, wtforms.FieldList):
 
     @property
     def json_data(self):
-        """Json data property."""
+        """JSON data property."""
         return [
             f.json_data if getattr(f, 'json_data', None) else f.data
             for f in self.get_entries()
