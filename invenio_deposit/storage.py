@@ -26,6 +26,7 @@ import uuid
 from fs import opener, path
 
 from invenio.base.globals import cfg
+from invenio.utils.url import make_user_agent_string
 
 
 class UploadError(IOError):
@@ -42,10 +43,10 @@ class ExternalFile(object):
 
     def __init__(self, url, filename):
         """Initialiez external file."""
-        from invenio.legacy.bibdocfile.api import open_url, \
-            InvenioBibdocfileUnauthorizedURL
         try:
-            self._file = open_url(url, headers={})
+            request = urllib2.Request(url)
+            request.add_header('User-Agent', make_user_agent_string())
+            self._file = urllib2.urlopen(request)
             self.filename = None
             info = self._file.info()
             content_disposition = info.getheader('Content-Disposition')

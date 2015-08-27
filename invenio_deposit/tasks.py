@@ -21,23 +21,33 @@
 
 from __future__ import print_function
 
+import dateutil.parser
+
+import dictdiffer
+
 import json
+
 import os
+
+import warnings
+
+from flask import abort, current_app, request
+
 from functools import partial, wraps
+
 from tempfile import mkstemp
 
-import dateutil.parser
-import dictdiffer
-from flask import abort, current_app, request
 from flask_login import current_user
-from invenio_pidstore.models import PersistentIdentifier
-from invenio_records.api import create_record, get_record
 
 from invenio.ext.logging import register_exception
 from invenio.ext.restful import error_codes
-from invenio.legacy.bibdocfile.api import BibRecDocs
 from invenio.modules.editor.models import HstRECORD
+
 from invenio_formatter import format_record
+
+from invenio_pidstore.models import PersistentIdentifier
+
+from invenio_records.api import create_record, get_record
 
 from .helpers import deposition_record, make_record, record_to_draft
 from .models import Agent, Deposition, DepositionDraftCacheManager
@@ -408,17 +418,8 @@ def mint_pid(pid_field='doi', pid_creator=None, pid_store_type='doi',
 
 def process_bibdocfile(process=None):
     """Process bibdocfiles with custom processor."""
-    @wraps(process_bibdocfile)
-    def _bibdocfile_update(obj, eng):
-        if process:
-            d = Deposition(obj)
-            sip = d.get_latest_sip(sealed=False)
-            recid = sip.metadata.get('recid')
-            if recid:
-                brd = BibRecDocs(int(recid))
-                process(d, brd)
-                d.update()
-    return _bibdocfile_update
+    warnings.warn("Use of bibdocfile has been deprecated.", DeprecationWarning)
+    return []
 
 
 def prepare_sip():
