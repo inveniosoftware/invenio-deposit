@@ -30,6 +30,7 @@ sudo: false
 services:
   - mysql
   - redis
+  - elasticsearch
 
 language: python
 
