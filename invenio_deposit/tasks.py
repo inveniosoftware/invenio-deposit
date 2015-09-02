@@ -361,8 +361,8 @@ def create_recid():
             raise Exception("No submission information package found.")
 
         if 'recid' not in sip.metadata:
-            from invenio.legacy.bibupload.engine import create_new_record
-            sip.metadata['recid'] = create_new_record()
+            sip.metadata['recid'] = PersistentIdentifier.create(
+                'recid', pid_value=None, pid_provider='invenio')
         d.update()
     return _create_recid
 

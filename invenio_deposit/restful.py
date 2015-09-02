@@ -29,7 +29,6 @@ from werkzeug.utils import secure_filename
 
 from invenio.ext.restful import error_codes, require_api_auth, \
     require_header, require_oauth_scopes
-from invenio.modules.access.engine import acc_authorize_action
 
 from .models import Deposition, DepositionDoesNotExists, DepositionError, \
     DepositionFile, DepositionNotDeletable, DraftDoesNotExists, \
