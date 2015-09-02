@@ -49,6 +49,7 @@ Invenio module for depositing metadata using workflows.
 - Marco Neumann <marco@crepererum.net>
 - Pedro Gaudêncio <pedro.gaudencio@cern.ch>
 - Pedro Gaudêncio <pmgaudencio@gmail.com>
+- Sami Hiltunen <sami.mikael.hiltunen@cern.ch>
 - Sebastian Witowski <sebastian.witowski@cern.ch>
 - Tibor Simko <tibor.simko@cern.ch>
 - Wojciech Ziolek <wojciech.ziolek@cern.ch>

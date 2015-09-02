@@ -110,7 +110,7 @@ def authorize_user(action, **params):
     """Check if current user is authorized to perform the action."""
     @wraps(authorize_user)
     def _authorize_user(obj, dummy_eng):
-        from invenio.modules.access.engine import acc_authorize_action
+        from invenio_access.engine import acc_authorize_action
 
         auth, message = acc_authorize_action(
             current_user.get_id(),

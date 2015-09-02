@@ -25,7 +25,7 @@ from .registry import deposit_types
 
 def get_authorized_deposition_types(user_info):
     """Return a list of allowed deposition types for a certain user."""
-    from invenio.modules.access.engine import acc_authorize_action
+    from invenio_access.engine import acc_authorize_action
 
     return {
         key for key in deposit_types.mapping().keys()

@@ -37,6 +37,7 @@ requirements = [
     'Flask>=0.10.1',
     'six>=1.7.2',
     'idutils>=0.1.0',
+    'invenio-access>=0.1.0',
     'invenio-formatter>=0.2.0',
     'invenio-knowledge>=0.1.0',
     'invenio-oauth2server>=0.1.0',
@@ -56,6 +57,7 @@ test_requirements = [
 
 
 class PyTest(TestCommand):
+
     """PyTest Test."""
 
     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
