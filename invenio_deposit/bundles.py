@@ -25,10 +25,14 @@ from invenio.base.bundles import invenio as _i
 from invenio.base.bundles import jquery as _j
 from invenio.ext.assets import Bundle, RequireJSFilter
 
+from .filter import CSSUrlFixer
+
 js = Bundle(
     "vendors/plupload/js/moxie.js",
     "vendors/plupload/js/plupload.dev.js",
+    "vendors/json-editor/dist/jsoneditor.js",
     "js/deposit/init.js",
+    "js/deposit/jsonwidget.js",
     output="deposit.js",
     filters=RequireJSFilter(exclude=[_j, _i]),
     weight=51,
@@ -37,12 +41,27 @@ js = Bundle(
         "ckeditor": "latest",
         "flight": "latest",
         "eonasdan-bootstrap-datetimepicker": "4.14.30",
+        "base-64": "latest",
+        "json-editor": "latest",
+        "select2": "~3",
+        "utf8": "latest",
     }
 )
 
 styles = Bundle(
     "css/deposit/form.css",
     "vendors/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css",  # noqa
+    Bundle(
+        "less/deposit/jsonwidget.less",
+        Bundle(
+            "vendors/select2/select2.css",
+            "vendors/select2/select2-bootstrap.css",
+            filters=CSSUrlFixer('vendors/select2'),
+            output="select2_fixed.css"
+        ),
+        output='jsondeposit.css',
+        filters="less,cleancss",
+    ),
     output="deposit.css",
     filters="cleancss",
     weight=51
