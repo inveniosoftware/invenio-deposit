@@ -36,6 +36,8 @@ class SimpleRecordTest(DepositionTestCase):
 
     """Simple record test."""
 
+    render_templates = False
+
     def setUp(self):
         """Setup."""
         try:
@@ -100,12 +102,14 @@ class SimpleRecordTest(DepositionTestCase):
                                        follow_redirects=True,
                                        base_url=cfg['CFG_SITE_SECURE_URL']))
 
-        self.login("admin", "")
+        self.login('admin', '')
 
         res = self.client.get(url_for('webdeposit.index'))
         self.assert200(res)
-        assert "Tests" in res.data
-        assert "Simple Test" in res.data
+        deposition_types = self.get_context_variable('deposition_types')
+        assert 'simple' in deposition_types
+        assert 'Tests' == deposition_types['simple'].group
+        assert 'Simple Test' == deposition_types['simple'].name
 
         self.assert200(self.client.get(url_for(
             'webdeposit.deposition_type_index', deposition_type='simple'
