@@ -28,3 +28,4 @@
 # !WARNING! !WARNING! !WARNING! !WARNING! !WARNING! !WARNING! !WARNING!
 
 -e .[docs]
+mock==1.0.0
