@@ -24,6 +24,7 @@
 
 -e git+git://github.com/inveniosoftware/idutils.git#egg=idutils
 -e git+git://github.com/inveniosoftware/invenio-access.git#egg=invenio-access
+-e git+git://github.com/inveniosoftware/invenio-base.git#egg=invenio-base
 -e git+git://github.com/inveniosoftware/invenio-jsonschemas.git#egg=invenio-jsonschemas
 -e git+git://github.com/inveniosoftware/invenio-oauth2server.git#egg=invenio-oauth2server
 -e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore

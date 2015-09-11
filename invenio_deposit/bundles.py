@@ -21,8 +21,8 @@
 
 from __future__ import unicode_literals
 
-from invenio.base.bundles import invenio as _i
-from invenio.base.bundles import jquery as _j
+from invenio_base.bundles import invenio as _i
+from invenio_base.bundles import jquery as _j
 from invenio.ext.assets import Bundle, RequireJSFilter
 from invenio.ext.assets.filter import CSSUrlFixer
 

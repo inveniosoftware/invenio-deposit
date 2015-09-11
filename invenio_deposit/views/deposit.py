@@ -31,7 +31,7 @@ from flask_menu import register_menu
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 
-from invenio.base.i18n import _
+from invenio_base.i18n import _
 from invenio.ext.principal import permission_required
 
 from ..acl import usedeposit

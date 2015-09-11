@@ -25,7 +25,7 @@ import uuid
 
 from fs import opener, path
 
-from invenio.base.globals import cfg
+from invenio_base.globals import cfg
 from invenio.utils.url import make_user_agent_string
 
 

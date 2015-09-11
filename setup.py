@@ -38,6 +38,7 @@ requirements = [
     'six>=1.7.2',
     'idutils>=0.1.0',
     'invenio-access>=0.1.0',
+    'invenio-base>=0.2.1',
     'invenio-formatter>=0.2.1',
     'invenio-knowledge>=0.1.0',
     'invenio-oauth2server>=0.1.0',

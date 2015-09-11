@@ -25,8 +25,8 @@ from datetime import date
 
 from flask import url_for
 
-from invenio.base.globals import cfg
-from invenio.base.i18n import _
+from invenio_base.globals import cfg
+from invenio_base.i18n import _
 from invenio.testsuite import make_test_suite, run_test_suite
 
 from helpers import DepositionTestCase

@@ -37,7 +37,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 
-from invenio.base.helpers import unicodifier
+from invenio_base.helpers import unicodifier
 from invenio.ext.restful import UTCISODateTime
 from invenio.ext.sqlalchemy import db
 from invenio.ext.sqlalchemy.utils import session_manager
