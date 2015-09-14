@@ -61,8 +61,8 @@ extras_require = {
         'sphinx_rtd_theme>=0.1.7'
     ],
     'jsonschema': [
-        'invenio-jsonschemas>=0.0.0',
-        'jsonschema>=2.5.0',
+        'invenio-jsonschemas>=0.1.0',
+        'jsonschema>=2.5.1',
     ],
     'tests': test_requirements
 }
