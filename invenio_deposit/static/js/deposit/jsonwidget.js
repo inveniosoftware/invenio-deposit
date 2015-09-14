@@ -17,7 +17,13 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  */
 
-require(['jquery', 'base64', 'utf8', 'select2'], function($, base64, utf8, _select2) {
+require([
+    'jquery',
+    'vendors/base-64/base64',
+    'vendors/utf8/utf8',
+    'select2'
+  ],
+  function($, base64, utf8, _select2) {
   'use strict';
 
   $(function() {
