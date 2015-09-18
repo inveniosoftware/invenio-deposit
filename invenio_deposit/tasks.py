@@ -41,7 +41,6 @@ from flask_login import current_user
 
 from invenio.ext.logging import register_exception
 from invenio.ext.restful import error_codes
-from invenio.modules.editor.models import HstRECORD
 
 from invenio_formatter import format_record
 
@@ -339,13 +338,7 @@ def merge_record(draft_id='_default', pre_process_load=None,
             changed_simple_json,
         )
 
-        # Ensure we are based on latest version_id to prevent being rejected in
-        # the bibupload queue.
-        hst_record = HstRECORD.query.filter_by(
-            id_bibrec=sip.metadata.get('recid')
-        ).order_by(HstRECORD.job_date.desc()).first()
-
-        sip.metadata['modification_date'] = hst_record.job_date.isoformat()
+        # TODO check sip.metadata['modification_date']
 
         d.update()
     return _merge_record
