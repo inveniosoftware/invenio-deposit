@@ -56,7 +56,7 @@ class DepositionTest(InvenioTestCase):
 
     def test_create(self):
         """Test."""
-        from invenio.ext.login.legacy_user import UserInfo
+        from invenio_ext.login.legacy_user import UserInfo
         from invenio_deposit.models import Deposition
 
         user = UserInfo(uid=1)
