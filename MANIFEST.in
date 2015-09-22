@@ -11,6 +11,7 @@ recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs Makefile
 recursive-include invenio_deposit *.css
+recursive-include invenio_deposit *.less
 recursive-include invenio_deposit *.html
 recursive-include invenio_deposit *.js
 recursive-include invenio_deposit *.mustache
