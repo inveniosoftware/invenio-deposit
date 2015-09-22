@@ -21,7 +21,7 @@
 
 import copy
 
-from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
+from invenio_testing import InvenioTestCase
 
 
 class WebDepositFormTest(InvenioTestCase):
@@ -433,9 +433,3 @@ class WebDepositFormTest(InvenioTestCase):
         # data['formfield'] = "should have been a dict"
         # form = TestForm(formdata=self.multidict(data))
         # self.assertFalse(form.validate())
-
-
-TEST_SUITE = make_test_suite(WebDepositFormTest)
-
-if __name__ == "__main__":
-    run_test_suite(TEST_SUITE)

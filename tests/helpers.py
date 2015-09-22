@@ -21,7 +21,7 @@ import os
 
 from flask import url_for
 
-from invenio.testsuite import InvenioTestCase
+from invenio_testing import InvenioTestCase
 
 
 class DepositionTestCase(InvenioTestCase):

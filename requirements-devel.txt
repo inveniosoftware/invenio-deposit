@@ -30,5 +30,6 @@
 -e git+git://github.com/inveniosoftware/invenio-oauth2server.git#egg=invenio-oauth2server
 -e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
 -e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
+-e git+git://github.com/inveniosoftware/invenio-testing.git#egg=invenio-testing
 -e git+git://github.com/inveniosoftware/invenio-utils.git#egg=invenio-utils
 -e git+git://github.com/inveniosoftware/invenio-workflows.git#egg=invenio-workflows

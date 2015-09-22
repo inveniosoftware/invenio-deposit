@@ -21,7 +21,7 @@
 
 from flask_registry import RegistryError
 
-from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
+from invenio_testing import InvenioTestCase
 
 
 class DepositionTest(InvenioTestCase):
@@ -70,8 +70,3 @@ class DepositionTest(InvenioTestCase):
         # remove the records
         Deposition.delete(d)
         Deposition.delete(d2)
-
-TEST_SUITE = make_test_suite(DepositionTest)
-
-if __name__ == "__main__":
-    run_test_suite(TEST_SUITE)
