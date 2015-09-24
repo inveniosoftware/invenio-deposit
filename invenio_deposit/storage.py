@@ -26,7 +26,7 @@ import uuid
 from fs import opener, path
 
 from invenio_base.globals import cfg
-from invenio.utils.url import make_user_agent_string
+from invenio_utils.url import make_user_agent_string
 
 
 class UploadError(IOError):

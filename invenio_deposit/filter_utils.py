@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2013, 2014 CERN.
+# Copyright (C) 2013, 2014, 2015 CERN.
 #
 # Invenio is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -27,7 +27,7 @@ http://wtforms.simplecodes.com/docs/1.0.4/fields.html#wtforms.fields.Field
 
 import six
 
-from invenio.utils.html import CFG_HTML_BUFFER_ALLOWED_TAG_WHITELIST, \
+from invenio_utils.html import CFG_HTML_BUFFER_ALLOWED_TAG_WHITELIST, \
     HTMLWasher
 
 

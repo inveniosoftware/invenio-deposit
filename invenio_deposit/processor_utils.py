@@ -22,8 +22,8 @@ import idutils
 from invenio_records.api import get_record
 from werkzeug import MultiDict
 
-from invenio.utils.datacite import DataciteMetadata
-from invenio.utils.sherpa_romeo import SherpaRomeoSearch
+from invenio_utils.datacite import DataciteMetadata
+from invenio_utils.sherpa_romeo import SherpaRomeoSearch
 
 
 #
