@@ -44,7 +44,7 @@ class SimpleRecordTest(DepositionTestCase):
             self.clear('simple')
         except Exception:
             pass
-        from invenio.ext.login import UserInfo
+        from invenio_ext.login import UserInfo
         from invenio_deposit import field_widgets
         from invenio_deposit import fields
         from invenio_deposit.form import WebDepositForm

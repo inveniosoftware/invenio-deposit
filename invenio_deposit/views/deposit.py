@@ -21,18 +21,20 @@
 
 import json
 import warnings
+
 from functools import wraps
+
+from flask_login import current_user, login_required
+from invenio_base.i18n import _
+from invenio_ext.principal import permission_required
 
 from flask import Blueprint, abort, current_app, flash, jsonify, \
     make_response, redirect, render_template, request, send_file, url_for
 from flask_breadcrumbs import default_breadcrumb_root, register_breadcrumb
-from flask_login import current_user, login_required
 from flask_menu import register_menu
+
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
-
-from invenio_base.i18n import _
-from invenio.ext.principal import permission_required
 
 from ..acl import usedeposit
 from ..models import Deposition, DepositionDoesNotExists, \

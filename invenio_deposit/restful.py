@@ -22,13 +22,18 @@
 from functools import wraps
 
 from cerberus import Validator
+
 from flask import request
+
 from flask_login import current_user
+
 from flask_restful import Resource, abort, reqparse
+
+from invenio_ext.restful import error_codes, require_api_auth, \
+    require_header, require_oauth_scopes
+
 from werkzeug.utils import secure_filename
 
-from invenio.ext.restful import error_codes, require_api_auth, \
-    require_header, require_oauth_scopes
 from .models import Deposition, DepositionDoesNotExists, DepositionError, \
     DepositionFile, DepositionNotDeletable, DraftDoesNotExists, \
     FileDoesNotExists, FilenameAlreadyExists, ForbiddenAction, \
@@ -266,18 +271,23 @@ class DepositionListResource(Resource, InputProcessorMixin):
         return d.marshal(), 201
 
     def put(self):
+        """put."""
         abort(405)
 
     def delete(self):
+        """delete."""
         abort(405)
 
     def head(self):
+        """head."""
         abort(405)
 
     def options(self):
+        """option."""
         abort(405)
 
     def patch(self):
+        """patch."""
         abort(405)
 
 
@@ -292,6 +302,7 @@ class DepositionResource(Resource, InputProcessorMixin):
         return Deposition.get(resource_id, user=current_user).marshal()
 
     def post(self, resource_id):
+        """post."""
         abort(405)
 
     @require_header('Content-Type', 'application/json')
@@ -312,12 +323,15 @@ class DepositionResource(Resource, InputProcessorMixin):
         return "", 204
 
     def head(self, resource_id):
+        """head."""
         abort(405)
 
     def options(self, resource_id):
+        """option."""
         abort(405)
 
     def patch(self, resource_id):
+        """patch."""
         abort(405)
 
 
@@ -333,21 +347,27 @@ class DepositionDraftListResource(Resource):
         return map(lambda x: d.type.marshal_draft(x), d.drafts_list)
 
     def post(self, resource_id):
+        """post."""
         abort(405)
 
     def put(self, resource_id):
+        """put."""
         abort(405)
 
     def delete(self, resource_id):
+        """delete."""
         abort(405)
 
     def head(self, resource_id):
+        """head."""
         abort(405)
 
     def options(self, resource_id):
+        """option."""
         abort(405)
 
     def patch(self, resource_id):
+        """patch."""
         abort(405)
 
 
@@ -364,6 +384,7 @@ class DepositionDraftResource(Resource, InputProcessorMixin):
         return d.type.marshal_draft(d.get_draft(draft_id))
 
     def post(self, resource_id, draft_id):
+        """post."""
         abort(405)
 
     @require_header('Content-Type', 'application/json')
@@ -376,15 +397,19 @@ class DepositionDraftResource(Resource, InputProcessorMixin):
         d.save()
 
     def delete(self, resource_id, draft_id):
+        """delete."""
         abort(405)
 
     def head(self, resource_id, draft_id):
+        """head."""
         abort(405)
 
     def options(self, resource_id, draft_id):
+        """option."""
         abort(405)
 
     def patch(self, resource_id, draft_id):
+        """patch."""
         abort(405)
 
 

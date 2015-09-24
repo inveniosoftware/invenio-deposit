@@ -31,22 +31,22 @@ import os
 
 import warnings
 
-from flask import abort, current_app, request
-
 from functools import partial, wraps
 
 from tempfile import mkstemp
 
+from flask import abort, current_app, request
+
 from flask_login import current_user
 
-from invenio.ext.logging import register_exception
-from invenio.ext.restful import error_codes
+from invenio_ext.logging import register_exception
+from invenio_ext.restful import error_codes
 
 from invenio_formatter import format_record
 
-from invenio_pidstore.models import PersistentIdentifier
-
 from invenio_records.api import create_record, get_record
+
+from invenio_pidstore.models import PersistentIdentifier
 
 from .helpers import deposition_record, make_record, record_to_draft
 from .models import Agent, Deposition, DepositionDraftCacheManager
@@ -464,6 +464,7 @@ def hold_for_approval():
 
 
 def dump_record_sip():
+    """Dump record sip."""
     @wraps(dump_record_sip)
     def dump(obj, dummy_eng):
         # FIXME change share tmp directory
@@ -488,6 +489,7 @@ def dump_record_sip():
 
 
 def store_record():
+    """Store record."""
     @wraps(store_record)
     def create(obj, dummy_eng):
         # FIXME change share tmp directory

@@ -22,12 +22,14 @@
 import json
 
 import six
+
+from invenio_ext.template import render_template_to_string
+from invenio_ext.template.utils import render_macro_from_template
+
 from werkzeug import MultiDict
+
 from wtforms.widgets import HiddenInput, HTMLString, Input, RadioInput, \
     TextInput, html_params
-
-from invenio.ext.template import render_template_to_string
-from invenio.ext.template.utils import render_macro_from_template
 
 
 def date_widget(field, **kwargs):
