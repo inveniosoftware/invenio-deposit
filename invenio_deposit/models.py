@@ -38,9 +38,9 @@ from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 
 from invenio_base.helpers import unicodifier
-from invenio.ext.restful import UTCISODateTime
-from invenio.ext.sqlalchemy import db
-from invenio.ext.sqlalchemy.utils import session_manager
+from invenio_ext.restful import UTCISODateTime
+from invenio_ext.sqlalchemy import db
+from invenio_ext.sqlalchemy.utils import session_manager
 from invenio_workflows.engine import WorkflowStatus
 from invenio_workflows.models import BibWorkflowObject, ObjectVersion, Workflow
 
@@ -1566,7 +1566,7 @@ class Agent(FactoryMixin):
     def from_request_context(self):
         """From request context."""
         from flask import request
-        from invenio.ext.login import current_user
+        from invenio_ext.login import current_user
         self.ip_address = request.remote_addr
         self.user_id = current_user.get_id()
         self.email_address = current_user.info.get('email', '')

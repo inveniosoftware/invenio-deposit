@@ -32,7 +32,7 @@ from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 
 from invenio_base.i18n import _
-from invenio.ext.principal import permission_required
+from invenio_ext.principal import permission_required
 
 from ..acl import usedeposit
 from ..models import Deposition, DepositionDoesNotExists, \

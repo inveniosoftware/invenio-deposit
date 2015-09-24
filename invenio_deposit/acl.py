@@ -19,7 +19,7 @@
 
 """List the access actions used for authorization."""
 
-from invenio.ext.principal import Action
+from invenio_ext.principal import Action
 
 
 class usedeposit(Action):

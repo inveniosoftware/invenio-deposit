@@ -39,8 +39,8 @@ from tempfile import mkstemp
 
 from flask_login import current_user
 
-from invenio.ext.logging import register_exception
-from invenio.ext.restful import error_codes
+from invenio_ext.logging import register_exception
+from invenio_ext.restful import error_codes
 
 from invenio_formatter import format_record
 

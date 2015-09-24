@@ -27,7 +27,7 @@ from flask_login import current_user
 from flask_restful import Resource, abort, reqparse
 from werkzeug.utils import secure_filename
 
-from invenio.ext.restful import error_codes, require_api_auth, \
+from invenio_ext.restful import error_codes, require_api_auth, \
     require_header, require_oauth_scopes
 from .models import Deposition, DepositionDoesNotExists, DepositionError, \
     DepositionFile, DepositionNotDeletable, DraftDoesNotExists, \

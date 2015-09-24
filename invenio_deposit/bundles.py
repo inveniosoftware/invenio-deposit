@@ -23,8 +23,8 @@ from __future__ import unicode_literals
 
 from invenio_base.bundles import invenio as _i
 from invenio_base.bundles import jquery as _j
-from invenio.ext.assets import Bundle, RequireJSFilter
-from invenio.ext.assets.filter import CSSUrlFixer
+from invenio_ext.assets import Bundle, RequireJSFilter
+from invenio_ext.assets.filter import CSSUrlFixer
 
 js = Bundle(
     "vendors/plupload/js/moxie.js",
