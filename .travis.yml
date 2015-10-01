@@ -48,7 +48,7 @@ python:
 
 before_install:
   - "travis_retry pip install --upgrade pip"
-  - "travis_retry pip install check-manifest mock twine wheel"
+  - "travis_retry pip install check-manifest mock twine wheel coveralls"
   - "python requirements.py --extras=$REXTRAS --level=min > .travis-lowest-requirements.txt"
   - "python requirements.py --extras=$REXTRAS --level=pypi > .travis-release-requirements.txt"
   - "python requirements.py --extras=$REXTRAS --level=dev > .travis-devel-requirements.txt"
