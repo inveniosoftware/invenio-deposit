@@ -20,7 +20,6 @@
 """Utility functions for field autocomplete feature."""
 
 from invenio_utils.orcid import OrcidSearch
-from invenio_utils.sherpa_romeo import SherpaRomeoSearch
 
 
 def kb_autocomplete(name, mapper=None):
@@ -49,30 +48,6 @@ def kb_dynamic_autocomplete(name, mapper=None):
         result = get_kbd_values(name, searchwith=term)[:limit]
         return map(mapper, result) if mapper is not None else result
     return inner
-
-
-def sherpa_romeo_publishers(dummy_form, dummy_field, term, limit=50):
-    """Autocomplete publishers from SHERPA/RoMEO service."""
-    if term:
-        sherpa_romeo = SherpaRomeoSearch()
-        publishers = sherpa_romeo.search_publisher(term)
-        if publishers is None:
-            return []
-        return map(lambda x: {'value': x}, publishers[:limit])
-    return []
-
-
-def sherpa_romeo_journals(dummy_form, dummy_field, term, limit=50):
-    """Search SHERPA/RoMEO for journal name."""
-    if term:
-        # SherpaRomeoSearch doesnt' like unicode
-        if isinstance(term, unicode):
-            term = term.encode('utf8')
-        s = SherpaRomeoSearch()
-        journals = s.search_journal(term)
-        if journals is not None:
-            return map(lambda x: {'value': x}, journals[:limit])
-    return []
 
 
 def orcid_authors(dummy_form, dummy_field, term, limit=50):

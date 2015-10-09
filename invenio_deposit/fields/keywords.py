@@ -37,8 +37,6 @@ class KeywordsField(WebDepositField, StringField):
         defaults = dict(
             icon='tags',
             widget_classes="form-control"
-            # validators=[sherpa_romeo_journal_validate], #FIXME
-            # autocomplete=sherpa_romeo_journals,
         )
         defaults.update(kwargs)
         super(KeywordsField, self).__init__(**defaults)

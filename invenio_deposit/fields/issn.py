@@ -23,8 +23,6 @@ from wtforms import StringField
 
 from ..field_base import WebDepositField
 
-# from ..processor_utils import sherpa_romeo_issn_validate
-
 __all__ = ['ISSNField']
 
 
@@ -40,7 +38,6 @@ class ISSNField(WebDepositField, StringField):
             icon='barcode',
             export_key='issn',
             widget_classes="form-control",
-            # validators=[sherpa_romeo_issn_validate]  # FIXME
         )
         defaults.update(kwargs)
         super(ISSNField, self).__init__(**defaults)
