@@ -19,7 +19,7 @@
 
 """Unit tests for deposit module validators."""
 
-from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
+from invenio_testing import InvenioTestCase
 
 from wtforms.validators import StopValidation, ValidationError
 
@@ -89,8 +89,3 @@ class MintedDOIValidatorTest(InvenioTestCase):
         with self.assertRaises(ValidationError):
             validator(form, field2)
 
-
-TEST_SUITE = make_test_suite(MintedDOIValidatorTest)
-
-if __name__ == "__main__":
-    run_test_suite(TEST_SUITE)

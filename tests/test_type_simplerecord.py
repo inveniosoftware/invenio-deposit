@@ -27,7 +27,6 @@ from flask import url_for
 
 from invenio_base.globals import cfg
 from invenio_base.i18n import _
-from invenio.testsuite import make_test_suite, run_test_suite
 
 from helpers import DepositionTestCase
 
@@ -129,11 +128,3 @@ class SimpleRecordTest(DepositionTestCase):
                     deposition_type='simple', uuid=dep_id),
             follow_redirects=True)
         )
-
-
-TEST_SUITE = make_test_suite(
-    SimpleRecordTest,
-)
-
-if __name__ == "__main__":
-    run_test_suite(TEST_SUITE)
