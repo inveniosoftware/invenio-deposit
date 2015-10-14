@@ -37,25 +37,26 @@ requirements = [
     'Flask>=0.10.1',
     'six>=1.7.2',
     'idutils>=0.1.0',
-    'invenio-access>=0.1.0',
-    'invenio-base>=0.2.1',
-    'invenio-formatter>=0.2.1',
+    'invenio-access>=0.2.0',
+    'invenio-base>=0.3.1',
+    'invenio-formatter>=0.2.2.post1',
     'invenio-knowledge>=0.1.0',
     'invenio-oauth2server>=0.1.0',
     'invenio-pidstore>=0.1.0',
     'invenio-records>=0.3.2',
     'invenio-workflows>=0.1.1',
-    'invenio-utils>=0.1.1',
-    'invenio-ext>=0.2.1',
+    'invenio-utils>=0.2.0',
+    'invenio-ext>=0.3.1',
 ]
 
 test_requirements = [
+    'invenio_testing>=0.1.1',
     'unittest2>=1.1.0',
     'Flask_Testing>=0.4.1',
-    'pytest>=2.7.0',
-    'pytest_cov>=1.8.0,<2.0.0',
+    'pytest>=2.8.0',
+    'pytest_cov>=2.1.0',
     'pytest_pep8>=1.0.6',
-    'coverage>=3.7.1',
+    'coverage>=4.0.0',
 ]
 
 extras_require = {
@@ -101,9 +102,6 @@ class PyTest(TestCommand):
         """Run tests."""
         # import here, cause outside the eggs aren't loaded
         import pytest
-        import _pytest.config
-        pm = _pytest.config.get_plugin_manager()
-        pm.consider_setuptools_entrypoints()
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 

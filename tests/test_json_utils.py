@@ -19,7 +19,7 @@
 
 from __future__ import print_function, unicode_literals
 
-from invenio.testsuite import InvenioTestCase, make_test_suite, run_test_suite
+from invenio_testing import InvenioTestCase
 
 
 class UtilsTest(InvenioTestCase):
@@ -45,9 +45,3 @@ class UtilsTest(InvenioTestCase):
             blob2json(blob),
             'incorrect full serializaion + deserialization'
         )
-
-
-TEST_SUITE = make_test_suite(UtilsTest)
-
-if __name__ == '__main__':
-    run_test_suite(TEST_SUITE)
