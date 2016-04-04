@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -23,23 +23,24 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 
-# Check manifest will not automatically add these two files:
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_deposit *.po *.pot *.mo
+"""Minimal Flask application example for development.
 
-# added by check_manifest.py
-include *.rst
-include *.sh
-include *.txt
-include LICENSE
-include babel.ini
-include pytest.ini
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include invenio_deposit *.html
-recursive-include tests *.py
+Run example development server:
+
+.. code-block:: console
+
+   $ cd examples
+   $ flask -a app.py --debug run
+"""
+
+from __future__ import absolute_import, print_function
+
+from flask import Flask
+from flask_babelex import Babel
+
+from invenio_deposit import InvenioDeposit
+
+# Create Flask application
+app = Flask(__name__)
+Babel(app)
+InvenioDeposit(app)

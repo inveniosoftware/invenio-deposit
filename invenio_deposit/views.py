@@ -22,24 +22,24 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+"""Module for depositing record metadata and uploading files."""
 
-# Check manifest will not automatically add these two files:
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_deposit *.po *.pot *.mo
+from __future__ import absolute_import, print_function
 
-# added by check_manifest.py
-include *.rst
-include *.sh
-include *.txt
-include LICENSE
-include babel.ini
-include pytest.ini
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include invenio_deposit *.html
-recursive-include tests *.py
+from flask import Blueprint, render_template
+from flask_babelex import lazy_gettext as _
+
+blueprint = Blueprint(
+    'invenio_deposit',
+    __name__,
+    template_folder='templates',
+    static_folder='static',
+)
+
+
+@blueprint.route("/")
+def index():
+    """Basic view."""
+    return render_template(
+        "invenio_deposit/index.html",
+        module_name=_('Invenio-Deposit'))

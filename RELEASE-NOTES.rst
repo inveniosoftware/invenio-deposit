@@ -1,53 +1,30 @@
-========================
- Invenio-Deposit v0.2.0
-========================
+==========================
+ Invenio-Deposit v1.0.0a1
+==========================
 
-Invenio-Deposit v0.2.0 was released on September 8, 2015.
+Invenio-Deposit v1.0.0a1 was released on TBD, 2016.
 
 About
 -----
 
-Invenio module for depositing metadata using workflows.
+Module for depositing record metadata and uploading files.
 
 *This is an experimental developer preview release.*
 
-Incompatible changes
---------------------
+What's new
+----------
 
-- Removes dependency on bibupload module.
-- Removes dependency on legacy bibdocfile module.
-
-New features
-------------
-
-- Implements optional JSONSchema-based deposit forms. One can install
-  required dependencies using 'invenio_deposit[jsonschema]'.
-
-Improved features
------------------
-
-- Allows panel headers in form groups to have an icon. Example usage
-  {"icon": "fa fa-user"}.
-
-Bug fixes
----------
-
-- Adds missing `invenio_access` dependency and amends past upgrade
-  recipes following its separation into standalone package.
-- Adds missing dependency to invenio-knowledge package and fixes
-  imports.
-- Fixes MintedDOIValidator, so that it correctly checks if DOI was
-  already minted for the specific upload.
+- Initial public release.
 
 Installation
 ------------
 
-   $ pip install invenio-deposit==0.2.0
+   $ pip install invenio-deposit==1.0.0a1
 
 Documentation
 -------------
 
-   http://invenio-deposit.readthedocs.org/en/v0.2.0
+   http://pythonhosted.org/invenio-deposit/
 
 Happy hacking and thanks for flying Invenio-Deposit.
 

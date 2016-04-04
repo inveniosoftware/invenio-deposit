@@ -1,6 +1,6 @@
 ..
     This file is part of Invenio.
-    Copyright (C) 2015 CERN.
+    Copyright (C) 2015, 2016 CERN.
 
     Invenio is free software; you can redistribute it
     and/or modify it under the terms of the GNU General Public License as
@@ -41,9 +41,9 @@
         :target: https://github.com/inveniosoftware/invenio-deposit/blob/master/LICENSE
 
 
-Invenio module for depositing metadata using workflows.
+Module for depositing record metadata and uploading files.
 
-*This is an experimental development preview release.*
+*This is an experimental developer preview release.*
 
 * Free software: GPLv2 license
-* Documentation: https://invenio-deposit.readthedocs.org.
+* Documentation: https://pythonhosted.org/invenio-deposit/

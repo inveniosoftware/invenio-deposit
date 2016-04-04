@@ -1,6 +1,6 @@
 ..
     This file is part of Invenio.
-    Copyright (C) 2015, 2016 CERN.
+    Copyright (C) 2016 CERN.
 
     Invenio is free software; you can redistribute it
     and/or modify it under the terms of the GNU General Public License as
@@ -22,28 +22,4 @@
     as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 
-Changes
-=======
-
-Version 1.0.0a1 (release TBD)
-
-- Refactoring for Invenio 3.
-
-Version 0.2.0 (release 2015-09-08)
-
-- Removes dependency on bibupload module.
-- Removes dependency on legacy bibdocfile module.
-- Implements optional JSONSchema-based deposit forms. One can install
-  required dependencies using 'invenio_deposit[jsonschema]'.
-- Allows panel headers in form groups to have an icon. Example usage
-  {"icon": "fa fa-user"}.
-- Adds missing `invenio_access` dependency and amends past upgrade
-  recipes following its separation into standalone package.
-- Adds missing dependency to invenio-knowledge package and fixes
-  imports.
-- Fixes MintedDOIValidator, so that it correctly checks if DOI was
-  already minted for the specific upload.
-
-Version 0.1.0 (release 2015-08-14)
-
-- Initial public release.
+.. include:: ../AUTHORS.rst
