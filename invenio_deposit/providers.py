@@ -22,30 +22,37 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Module for depositing record metadata and uploading files."""
+"""Deposit identifier provider."""
 
 from __future__ import absolute_import, print_function
 
-from .views import blueprint
+from invenio_pidstore.providers.base import BaseProvider
+from invenio_pidstore.models import PIDStatus
 
 
-class InvenioDeposit(object):
-    """Invenio-Deposit extension."""
+class DepositProvider(BaseProvider):
+    """Deposit identifier provider."""
 
-    def __init__(self, app=None):
-        """Extension initialization."""
-        if app:
-            self.init_app(app)
+    pid_type = 'deposit'
+    """Type of persistent identifier."""
 
-    def init_app(self, app):
-        """Flask application initialization."""
-        self.init_config(app)
-        app.register_blueprint(blueprint)
-        app.extensions['invenio-deposit'] = self
+    pid_provider = None
+    """Provider name.
 
-    def init_config(self, app):
-        """Initialize configuration."""
-        app.config.setdefault(
-            'DEPOSIT_BASE_TEMPLATE',
-            app.config.get('BASE_TEMPLATE',
-                           'invenio_deposit/base.html'))
+    The provider name is not recorded in the PID since the provider does not
+    provide any additional features besides creation of deposit ids.
+    """
+
+    default_status = PIDStatus.RESERVED
+    """Deposit IDs are by default registered immediately."""
+
+    @classmethod
+    def create(cls, object_type=None, object_uuid=None, **kwargs):
+        """Create a new deposit identifier."""
+        assert 'pid_value' in kwargs
+        kwargs.setdefault('status', cls.default_status)
+        if object_type and object_uuid:
+            kwargs['status'] = PIDStatus.REGISTERED
+        return super(DepositProvider, cls).create(
+            object_type=object_type, object_uuid=object_uuid, **kwargs)
+

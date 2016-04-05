@@ -22,36 +22,14 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Module for depositing record metadata and uploading files."""
-
-from __future__ import absolute_import, print_function
-
-from flask import Blueprint, render_template
-from flask_login import login_required
-from flask_babelex import lazy_gettext as _
-
-blueprint = Blueprint(
-    'invenio_deposit',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-    url_prefix='/deposit',
-)
-
-
-@blueprint.route('/')
-@login_required
-def index():
-    """List user depositions."""
-    return render_template(
-        'invenio_deposit/index.html',
-    )
-
-
-@blueprint.route('/new')
-@login_required
-def new():
-    """Create new deposition."""
-    return render_template(
-        'invenio_deposit/new.html',
-    )
+dojson>=1.0.0
+invenio-assets>=1.0.0a4
+invenio-db>=1.0.0a9
+invenio-indexer>=1.0.0a1
+invenio-pidstore>=1.0.0a6
+invenio-rest[cors]>=1.0.0a5
+invenio-records-rest>=1.0.0a4
+invenio-records-ui>=1.0.0a4
+invenio-records>=1.0.0a9
+invenio-search>=1.0.0a3
+invenio-theme>=1.0.0a7

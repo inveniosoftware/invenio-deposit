@@ -1,7 +1,112 @@
+{#
+# This file is part of Invenio.
+# Copyright (C) 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
+#}
+
 {%- extends config.DEPOSIT_BASE_TEMPLATE %}
 
-{%- block page_body %}
-TODO: Example template, please remove if you do not need it.
-{{_('Welcome to %(module_name)s', module_name=module_name)}}
-{%- endblock %}
+{%- block css %}
+    {{ super() }}
+    {% assets "invenio_search_ui_search_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
+{%- endblock css %}
 
+{%- block javascript %}
+  {{ super() }}
+  {% assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+{%- endblock javascript %}
+
+{%- block body_inner %}
+<div id="invenio-search">
+  <invenio-search search-endpoint="{{ config.DEPOSIT_SEARCH_API|default('/api/depositions/') }}">
+  {{super()}}
+  </invenio-search>
+</div>
+{%- endblock body_inner %}
+
+{%- block page_body %}
+<div class="container search-page">
+  {%- block search_body %}
+    <div class="row">
+      <div class="col-md-4 col-sm-8 col-xs-8">
+        <invenio-search-bar
+        template="{{ url_for('static', filename='templates/invenio_deposit/searchbar.html') }}"
+        placeholder="{{ _('My Uploads') }}">
+        </invenio-search-bar>
+      </div>
+      <div class="col-md-offset-6 col-md-2 col-sm-4 col-xs-4">
+        <a class="btn btn-success btn-block" href="{{ url_for('invenio_deposit.new') }}">
+          <i class="pull-left glyphicon glyphicon-upload"></i> {{ _('New Upload') }}
+        </a>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="btn-group">
+        <a class="text-muted btn btn-sm btn-link" href="#">
+          <strong><i class="glyphicon glyphicon-open"></i> Drafts 0</strong>
+        </a>
+        <a class="text-muted btn btn-sm btn-link" href="#">
+          <i class="glyphicon glyphicon-saved"></i> Submitted 0
+        </a>
+        </div>
+        <invenio-search-count
+          template="{{ url_for('static', filename='templates/invenio_search_ui/count.html') }}">
+        </invenio-search-count>
+        <div class="pull-right">
+        {%- set sort_options = config.get('RECORDS_REST_SORT_OPTIONS', {}).get(config.SEARCH_UI_SEARCH_INDEX) %}
+        {%- if sort_options %}
+          Sort by:
+          <invenio-search-select-box
+             sort-key="sort"
+             available-options='{{ sort_options|format_sortoptions|safe }}'
+             template="{{ url_for('static', filename='templates/invenio_search_ui/selectbox.html') }}"
+            >
+          </invenio-search-select-box>
+          <invenio-search-sort-order
+           sort-key="sort"
+           template="{{ url_for('static', filename='templates/invenio_search_ui/togglebutton.html') }}"
+          >
+          </invenio-search-sort-order>
+        {%- endif %}
+        </div>
+      </div>
+      <div class="panel-body">
+        <invenio-search-error
+          template="{{ url_for('static', filename='templates/invenio_search_ui/error.html') }}"
+          message="{{ _('Search failed.') }}">
+        </invenio-search-error>
+        <invenio-search-loading
+          template="{{ url_for('static', filename='node_modules/invenio-search-js/dist/templates/loading.html') }}"
+          message="{{ _('Loading...') }}">
+        </invenio-search-loading>
+        <invenio-search-results
+          template="{{ url_for('static', filename='templates/invenio_search_ui/marc21/default.html') }}">
+        </invenio-search-results>
+      </div>
+    </div>
+    <div align="center">
+      <invenio-search-pagination
+        template="{{ url_for('static', filename='templates/invenio_search_ui/pagination.html') }}">
+      </invenio-search-pagination>
+    </div>
+  {%- endblock search_body %}
+</div>
+{%- endblock page_body -%}

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,36 +22,19 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Module for depositing record metadata and uploading files."""
+"""Persistent identifier fetchers."""
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
-from flask import Blueprint, render_template
-from flask_login import login_required
-from flask_babelex import lazy_gettext as _
+from invenio_pidstore.fetchers import FetchedPID
 
-blueprint = Blueprint(
-    'invenio_deposit',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-    url_prefix='/deposit',
-)
+from .providers import DepositProvider
 
 
-@blueprint.route('/')
-@login_required
-def index():
-    """List user depositions."""
-    return render_template(
-        'invenio_deposit/index.html',
-    )
-
-
-@blueprint.route('/new')
-@login_required
-def new():
-    """Create new deposition."""
-    return render_template(
-        'invenio_deposit/new.html',
+def deposit_fetcher(record_uuid, data):
+    """Fetch a deposit identifier."""
+    return FetchedPID(
+        provider=DepositProvider,
+        pid_type=DepositProvider.pid_type,
+        pid_value=str(data['_deposit']['id']),
     )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,36 +22,30 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Module for depositing record metadata and uploading files."""
+"""Default configuration of deposit module."""
 
-from __future__ import absolute_import, print_function
+from invenio_records_rest.config import RECORDS_REST_ENDPOINTS
 
-from flask import Blueprint, render_template
-from flask_login import login_required
-from flask_babelex import lazy_gettext as _
-
-blueprint = Blueprint(
-    'invenio_deposit',
-    __name__,
-    template_folder='templates',
-    static_folder='static',
-    url_prefix='/deposit',
+DEPOSIT_RECORDS_REST_ENDPOINTS = dict(
+    deposit=dict(
+        pid_type='deposit',
+        pid_minter='deposit',
+        pid_fetcher='deposit',
+        search_index='depositions',
+        search_type=None,
+        record_serializers={
+            'application/json': ('invenio_records_rest.serializers'
+                                 ':json_v1_response'),
+        },
+        search_serializers={
+            'application/json': ('invenio_records_rest.serializers'
+                                 ':json_v1_search'),
+        },
+        list_route='/depositions/',
+        item_route='/depositions/<pid_value>',
+        default_media_type='application/json',
+        max_result_window=10000,
+    ),
 )
 
-
-@blueprint.route('/')
-@login_required
-def index():
-    """List user depositions."""
-    return render_template(
-        'invenio_deposit/index.html',
-    )
-
-
-@blueprint.route('/new')
-@login_required
-def new():
-    """Create new deposition."""
-    return render_template(
-        'invenio_deposit/new.html',
-    )
+DEPOSIT_RECORDS_REST_ENDPOINTS.update(RECORDS_REST_ENDPOINTS)

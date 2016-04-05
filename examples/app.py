@@ -25,22 +25,154 @@
 
 """Minimal Flask application example for development.
 
-Run example development server:
+Installation proccess
+---------------------
+
+First preapare all static files:
 
 .. code-block:: console
 
    $ cd examples
+   $ npm install -g node-sass clean-css requirejs uglify-js
+   $ pip install -r requirements.txt
+   $ flask -a app.py npm
+   $ cd static ; npm install ; cd ..
+   $ flask -a app.py collect -v
+   $ flask -a app.py assets build
+
+Make sure that ``elasticsearch`` server is running:
+
+.. code-block:: console
+
+   $ elasticsearch
+
+   ... version[2.0.0] ...
+
+Create demo records
+
+.. code-block:: console
+
+   $ mkdir instance
+   $ flask -a app.py db init
+   $ flask -a app.py db create
+   $ flask -a app.py index init
+   $ flask -a app.py fixtures records
+
+Start the server
+
+.. code-block:: console
+
    $ flask -a app.py --debug run
+
+Visit your favorite browser on `http://localhost:5000/search
+<http://localhost:5000/deposit>`_.
+
 """
 
 from __future__ import absolute_import, print_function
 
-from flask import Flask
+from os.path import dirname, join
+
+import jinja2
+from flask import Flask, render_template
 from flask_babelex import Babel
+from flask_cli import FlaskCLI
+from invenio_accounts import InvenioAccounts
+from invenio_accounts.views import blueprint as accounts_blueprint
+from invenio_assets import InvenioAssets
+from invenio_db import InvenioDB, db
+from invenio_indexer import InvenioIndexer
+from invenio_indexer.api import RecordIndexer
+from invenio_pidstore import InvenioPIDStore
+from invenio_records import InvenioRecords
+from invenio_records_rest import InvenioRecordsREST
+from invenio_records_rest.facets import terms_filter
+from invenio_records_ui import InvenioRecordsUI
+from invenio_rest import InvenioREST
+from invenio_search import InvenioSearch
+from invenio_search_ui import InvenioSearchUI
+from invenio_search_ui.bundles import js
+from invenio_theme import InvenioTheme
 
 from invenio_deposit import InvenioDeposit
+from invenio_deposit.config import DEPOSIT_RECORDS_REST_ENDPOINTS
 
 # Create Flask application
 app = Flask(__name__)
+
+app.config.update(
+    CELERY_ALWAYS_EAGER=True,
+    CELERY_CACHE_BACKEND="memory",
+    CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
+    CELERY_RESULT_BACKEND="cache",
+    REST_ENABLE_CORS=True,
+    SECRET_KEY='changeme',
+    SQLALCHEMY_TRACK_MODIFICATIONS=True,
+    RECORDS_REST_ENDPOINTS=DEPOSIT_RECORDS_REST_ENDPOINTS,
+)
+
+FlaskCLI(app)
 Babel(app)
+
+# Set jinja loader to first grab templates from the app's folder.
+app.jinja_loader = jinja2.ChoiceLoader([
+    jinja2.FileSystemLoader(join(dirname(__file__), "templates")),
+    app.jinja_loader
+ ])
+
+InvenioDB(app)
+InvenioTheme(app)
+InvenioAccounts(app)
+InvenioRecords(app)
+InvenioRecordsUI(app)
+search = InvenioSearch(app)
+# search.register_mappings('testrecords', 'data')
+InvenioSearchUI(app)
+InvenioREST(app)
+InvenioIndexer(app)
+InvenioPIDStore(app)
+
+InvenioRecordsREST(app)
+
+assets = InvenioAssets(app)
+assets.env.register('invenio_search_ui_search_js', js)
+
 InvenioDeposit(app)
+
+app.register_blueprint(accounts_blueprint)
+
+
+@app.cli.group()
+def fixtures():
+    """Command for working with test data."""
+
+
+@fixtures.command()
+def records():
+    """Load records."""
+    import pkg_resources
+    import uuid
+    from dojson.contrib.marc21 import marc21
+    from dojson.contrib.marc21.utils import create_record, split_blob
+    from invenio_pidstore import current_pidstore
+    from invenio_records.api import Record
+
+    # pkg resources the demodata
+    data_path = pkg_resources.resource_filename(
+        'invenio_records', 'data/marc21/bibliographic.xml'
+    )
+    with open(data_path) as source:
+        indexer = RecordIndexer()
+        with db.session.begin_nested():
+            for index, data in enumerate(split_blob(source.read()), start=1):
+                # create uuid
+                rec_uuid = uuid.uuid4()
+                # do translate
+                record = marc21.do(create_record(data))
+                # create PID
+                current_pidstore.minters['recid'](
+                    rec_uuid, record
+                )
+                # create record
+                indexer.index(Record.create(record, id_=rec_uuid))
+        db.session.commit()
