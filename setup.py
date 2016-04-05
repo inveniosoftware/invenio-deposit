@@ -62,6 +62,7 @@ setup_requires = [
 
 install_requires = [
     'Flask-BabelEx>=0.9.2',
+    'invenio-jsonschemas>=1.0.0a1',
     'invenio-records-rest>=1.0.0a6',
     'invenio-records-ui>=1.0.0a5',
     'invenio-records>=1.0.0a14',
@@ -107,6 +108,12 @@ setup(
         ],
         'invenio_pidstore.minters': [
             'deposit = invenio_deposit.minters:deposit_minter',
+        ],
+        'invenio_jsonschemas.schemas': [
+            'deposits = invenio_deposit.schemas',
+        ],
+        'invenio_search.mappings': [
+            'deposits = invenio_deposit.mappings',
         ],
     },
     extras_require=extras_require,

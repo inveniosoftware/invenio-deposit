@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Deposit schema.",
+  "description": "Describe information needed for deposit module.",
+  "properties": {
+    "_deposit": {
+      "type": "object",
+      "name": "_deposit",
+      "properties": {
+        "id": {
+          "type": "string",
+          "name": "id"
+        },
+        "created_by": {
+          "type": "integer",
+          "name": "created_by"
+        },
+        "editors": {
+          "type": "array",
+          "name": "editors",
+          "items": [
+            {
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ]
+    }
+  },
+  "required": [
+    "_deposit"
+  ]
+}

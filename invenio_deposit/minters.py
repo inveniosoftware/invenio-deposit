@@ -26,6 +26,10 @@
 
 from __future__ import absolute_import
 
+import uuid
+
+from datetime import datetime
+
 from .providers import DepositProvider
 
 
@@ -34,9 +38,14 @@ def deposit_minter(record_uuid, data):
     provider = DepositProvider.create(
         object_type='rec',
         object_uuid=record_uuid,
+        pid_value=uuid.uuid4().hex,
     )
+    now = datetime.utcnow().isoformat(),
     data['_deposit'] = {
         'id': provider.pid.pid_value,
-        # TODO 'editors': [current_user.get_id()],
+        'status': provider.pid.status.value,
+        'created': now,
+        'updated': now,
+        # TODO 'owners': [current_user.get_id()],
     }
     return provider.pid

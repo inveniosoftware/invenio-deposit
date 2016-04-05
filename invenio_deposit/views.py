@@ -26,9 +26,10 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template
 from flask_login import login_required
 from flask_babelex import lazy_gettext as _
+from invenio_db import db
 
 blueprint = Blueprint(
     'invenio_deposit',
@@ -42,7 +43,7 @@ blueprint = Blueprint(
 @blueprint.route('/')
 @login_required
 def index():
-    """List user depositions."""
+    """List user deposits."""
     return render_template(
         'invenio_deposit/index.html',
     )
@@ -51,7 +52,8 @@ def index():
 @blueprint.route('/new')
 @login_required
 def new():
-    """Create new deposition."""
-    return render_template(
-        'invenio_deposit/new.html',
-    )
+    """Create new deposit."""
+    from .api import Deposit
+    deposit = Deposit.create({})
+    db.session.commit()
+    return redirect('/deposits/{0}'.format(deposit['_deposit']['id']))

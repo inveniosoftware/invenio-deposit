@@ -1,0 +1,12 @@
+<span ng-init="tree=[];tree_more=[]">
+  <a class="btn btn-sm btn-link" href="#" ng-click="handleClick('status', 'k')">
+    <strong class="text-muted">
+      <i class="glyphicon glyphicon-open"></i> Drafts {{ (vm.invenioSearchResults.aggregations.status.buckets | filter:{key: 'k'})[0].doc_count || '0' }}
+    </strong>
+  </a>
+  <a class="btn btn-sm btn-link" href="#" ng-click="handleClick('status', 'r')">
+    <span class="text-muted">
+      <i class="glyphicon glyphicon-saved"></i> Submitted {{ (vm.invenioSearchResults.aggregations.status.buckets | filter:{key: 'r'})[0].doc_count || '0' }}
+    </span>
+  </a>
+</span>

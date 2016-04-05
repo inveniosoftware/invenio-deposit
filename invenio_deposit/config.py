@@ -26,12 +26,15 @@
 
 from invenio_records_rest.config import RECORDS_REST_ENDPOINTS
 
+DEPOSIT_SEARCH_API = '/api/deposits'
+"""URL of search endpoint for deposits."""
+
 DEPOSIT_RECORDS_REST_ENDPOINTS = dict(
     deposit=dict(
         pid_type='deposit',
         pid_minter='deposit',
         pid_fetcher='deposit',
-        search_index='depositions',
+        search_index='deposits',
         search_type=None,
         record_serializers={
             'application/json': ('invenio_records_rest.serializers'
@@ -41,10 +44,18 @@ DEPOSIT_RECORDS_REST_ENDPOINTS = dict(
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_search'),
         },
-        list_route='/depositions/',
-        item_route='/depositions/<pid_value>',
+        list_route='/deposits/',
+        item_route='/deposits/<pid_value>',
         default_media_type='application/json',
         max_result_window=10000,
+    ),
+)
+
+DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
+    deposit=dict(
+        pid_type='deposits',
+        route='/deposits/<pid_value>',
+        template='invenio_records_ui/detail.html',
     ),
 )
 

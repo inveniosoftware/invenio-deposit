@@ -35,7 +35,7 @@
 
 {%- block body_inner %}
 <div id="invenio-search">
-  <invenio-search search-endpoint="{{ config.DEPOSIT_SEARCH_API|default('/api/depositions/') }}">
+  <invenio-search search-endpoint="{{ config.DEPOSIT_SEARCH_API }}">
   {{super()}}
   </invenio-search>
 </div>
@@ -45,62 +45,63 @@
 <div class="container search-page">
   {%- block search_body %}
     <div class="row">
-      <div class="col-md-4 col-sm-8 col-xs-8">
-        <invenio-search-bar
-        template="{{ url_for('static', filename='templates/invenio_deposit/searchbar.html') }}"
-        placeholder="{{ _('My Uploads') }}">
-        </invenio-search-bar>
+      <div class="col-md-8 col-sm-8 col-xs-8">
+        <div class="row">
+          <div class="col-md-8">
+            <invenio-search-bar
+            template="{{ url_for('static', filename='templates/invenio_deposit/searchbar.html') }}"
+            placeholder="{{ _('My Uploads') }}">
+            </invenio-search-bar>
+          </div>
+          <div class="col-md-4">
+            <invenio-search-loading
+              template="{{ url_for('static', filename='node_modules/invenio-search-js/dist/templates/loading.html') }}"
+              message="{{ _('Loading...') }}">
+            </invenio-search-loading>
+          </div>
+        </div>
       </div>
-      <div class="col-md-offset-6 col-md-2 col-sm-4 col-xs-4">
+      <div class="col-md-offset-2 col-md-2 col-sm-4 col-xs-4">
         <a class="btn btn-success btn-block" href="{{ url_for('invenio_deposit.new') }}">
           <i class="pull-left glyphicon glyphicon-upload"></i> {{ _('New Upload') }}
         </a>
       </div>
     </div>
+
+    <invenio-search-error
+      template="{{ url_for('static', filename='templates/invenio_search_ui/error.html') }}"
+      message="{{ _('Search failed.') }}">
+    </invenio-search-error>
+
     <div class="panel panel-default">
       <div class="panel-heading">
-        <div class="btn-group">
-        <a class="text-muted btn btn-sm btn-link" href="#">
-          <strong><i class="glyphicon glyphicon-open"></i> Drafts 0</strong>
-        </a>
-        <a class="text-muted btn btn-sm btn-link" href="#">
-          <i class="glyphicon glyphicon-saved"></i> Submitted 0
-        </a>
-        </div>
-        <invenio-search-count
-          template="{{ url_for('static', filename='templates/invenio_search_ui/count.html') }}">
-        </invenio-search-count>
-        <div class="pull-right">
-        {%- set sort_options = config.get('RECORDS_REST_SORT_OPTIONS', {}).get(config.SEARCH_UI_SEARCH_INDEX) %}
-        {%- if sort_options %}
-          Sort by:
-          <invenio-search-select-box
-             sort-key="sort"
-             available-options='{{ sort_options|format_sortoptions|safe }}'
-             template="{{ url_for('static', filename='templates/invenio_search_ui/selectbox.html') }}"
+        <invenio-search-facets
+        template="{{ url_for('static', filename='templates/invenio_deposit/selectstatus.html') }}">
+        </invenio-search-facets>
+        <div class="pull-right form-inline">
+          <div class="form-group">
+          {%- set sort_options = config.get('RECORDS_REST_SORT_OPTIONS', {}).get(config.SEARCH_UI_SEARCH_INDEX) %}
+          {%- if sort_options %}
+            <label>{{ _('Sort') }}</label>
+            <invenio-search-select-box
+              sort-key="sort"
+              available-options='{{ sort_options|format_sortoptions|safe }}'
+              template="{{ url_for('static', filename='templates/invenio_deposit/selectbox.html') }}"
+              >
+            </invenio-search-select-box>
+            <invenio-search-sort-order
+            sort-key="sort"
+            template="{{ url_for('static', filename='templates/invenio_deposit/togglebutton.html') }}"
             >
-          </invenio-search-select-box>
-          <invenio-search-sort-order
-           sort-key="sort"
-           template="{{ url_for('static', filename='templates/invenio_search_ui/togglebutton.html') }}"
-          >
-          </invenio-search-sort-order>
-        {%- endif %}
+            </invenio-search-sort-order>
+          {%- endif %}
+          </div>
         </div>
       </div>
-      <div class="panel-body">
-        <invenio-search-error
-          template="{{ url_for('static', filename='templates/invenio_search_ui/error.html') }}"
-          message="{{ _('Search failed.') }}">
-        </invenio-search-error>
-        <invenio-search-loading
-          template="{{ url_for('static', filename='node_modules/invenio-search-js/dist/templates/loading.html') }}"
-          message="{{ _('Loading...') }}">
-        </invenio-search-loading>
-        <invenio-search-results
-          template="{{ url_for('static', filename='templates/invenio_search_ui/marc21/default.html') }}">
-        </invenio-search-results>
-      </div>
+      <invenio-search-results
+        class="list-group"
+        template="{{ url_for('static', filename='templates/invenio_deposit/results.html') }}">
+      </invenio-search-results>
     </div>
     <div align="center">
       <invenio-search-pagination

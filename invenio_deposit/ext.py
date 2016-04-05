@@ -26,6 +26,7 @@
 
 from __future__ import absolute_import, print_function
 
+from .cli import deposit as cmd
 from .views import blueprint
 
 
@@ -40,6 +41,7 @@ class InvenioDeposit(object):
     def init_app(self, app):
         """Flask application initialization."""
         self.init_config(app)
+        app.cli.add_command(cmd)
         app.register_blueprint(blueprint)
         app.extensions['invenio-deposit'] = self
 

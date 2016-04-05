@@ -74,15 +74,16 @@ from __future__ import absolute_import, print_function
 from os.path import dirname, join
 
 import jinja2
-from flask import Flask, render_template
+from flask import Flask, current_app, render_template
 from flask_babelex import Babel
-from flask_cli import FlaskCLI
+from flask_cli import FlaskCLI, with_appcontext
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
 from invenio_indexer import InvenioIndexer
 from invenio_indexer.api import RecordIndexer
+from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
@@ -94,21 +95,38 @@ from invenio_search_ui import InvenioSearchUI
 from invenio_search_ui.bundles import js
 from invenio_theme import InvenioTheme
 
-from invenio_deposit import InvenioDeposit
-from invenio_deposit.config import DEPOSIT_RECORDS_REST_ENDPOINTS
+from invenio_deposit import InvenioDeposit, config
 
 # Create Flask application
 app = Flask(__name__)
 
 app.config.update(
     CELERY_ALWAYS_EAGER=True,
-    CELERY_CACHE_BACKEND="memory",
+    CELERY_CACHE_BACKEND='memory',
     CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
-    CELERY_RESULT_BACKEND="cache",
+    CELERY_RESULT_BACKEND='cache',
+    JSONSCHEMAS_HOST='localhost:5000',
     REST_ENABLE_CORS=True,
     SECRET_KEY='changeme',
+    SERVER_NAME='localhost:5000',
     SQLALCHEMY_TRACK_MODIFICATIONS=True,
-    RECORDS_REST_ENDPOINTS=DEPOSIT_RECORDS_REST_ENDPOINTS,
+    RECORDS_REST_ENDPOINTS=config.DEPOSIT_RECORDS_REST_ENDPOINTS,
+    RECORDS_UI_ENDPOINTS=config.DEPOSIT_RECORDS_UI_ENDPOINTS,
+    DEPOSIT_SEARCH_API='/deposits',
+    RECORDS_REST_FACETS=dict(
+        deposits=dict(
+            aggs=dict(
+                status=dict(terms=dict(
+                    field='_deposit.status'
+                )),
+            ),
+            post_filters=dict(
+                status=terms_filter(
+                    '_deposit.status'
+                ),
+            )
+        )
+    ),
 )
 
 FlaskCLI(app)
@@ -122,6 +140,7 @@ app.jinja_loader = jinja2.ChoiceLoader([
 
 InvenioDB(app)
 InvenioTheme(app)
+InvenioJSONSchemas(app)
 InvenioAccounts(app)
 InvenioRecords(app)
 InvenioRecordsUI(app)
@@ -148,14 +167,14 @@ def fixtures():
 
 
 @fixtures.command()
+@with_appcontext
 def records():
     """Load records."""
     import pkg_resources
     import uuid
     from dojson.contrib.marc21 import marc21
     from dojson.contrib.marc21.utils import create_record, split_blob
-    from invenio_pidstore import current_pidstore
-    from invenio_records.api import Record
+    from invenio_deposit.api import Deposit
 
     # pkg resources the demodata
     data_path = pkg_resources.resource_filename(
@@ -165,14 +184,8 @@ def records():
         indexer = RecordIndexer()
         with db.session.begin_nested():
             for index, data in enumerate(split_blob(source.read()), start=1):
-                # create uuid
-                rec_uuid = uuid.uuid4()
                 # do translate
                 record = marc21.do(create_record(data))
-                # create PID
-                current_pidstore.minters['recid'](
-                    rec_uuid, record
-                )
                 # create record
-                indexer.index(Record.create(record, id_=rec_uuid))
+                indexer.index(Deposit.create(record))
         db.session.commit()

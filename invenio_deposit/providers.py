@@ -51,8 +51,6 @@ class DepositProvider(BaseProvider):
         """Create a new deposit identifier."""
         assert 'pid_value' in kwargs
         kwargs.setdefault('status', cls.default_status)
-        if object_type and object_uuid:
-            kwargs['status'] = PIDStatus.REGISTERED
         return super(DepositProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)
 
