@@ -40,12 +40,9 @@ def deposit_minter(record_uuid, data):
         object_uuid=record_uuid,
         pid_value=uuid.uuid4().hex,
     )
-    now = datetime.utcnow().isoformat(),
     data['_deposit'] = {
         'id': provider.pid.pid_value,
-        'status': provider.pid.status.value,
-        'created': now,
-        'updated': now,
+        'status': 'draft',
         # TODO 'owners': [current_user.get_id()],
     }
     return provider.pid

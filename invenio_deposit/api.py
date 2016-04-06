@@ -28,6 +28,7 @@ import uuid
 
 from flask import current_app, url_for
 from invenio_db import db
+from invenio_pidstore import current_pidstore
 from invenio_records.api import Record
 from jsonpatch import apply_patch
 from sqlalchemy.orm.attributes import flag_modified
@@ -45,6 +46,7 @@ class Deposit(Record):
         """Create a deposit."""
         id_ = id_ or uuid.uuid4()
         pid = deposit_minter(id_, data)
+        # TODO check valid JSON schemas
         data.setdefault('$schema', url_for(
             'invenio_jsonschemas.get_schema',
             schema_path='deposits/deposit-v1.0.0.json',
@@ -52,15 +54,37 @@ class Deposit(Record):
         ))
         return super(Deposit, cls).create(data, id_=id_)
 
-    def publish(self):
+    def publish(self, pid=None, id_=None):
         """Publish a deposit."""
-        # mint PIDs
-        # set status as published
 
-    def edit(self):
+        id_ = id_ or uuid.uuid4()
+        # TODO check valid JSON schemas
+        data = dict(self)
+        schema = data.pop('$schema', None)
+        # TODO make it configurable
+        minter = current_pidstore.minters['recid']
+        pid = minter(id_, data)
+
+        self['_deposit']['status'] = 'published'
+        self['_deposit']['pid'] = {
+            'type': pid.pid_type, 'value': pid.pid_value
+        }
+        record = Record.create(data, id_=id_)
+        self.commit()
+        return record
+
+    def edit(self, pid=None):
         """Edit deposit."""
-        # change status
+        # TODO check for valid statuses?
+        # TODO change schema
+        self['_deposit']['status'] = 'draft'
+        self.commit()
 
-    def discard(self):
+    def discard(self, pid=None):
         """Discard deposit."""
-        # delete if it was not published before
+        if self['_deposit']['status'] == 'published' or \
+                self['_deposit'].get('pid'):
+            raise AlreadyPublished()
+        if pid:
+            pid.delete()
+        self.delete(force=True)

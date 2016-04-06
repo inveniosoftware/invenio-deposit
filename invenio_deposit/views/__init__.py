@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Blueprint, redirect, render_template
+from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required
 from flask_babelex import lazy_gettext as _
 from invenio_db import db
@@ -34,8 +34,8 @@ from invenio_db import db
 blueprint = Blueprint(
     'invenio_deposit',
     __name__,
-    template_folder='templates',
-    static_folder='static',
+    template_folder='../templates',
+    static_folder='../static',
     url_prefix='/deposit',
 )
 
@@ -53,7 +53,22 @@ def index():
 @login_required
 def new():
     """Create new deposit."""
-    from .api import Deposit
-    deposit = Deposit.create({})
+    from ..api import Deposit
+    deposit = Deposit.create(dict(request.values))
     db.session.commit()
-    return redirect('/deposits/{0}'.format(deposit['_deposit']['id']))
+    return redirect(url_for('.edit', deposit_id=deposit['_deposit']['id']))
+
+
+@blueprint.route('/<deposit_id>')
+@login_required
+def edit(deposit_id):
+    from functools import partial
+    from invenio_pidstore.resolver import Resolver
+    from ..api import Deposit
+    from .rest import deposit_actions
+    resolver = Resolver(
+        pid_type='deposit', object_type='rec',
+        getter=partial(Deposit.get_record, with_deleted=True)
+    )
+    pid, deposit = resolver.resolve(deposit_id)
+    return str(deposit)

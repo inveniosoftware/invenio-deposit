@@ -96,6 +96,7 @@ from invenio_search_ui.bundles import js
 from invenio_theme import InvenioTheme
 
 from invenio_deposit import InvenioDeposit, config
+from invenio_deposit.views import rest
 
 # Create Flask application
 app = Flask(__name__)
@@ -159,6 +160,7 @@ assets.env.register('invenio_search_ui_search_js', js)
 InvenioDeposit(app)
 
 app.register_blueprint(accounts_blueprint)
+app.register_blueprint(rest.blueprint)
 
 
 @app.cli.group()
