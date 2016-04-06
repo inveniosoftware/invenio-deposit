@@ -29,7 +29,12 @@ from __future__ import absolute_import, print_function
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required
 from flask_babelex import lazy_gettext as _
+from flask_breadcrumbs import register_breadcrumb
 from invenio_db import db
+from functools import partial
+from invenio_pidstore.resolver import Resolver
+from ..api import Deposit
+from .rest import deposit_actions
 
 blueprint = Blueprint(
     'invenio_deposit',
@@ -42,6 +47,7 @@ blueprint = Blueprint(
 
 @blueprint.route('/')
 @login_required
+@register_breadcrumb(blueprint, '.', _('Deposit'))
 def index():
     """List user deposits."""
     return render_template(
@@ -61,14 +67,14 @@ def new():
 
 @blueprint.route('/<deposit_id>')
 @login_required
+@register_breadcrumb(blueprint, '.edit', _('Edit'))
 def edit(deposit_id):
-    from functools import partial
-    from invenio_pidstore.resolver import Resolver
-    from ..api import Deposit
-    from .rest import deposit_actions
     resolver = Resolver(
         pid_type='deposit', object_type='rec',
         getter=partial(Deposit.get_record, with_deleted=True)
     )
     pid, deposit = resolver.resolve(deposit_id)
-    return str(deposit)
+    return render_template(
+        'invenio_deposit/edit.html',
+        pid=pid, deposit=deposit,
+    )

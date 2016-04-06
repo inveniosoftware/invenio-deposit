@@ -1,0 +1,75 @@
+{#
+# This file is part of Invenio.
+# Copyright (C) 2016 CERN.
+#
+# Invenio is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# Invenio is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Invenio; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+#
+# In applying this license, CERN does not
+# waive the privileges and immunities granted to it by virtue of its status
+# as an Intergovernmental Organization or submit itself to any jurisdiction.
+#}
+
+{%- extends config.DEPOSIT_BASE_TEMPLATE %}
+
+{%- block css %}
+    {{ super() }}
+    {#
+    {% assets "invenio_search_ui_search_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
+    #}
+{%- endblock css %}
+
+{%- block javascript %}
+  {{ super() }}
+  {#
+  {% assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+  #}
+{%- endblock javascript %}
+
+{%- block page_body %}
+<div class="container" ng-controller="FormController">
+  <form class="form">
+    <div class="page-header">
+    {%- if deposit['_deposit']['status'] == 'draft' and not deposit['_deposit'].get('pid') %}
+      <a class="btn btn-danger" href="{{ url_for('invenio_deposit.edit', deposit_id=pid.pid_value) }}">
+        <i class="glyphicon glyphicon-trash"></i> {{ _('Delete') }}
+      </a>
+    {%- endif %}
+      <span class="pull-right">
+      {%- if deposit['_deposit']['status'] != 'draft' %}
+        <a class="btn btn-success" href="{{ url_for('invenio_deposit.edit', deposit_id=pid.pid_value) }}">
+          <i class="glyphicon glyphicon-edit"></i> {{ _('Edit') }}
+        </a>
+      {%- else %}
+        <button name="action" value="save" class="btn btn-default">
+          <i class="glyphicon glyphicon-file"></i> {{ _('Save') }}
+        </button>
+        <button name="action" value="submit" type="submit" class="btn btn-primary">
+          <i class="glyphicon glyphicon-save"></i> {{ _('Submit') }}
+        </button>
+      {%- endif %}
+      </span>
+      <div class="clearfix"></div>
+    </div>
+
+    <div
+      sf-schema="schema"
+      sf-form="form"
+      sf-model="model">
+    </div>
+
+    <pre>{{ deposit|tojson }}</pre>
+  </form>
+</div>
+{%- endblock %}

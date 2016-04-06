@@ -37,6 +37,7 @@ from invenio_rest import ContentNegotiatedMethodView
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..api import Deposit
+from ..serializers import json_serializer
 
 blueprint = Blueprint(
     'invenio_deposit_rest_actions',
@@ -73,27 +74,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
         return response
 
 
-import json
-
-from flask import Response
-
-
-def json_serializer(pid, data, *args):
-    """Build a json flask response using the given data.
-
-    :returns: A flask response with json data.
-    :returns type: :py:class:`flask.Response`
-    """
-    if data is not None:
-        response = Response(
-            json.dumps(data.dumps()),
-            mimetype='application/json'
-        )
-    else:
-        response = Response(mimetype='application/json')
-    # response.set_etag(str(record.model.version_id))
-    return response
-
+# FIXME use same serializer as record REST API.
 serializers = {
     'application/json': json_serializer,
 }

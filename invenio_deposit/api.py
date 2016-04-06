@@ -29,6 +29,7 @@ import uuid
 from flask import current_app, url_for
 from invenio_db import db
 from invenio_pidstore import current_pidstore
+from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.api import Record
 from jsonpatch import apply_patch
 from sqlalchemy.orm.attributes import flag_modified
@@ -84,7 +85,7 @@ class Deposit(Record):
         """Discard deposit."""
         if self['_deposit']['status'] == 'published' or \
                 self['_deposit'].get('pid'):
-            raise AlreadyPublished()
+            raise PIDInvalidAction()
         if pid:
             pid.delete()
         self.delete(force=True)
