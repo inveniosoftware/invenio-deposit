@@ -24,12 +24,10 @@
 
 """Default configuration of deposit module."""
 
-from invenio_records_rest.config import RECORDS_REST_ENDPOINTS
-
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
 
-DEPOSIT_RECORDS_REST_ENDPOINTS = dict(
+DEPOSIT_REST_ENDPOINTS = dict(
     deposit=dict(
         pid_type='deposit',
         pid_minter='deposit',
@@ -53,10 +51,8 @@ DEPOSIT_RECORDS_REST_ENDPOINTS = dict(
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
     deposit=dict(
-        pid_type='deposits',
-        route='/deposits/<pid_value>',
-        template='invenio_records_ui/detail.html',
+        pid_type='deposit',
+        route='/deposit/<pid_value>',
+        template='invenio_deposit/edit.html',
     ),
 )
-
-DEPOSIT_RECORDS_REST_ENDPOINTS.update(RECORDS_REST_ENDPOINTS)

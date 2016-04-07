@@ -26,8 +26,11 @@
 
 from __future__ import absolute_import, print_function
 
+from invenio_records_rest.views import create_blueprint
+
+from . import config
 from .cli import deposit as cmd
-from .views import blueprint
+from .views import rest, ui
 
 
 class InvenioDeposit(object):
@@ -42,7 +45,9 @@ class InvenioDeposit(object):
         """Flask application initialization."""
         self.init_config(app)
         app.cli.add_command(cmd)
-        app.register_blueprint(blueprint)
+        app.register_blueprint(ui.create_blueprint(
+            app.config['DEPOSIT_RECORDS_UI_ENDPOINTS']
+        ))
         app.extensions['invenio-deposit'] = self
 
     def init_config(self, app):
@@ -51,3 +56,29 @@ class InvenioDeposit(object):
             'DEPOSIT_BASE_TEMPLATE',
             app.config.get('BASE_TEMPLATE',
                            'invenio_deposit/base.html'))
+        for k in dir(config):
+            if k.startswith('DEPOSIT_'):
+                app.config.setdefault(k, getattr(config, k))
+
+
+class InvenioDepositREST(object):
+    """Invenio-Deposit REST extension."""
+
+    def __init__(self, app=None):
+        """Extension initialization."""
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        """Flask application initialization."""
+        self.init_config(app)
+        app.register_blueprint(rest.create_blueprint(
+            app.config['DEPOSIT_REST_ENDPOINTS']
+        ))
+        app.extensions['invenio-deposit-rest'] = self
+
+    def init_config(self, app):
+        """Initialize configuration."""
+        for k in dir(config):
+            if k.startswith('DEPOSIT_'):
+                app.config.setdefault(k, getattr(config, k))

@@ -32,24 +32,48 @@ from flask import Blueprint, abort, current_app, request, url_for
 from flask_login import current_user
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
-from invenio_records_rest.views import pass_record
+from invenio_records_rest.views import create_url_rules, pass_record
 from invenio_rest import ContentNegotiatedMethodView
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..api import Deposit
-from ..serializers import json_serializer
 
-blueprint = Blueprint(
-    'invenio_deposit_rest_actions',
-    __name__,
-    url_prefix='/deposits'
-)
+
+def create_blueprint(endpoints):
+    """Create Invenio-Deposit-REST blueprint."""
+    blueprint = Blueprint(
+        'invenio_deposit_rest',
+        __name__,
+        url_prefix='',
+    )
+
+    for endpoint, options in (endpoints or {}).items():
+        for rule in create_url_rules(endpoint, **options):
+            blueprint.add_url_rule(**rule)
+
+        deposit_actions = DepositActionResource.as_view(
+            DepositActionResource.view_name.format(endpoint),
+            serializers=options.get('record_serializers'),
+            pid_type=options['pid_type'],
+        )
+
+        blueprint.add_url_rule(
+            '{0}/actions/<any(publish,edit,discard):action>'.format(
+                options['item_route']
+            ),
+            view_func=deposit_actions,
+            methods=['POST']
+        )
+
+    return blueprint
 
 
 class DepositActionResource(ContentNegotiatedMethodView):
     """"Deposit action resource."""
 
-    def __init__(self, serializers=None, *args, **kwargs):
+    view_name = '{0}_actions'
+
+    def __init__(self, serializers, pid_type, *args, **kwargs):
         """Constructor."""
         super(DepositActionResource, self).__init__(
             serializers,
@@ -57,7 +81,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
             **kwargs
         )
         self.resolver = Resolver(
-            pid_type='deposit', object_type='rec',
+            pid_type=pid_type, object_type='rec',
             getter=partial(Deposit.get_record, with_deleted=True)
         )
 
@@ -68,24 +92,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
         db.session.commit()
 
         response = self.make_response(pid, record, 201)
-        endpoint = 'invenio_records_rest.{0}_item'.format(pid.pid_type)
+        endpoint = '.{0}_item'.format(pid.pid_type)
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))
         return response
-
-
-# FIXME use same serializer as record REST API.
-serializers = {
-    'application/json': json_serializer,
-}
-
-deposit_actions = DepositActionResource.as_view(
-    'deposit_action_api',
-    serializers=serializers
-)
-
-blueprint.add_url_rule(
-    '/<string:pid_value>/actions/<any(publish,edit,discard):action>',
-    view_func=deposit_actions,
-    methods=['POST']
-)

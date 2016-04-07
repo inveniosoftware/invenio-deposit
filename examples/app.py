@@ -96,7 +96,7 @@ from invenio_search_ui.bundles import js
 from invenio_theme import InvenioTheme
 
 from invenio_deposit import InvenioDeposit, config
-from invenio_deposit.views import rest
+from invenio_deposit.ext import InvenioDepositREST
 
 # Create Flask application
 app = Flask(__name__)
@@ -111,8 +111,6 @@ app.config.update(
     SECRET_KEY='changeme',
     SERVER_NAME='localhost:5000',
     SQLALCHEMY_TRACK_MODIFICATIONS=True,
-    RECORDS_REST_ENDPOINTS=config.DEPOSIT_RECORDS_REST_ENDPOINTS,
-    RECORDS_UI_ENDPOINTS=config.DEPOSIT_RECORDS_UI_ENDPOINTS,
     DEPOSIT_SEARCH_API='/deposits',
     RECORDS_REST_FACETS=dict(
         deposits=dict(
@@ -128,6 +126,7 @@ app.config.update(
             )
         )
     ),
+    RECORDS_UI_DEFAULT_PERMISSION_FACTORY=None,
 )
 
 FlaskCLI(app)
@@ -158,9 +157,9 @@ assets = InvenioAssets(app)
 assets.env.register('invenio_search_ui_search_js', js)
 
 InvenioDeposit(app)
+InvenioDepositREST(app)
 
 app.register_blueprint(accounts_blueprint)
-app.register_blueprint(rest.blueprint)
 
 
 @app.cli.group()

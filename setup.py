@@ -97,9 +97,8 @@ setup(
         'invenio_base.apps': [
             'invenio_deposit = invenio_deposit:InvenioDeposit',
         ],
-        'invenio_base.api_blueprints': [
-            'invenio_deposit_rest_actions = invenio_files_rest.views.rest'
-            ':blueprint',
+        'invenio_base.api_apps': [
+            'invenio_deposit_rest = invenio_deposit:InvenioDepositREST',
         ],
         'invenio_i18n.translations': [
             'messages = invenio_deposit',
