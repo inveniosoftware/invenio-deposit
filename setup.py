@@ -100,6 +100,9 @@ setup(
         'invenio_base.api_apps': [
             'invenio_deposit_rest = invenio_deposit:InvenioDepositREST',
         ],
+        'invenio_assets.bundles': [
+            'invenio_deposit_js = invenio_deposit.bundles:js',
+        ],
         'invenio_i18n.translations': [
             'messages = invenio_deposit',
         ],

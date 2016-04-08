@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "title": "Record",
+  "properties": {
+    "title_statement": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      }
+    },
+    "main_entry_personal_name": {
+      "title": "Main entry personal name",
+      "type": "array",
+      "items":{
+        "type": "object",
+        "properties": {
+          "personal_name": {
+            "title": "Personal Name",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "array",
+      "items":{
+        "type": "object",
+        "properties": {
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "main_entry_personal_name"
+  ]
+}

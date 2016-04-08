@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,15 +22,26 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-dojson>=1.0.0
-invenio-assets>=1.0.0a4
-invenio-accounts>=1.0.0a9
-invenio-db>=1.0.0a9
-invenio-indexer>=1.0.0a1
-invenio-pidstore>=1.0.0a6
-invenio-rest[cors]>=1.0.0a5
-invenio-records-rest>=1.0.0a4
-invenio-records-ui>=1.0.0a4
-invenio-records>=1.0.0a9
-invenio-search>=1.0.0a3
-invenio-theme>=1.0.0a7
+"""UI for Invenio-Deposit."""
+
+from invenio_assets import NpmBundle
+
+js = NpmBundle(
+    'node_modules/angular/angular.js',
+    'node_modules/angular-sanitize/angular-sanitize.js',
+    'node_modules/objectpath/lib/ObjectPath.js',
+    'node_modules/tv4/tv4.js',
+    'node_modules/angular-schema-form/dist/schema-form.js',
+    'node_modules/angular-schema-form/dist/bootstrap-decorator.js',
+    'js/invenio_deposit/app.js',
+    filters='jsmin',
+    output='gen/deposit.%(version)s.js',
+    npm={
+        'almond': '~0.3.1',
+        'angular': '~1.4.9',
+        'angular-sanitize': '~1.4.9',
+        'angular-schema-form': '~0.8.13',
+        'tv4': '~1.2.7',
+        'objectpath': '~1.2.1',
+    },
+)

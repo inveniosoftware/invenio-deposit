@@ -31,45 +31,34 @@
 {%- endblock css %}
 
 {%- block javascript %}
-  {{ super() }}
+  {# FIXME: Move it probably to UI package and AMD it. #}
+  {% assets "invenio_deposit_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
   {#
   {% assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
   #}
 {%- endblock javascript %}
 
 {%- block page_body %}
-<div class="container" ng-controller="FormController">
-  <form class="form">
-    <div class="page-header">
-    {%- if pid and record['_deposit']['status'] == 'draft' and not record['_deposit'].get('pid') %}
-      <a class="btn btn-danger" href="#">
-        <i class="glyphicon glyphicon-trash"></i> {{ _('Delete') }}
-      </a>
-    {%- endif %}
-      <span class="pull-right">
-      {%- if pid and record['_deposit']['status'] != 'draft' %}
-        <a class="btn btn-success" href="{{ url_for('invenio_deposit_ui.deposit', pid_value=pid.pid_value) }}">
-          <i class="glyphicon glyphicon-edit"></i> {{ _('Edit') }}
-        </a>
-      {%- else %}
-        <button name="action" value="save" class="btn btn-default">
-          <i class="glyphicon glyphicon-file"></i> {{ _('Save') }}
-        </button>
-        <button name="action" value="submit" type="submit" class="btn btn-primary">
-          <i class="glyphicon glyphicon-save"></i> {{ _('Submit') }}
-        </button>
-      {%- endif %}
-      </span>
-      <div class="clearfix"></div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div id="invenio-records">
+          <invenio-records
+            action-endpoint="{{ url_for('invenio_deposit_rest.deposit_item', pid_value=pid.pid_value) }}"
+            extra-params="{}"
+            form="{{ url_for('static', filename='json/invenio_deposit/form.json') }}"
+            record='{{ record | tojson }}'
+            schema="{{ url_for('static', filename='json/invenio_deposit/schema.json') }}"
+          >
+            <invenio-records-actions
+              template="{{ url_for('static', filename='templates/invenio_deposit/records/actions.html') }}">
+            </invenio-records-actions>
+            <invenio-records-form
+              template="{{ url_for('static', filename='templates/invenio_deposit/records/form.html') }}">
+            </invenio-records-form>
+          </invenio-records>
+        </div>
+      </div>
     </div>
-
-    <div
-      sf-schema="schema"
-      sf-form="form"
-      sf-model="model">
-    </div>
-
-    <pre>{{ record|tojson }}</pre>
-  </form>
-</div>
+  </div>
 {%- endblock %}
