@@ -34,6 +34,7 @@ DEPOSIT_REST_ENDPOINTS = dict(
         pid_fetcher='deposit',
         search_index='deposits',
         search_type=None,
+        record_class='invenio_deposit.api:Deposit',
         record_serializers={
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_response'),
@@ -54,5 +55,6 @@ DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
         pid_type='deposit',
         route='/deposit/<pid_value>',
         template='invenio_deposit/edit.html',
+        record_class='invenio_deposit.api:Deposit',
     ),
 )

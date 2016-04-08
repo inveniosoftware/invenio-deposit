@@ -41,13 +41,13 @@
 <div class="container" ng-controller="FormController">
   <form class="form">
     <div class="page-header">
-    {%- if record['_deposit']['status'] == 'draft' and not record['_deposit'].get('pid') %}
+    {%- if pid and record['_deposit']['status'] == 'draft' and not record['_deposit'].get('pid') %}
       <a class="btn btn-danger" href="#">
         <i class="glyphicon glyphicon-trash"></i> {{ _('Delete') }}
       </a>
     {%- endif %}
       <span class="pull-right">
-      {%- if record['_deposit']['status'] != 'draft' %}
+      {%- if pid and record['_deposit']['status'] != 'draft' %}
         <a class="btn btn-success" href="{{ url_for('invenio_deposit_ui.deposit', pid_value=pid.pid_value) }}">
           <i class="glyphicon glyphicon-edit"></i> {{ _('Edit') }}
         </a>

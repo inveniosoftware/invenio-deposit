@@ -61,9 +61,8 @@ def create_blueprint(endpoints):
     @login_required
     def new():
         """Create new deposit."""
-        from ..api import Deposit
-        deposit = Deposit.create(dict(request.values))
-        db.session.commit()
-        return redirect(url_for('.edit', deposit_id=deposit['_deposit']['id']))
+        return render_template(
+            'invenio_deposit/edit.html', record={'_deposit': {'id': None}},
+        )
 
     return blueprint
