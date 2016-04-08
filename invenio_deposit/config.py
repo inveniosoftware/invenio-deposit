@@ -27,6 +27,8 @@
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
 
+DEPOSIT_PID_MINTER = 'recid'
+
 DEPOSIT_REST_ENDPOINTS = dict(
     deposit=dict(
         pid_type='deposit',

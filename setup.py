@@ -113,7 +113,7 @@ setup(
             'deposit = invenio_deposit.minters:deposit_minter',
         ],
         'invenio_jsonschemas.schemas': [
-            'deposits = invenio_deposit.schemas',
+            'deposits = invenio_deposit.jsonschemas',
         ],
         'invenio_search.mappings': [
             'deposits = invenio_deposit.mappings',
