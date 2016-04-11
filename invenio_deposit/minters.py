@@ -27,7 +27,6 @@
 from __future__ import absolute_import
 
 import uuid
-
 from datetime import datetime
 
 from .providers import DepositProvider

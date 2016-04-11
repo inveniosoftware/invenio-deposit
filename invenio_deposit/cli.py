@@ -68,9 +68,6 @@ def process_schema(value):
             )
         )
 
-option_pid_minter = click.option('--pid-minter', multiple=True,
-                                    default=None)
-
 
 #
 # Deposit management commands
@@ -89,36 +86,13 @@ def schema(source):
     # TODO
 
 
-
 @deposit.command()
 @click.argument('source', type=click.File('r'), default=sys.stdin)
 @click.option('-i', '--id', 'ids', multiple=True)
 @click.option('--force', is_flag=True, default=False)
-@option_pid_minter
 @with_appcontext
 def create(source, ids, force, pid_minter=None):
-    """Create new bibliographic record(s)."""
-    # Make sure that all imports are done with application context.
-    from .api import Record
-    from .models import RecordMetadata
-
-    pid_minter = [process_minter(minter) for minter in pid_minter or []]
-
-    data = json.load(source)
-
-    if isinstance(data, dict):
-        data = [data]
-
-    if ids:
-        assert len(ids) == len(data), 'Not enough identifiers.'
-
-    for record, id_ in zip_longest(data, ids):
-        id_ = id_ or uuid.uuid4()
-        for minter in pid_minter:
-            minter(id_, record)
-
-        click.echo(Record.create(record, id_=id_).id)
-    db.session.commit()
+    """Create new deposit."""
 
 
 @deposit.command()

@@ -41,8 +41,9 @@ cache:
   - pip
 
 env:
-  - REQUIREMENTS=lowest SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=release SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  # FIXME make sure that all packages has been released first
+  # - REQUIREMENTS=lowest SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  # - REQUIREMENTS=release SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
   - REQUIREMENTS=devel SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
 
 python:

@@ -28,7 +28,8 @@ from __future__ import absolute_import, print_function
 
 from functools import partial
 
-from flask import Blueprint, abort, current_app, request, url_for, render_template
+from flask import Blueprint, abort, current_app, render_template, request, \
+    url_for
 from flask_login import current_user, login_required
 from invenio_db import db
 
@@ -55,7 +56,6 @@ def create_blueprint(endpoints):
         return render_template(
             'invenio_deposit/index.html',
         )
-
 
     @blueprint.route('/deposit/new')
     @login_required

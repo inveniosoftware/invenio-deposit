@@ -26,8 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
-from invenio_pidstore.providers.base import BaseProvider
 from invenio_pidstore.models import PIDStatus
+from invenio_pidstore.providers.base import BaseProvider
 
 
 class DepositProvider(BaseProvider):
@@ -53,4 +53,3 @@ class DepositProvider(BaseProvider):
         kwargs.setdefault('status', cls.default_status)
         return super(DepositProvider, cls).create(
             object_type=object_type, object_uuid=object_uuid, **kwargs)
-

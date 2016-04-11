@@ -32,7 +32,7 @@ from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.models import PIDStatus
 from invenio_records.api import Record
-from invenio_records.signals import before_record_update, after_record_update
+from invenio_records.signals import after_record_update, before_record_update
 from jsonpatch import apply_patch
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm.exc import NoResultFound

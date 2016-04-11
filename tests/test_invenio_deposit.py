@@ -29,6 +29,7 @@ from __future__ import absolute_import, print_function
 
 from flask import Flask
 from flask_babelex import Babel
+from flask_cli import FlaskCLI
 
 from invenio_deposit import InvenioDeposit
 
@@ -42,10 +43,12 @@ def test_version():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
+    FlaskCLI(app)
     ext = InvenioDeposit(app)
     assert 'invenio-deposit' in app.extensions
 
     app = Flask('testapp')
+    FlaskCLI(app)
     ext = InvenioDeposit()
     assert 'invenio-deposit' not in app.extensions
     ext.init_app(app)

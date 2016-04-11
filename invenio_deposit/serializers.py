@@ -44,4 +44,3 @@ def json_serializer(pid, data, *args):
         response = Response(mimetype='application/json')
     # response.set_etag(str(data.model.version_id))
     return response
-
