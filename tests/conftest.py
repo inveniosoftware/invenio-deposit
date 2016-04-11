@@ -27,15 +27,81 @@
 
 from __future__ import absolute_import, print_function
 
+import os
+import shutil
+import tempfile
+
 import pytest
 from flask import Flask
+from flask_celeryext import FlaskCeleryExt
+from flask_cli import FlaskCLI
+from invenio_db import db as db_
+from invenio_db import InvenioDB
+from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_pidstore import InvenioPIDStore
+from invenio_records import InvenioRecords
+from invenio_records_rest import InvenioRecordsREST
+from invenio_search import InvenioSearch
+from sqlalchemy_utils.functions import create_database, database_exists
+
+from invenio_deposit import InvenioDeposit
+
+
+@pytest.yield_fixture()
+def app(request):
+    """Flask application fixture."""
+    instance_path = tempfile.mkdtemp()
+    app_ = Flask(__name__, instance_path=instance_path)
+    app_.config.update(
+        CELERY_ALWAYS_EAGER=True,
+        CELERY_CACHE_BACKEND='memory',
+        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
+        CELERY_RESULT_BACKEND='cache',
+        SECRET_KEY='CHANGE_ME',
+        SECURITY_PASSWORD_SALT='CHANGE_ME_ALSO',
+        SQLALCHEMY_DATABASE_URI=os.environ.get(
+            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
+        SQLALCHEMY_TRACK_MODIFICATIONS=True,
+        TESTING=True,
+    )
+    FlaskCLI(app_)
+    FlaskCeleryExt(app_)
+    InvenioDB(app_)
+    InvenioJSONSchemas(app_)
+    InvenioSearch(app_)
+    InvenioRecords(app_)
+    InvenioRecordsREST(app_)
+    InvenioPIDStore(app_)
+    InvenioDeposit(app_)
+
+    with app_.app_context():
+        yield app_
+
+    shutil.rmtree(instance_path)
+
+
+@pytest.yield_fixture()
+def db(app):
+    """Database fixture."""
+    if not database_exists(str(db_.engine.url)):
+        create_database(str(db_.engine.url))
+    db_.create_all()
+    yield db_
+    db_.session.remove()
+    db_.drop_all()
 
 
 @pytest.fixture()
-def app():
-    """Flask application fixture."""
-    app = Flask('testapp')
-    app.config.update(
-        TESTING=True
-    )
-    return app
+def fake_schemas(app, tmpdir):
+    schemas = tmpdir.mkdir('schemas')
+    empty_schema = '{"title": "Empty"}'
+    for path in (('deposit-v1.0.0.json', ),
+                 ('deposits', 'test-v1.0.0.json'),
+                 ('test-v1.0.0.json', ), ):
+        schema = schemas
+        for section in path[:-1]:
+            schema = schema.mkdir(section)
+        schema = schema.join(path[-1])
+        schema.write(empty_schema)
+
+    app.extensions['invenio-jsonschemas'].register_schemas_dir(schemas.strpath)

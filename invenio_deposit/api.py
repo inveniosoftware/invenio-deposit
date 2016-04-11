@@ -25,12 +25,15 @@
 """Deposit API."""
 
 import uuid
+from functools import partial
 
 from flask import current_app, url_for
 from invenio_db import db
+from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
-from invenio_pidstore.models import PIDStatus
+from invenio_pidstore.models import PersistentIdentifier, PIDStatus
+from invenio_pidstore.resolver import Resolver
 from invenio_records.api import Record
 from invenio_records.signals import after_record_update, before_record_update
 from jsonpatch import apply_patch
@@ -40,42 +43,38 @@ from werkzeug.local import LocalProxy
 
 from .minters import deposit_minter
 
+current_jsonschemas = LocalProxy(
+    lambda: current_app.extensions['invenio-jsonschemas']
+)
+
 
 class Deposit(Record):
     """Define API for changing deposit state."""
 
-    SCHEMA_PATH_PREFIX = '/deposits'
+    SCHEMA_PATH_PREFIX = 'deposits/'
+    DEFAULT_SCHEMA = 'deposits/deposit-v1.0.0.json'
+
+    @property
+    def pid(self):
+        """Return an instance of deposit PID."""
+        return PersistentIdentifier.get('deposit', self['_deposit']['id'])
 
     @property
     def record_schema(self):
         """Convert deposit schema to a valid record schema."""
-        url_prefix = url_for(
-            'invenio_jsonschemas.get_schema',
-            schema_path=self.SCHEMA_PATH_PREFIX,
-            _external=True,
-        )
-        schema_path = self['$schema'].lstrip(url_prefix)
-        assert schema_path in app.extensions['invenio-jsonschemas'].schemas
-        return url_for(
-            'invenio_jsonschemas.get_schema',
-            schema_path=schema_path,
-            _external=True,
-        )
+        schema_path = current_jsonschemas.url_to_path(self['$schema'])
+        if schema_path and schema_path.startswith(self.SCHEMA_PATH_PREFIX):
+            return current_jsonschemas.path_to_url(
+                schema_path[len(self.SCHEMA_PATH_PREFIX):]
+            )
 
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
-        url_prefix = url_for(
-            'invenio_jsonschemas.get_schema',
-            schema_path='',
-            _external=True,
-        )
-        schema_path = record['$schema'].lstrip(url_prefix)
-        assert schema_path in app.extensions['invenio-jsonschemas'].schemas
-        return url_for(
-            'invenio_jsonschemas.get_schema',
-            schema_path=self.SCHEMA_PATH_PREFIX + schema_path,
-            _external=True,
-        )
+        schema_path = current_jsonschemas.url_to_path(record['$schema'])
+        if schema_path:
+            return current_jsonschemas.path_to_url(
+                self.SCHEMA_PATH_PREFIX + schema_path
+            )
 
     def fetch_published(self):
         """Return a tuple with PID and published record."""
@@ -86,7 +85,7 @@ class Deposit(Record):
             pid_type=pid_type, object_type='rec',
             getter=partial(Record.get_record, with_deleted=True)
         )
-        return self.record_resolver.resolve(pid_value)
+        return resolver.resolve(pid_value)
 
     def merge_with_published(self):
         """."""
@@ -99,17 +98,21 @@ class Deposit(Record):
     @classmethod
     def create(cls, data, id_=None):
         """Create a deposit."""
-        # TODO check valid JSON schemas
-        data.setdefault('$schema', url_for(
-            'invenio_jsonschemas.get_schema',
-            schema_path='deposits/deposit-v1.0.0.json',
-            _external=True,
+        data.setdefault('$schema', current_jsonschemas.path_to_url(
+            cls.DEFAULT_SCHEMA
         ))
-        # TODO validate that it is regitered deposit schema
+        if not current_jsonschemas.url_to_path(data['$schema']):
+            raise JSONSchemaNotFound(data['$schema'])
+
+        if '_deposit' not in data:
+            id_ = id_ or uuid.uuid4()
+            deposit_minter(id_, data)
         return super(Deposit, cls).create(data, id_=id_)
 
     def publish(self, pid=None, id_=None):
         """Publish a deposit."""
+        pid = pid or self.pid
+
         if not pid.is_registered():
             raise PIDInvalidAction()
 
@@ -123,7 +126,7 @@ class Deposit(Record):
             record_pid = minter(id_, self)
 
             self['_deposit']['pid'] = {
-                'type': new_pid.pid_type, 'value': new_pid.pid_value
+                'type': record_pid.pid_type, 'value': record_pid.pid_value
             }
 
             data = dict(self.dumps())
@@ -132,7 +135,7 @@ class Deposit(Record):
         else:  # Update after edit
             record_pid, record = self.fetch_published()
             # TODO add support for patching
-            assert record.revision == self['_deposit']['pid']['revision']
+            assert record.revision_id == self['_deposit']['pid']['revision_id']
 
             data = dict(self.dumps())
             data['$schema'] = self.record_schema
@@ -144,6 +147,8 @@ class Deposit(Record):
 
     def edit(self, pid=None):
         """Edit deposit."""
+        pid = pid or self.pid
+
         if 'published' != self['_deposit']['status']:
             raise PIDInvalidAction()
 
@@ -151,7 +156,7 @@ class Deposit(Record):
             """Update selected keys."""
             data = record.dumps()
             # Keep current record revision for merging.
-            data['_deposit']['pid']['revision'] = record.revision
+            data['_deposit']['pid']['revision_id'] = record.revision_id
             data['_deposit']['status'] = 'draft'
             data['$schema'] = self.build_deposit_schema(record)
             return data
@@ -159,7 +164,7 @@ class Deposit(Record):
         with db.session.begin_nested():
             before_record_update.send(self)
 
-            record_pid, record = self.fetch_pushlished()
+            record_pid, record = self.fetch_published()
             assert PIDStatus.REGISTERED == record_pid.status
             assert record['_deposit'] == self['_deposit']
 
@@ -169,13 +174,11 @@ class Deposit(Record):
             db.session.merge(self.model)
 
         after_record_update.send(self)
-        return self
+        return self.__class__(self.model.json, model=self.model)
 
     def discard(self, pid=None):
-        """Discard deposit."""
-        if self['_deposit']['status'] == 'published' or \
-                self['_deposit'].get('pid'):
-            raise PIDInvalidAction()
+        """Discard deposit changes."""
+        pid = pid or self.pid
 
         with db.session.begin_nested():
             before_record_update.send(self)
@@ -188,10 +191,12 @@ class Deposit(Record):
             db.session.merge(self.model)
 
         after_record_update.send(self)
-        return self
+        return self.__class__(self.model.json, model=self.model)
 
     def delete(self, force=True, pid=None):
         """Delete deposit."""
+        pid = pid or self.pid
+
         if self['_deposit']['status'] == 'published' or \
                 self['_deposit'].get('pid'):
             raise PIDInvalidAction()
