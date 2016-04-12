@@ -52,6 +52,10 @@ DEPOSIT_REST_ENDPOINTS = dict(
         pid_minter='deposit',
         pid_fetcher='deposit',
         record_class='invenio_deposit.api:Deposit',
+        files_serializers={
+            'application/json': ('invenio_deposit.serializers'
+                                 ':json_v1_files_response'),
+        },
         record_serializers={
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_response'),
@@ -87,3 +91,9 @@ DEPOSIT_UI_JSTEMPLATE_ERROR = \
     'node_modules/invenio-records-js/dist/templates/error.html'
 DEPOSIT_UI_JSTEMPLATE_FORM = \
     'node_modules/invenio-records-js/dist/templates/form.html'
+
+DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
+"""Default storage class."""
+
+DEPOSIT_REGISTER_RECORD_SIGNALS = True
+"""Catch record insert/update signals and update the `_files` field."""

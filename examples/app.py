@@ -72,16 +72,19 @@ Visit your favorite browser on `http://localhost:5000/search
 
 from __future__ import absolute_import, print_function
 
+import os
 from os.path import dirname, join
 
 import jinja2
-from flask import Flask, current_app, render_template
+from flask import Flask, current_app
 from flask_babelex import Babel
 from flask_cli import FlaskCLI, with_appcontext
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
+from invenio_files_rest import InvenioFilesREST
+from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
 from invenio_indexer.api import RecordIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
@@ -96,8 +99,7 @@ from invenio_search_ui import InvenioSearchUI
 from invenio_search_ui.bundles import js
 from invenio_theme import InvenioTheme
 
-from invenio_deposit import InvenioDeposit, config
-from invenio_deposit.ext import InvenioDepositREST
+from invenio_deposit import InvenioDeposit, InvenioDepositREST
 
 # Create Flask application
 app = Flask(__name__)
@@ -128,6 +130,9 @@ app.config.update(
         )
     ),
     RECORDS_UI_DEFAULT_PERMISSION_FACTORY=None,
+    SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
+                                      'sqlite:///app.db'),
+    DATADIR=join(dirname(__file__), 'data/upload')
 )
 
 FlaskCLI(app)
@@ -137,7 +142,7 @@ Babel(app)
 app.jinja_loader = jinja2.ChoiceLoader([
     jinja2.FileSystemLoader(join(dirname(__file__), "templates")),
     app.jinja_loader
- ])
+])
 
 InvenioDB(app)
 InvenioTheme(app)
@@ -153,6 +158,7 @@ InvenioIndexer(app)
 InvenioPIDStore(app)
 
 InvenioRecordsREST(app)
+InvenioFilesREST(app)
 
 assets = InvenioAssets(app)
 assets.env.register('invenio_search_ui_search_js', js)
@@ -174,9 +180,9 @@ def records():
     """Load records."""
     import pkg_resources
     import uuid
-    from flask_login import login_user, logout_user
     from dojson.contrib.marc21 import marc21
     from dojson.contrib.marc21.utils import create_record, split_blob
+    from flask_login import login_user, logout_user
     from invenio_accounts.models import User
     from invenio_deposit.api import Deposit
 
@@ -199,3 +205,15 @@ def records():
                     indexer.index(Deposit.create(record))
                     logout_user()
             db.session.commit()
+
+
+@fixtures.command()
+@with_appcontext
+def location():
+    """Load default location."""
+    d = current_app.config['DATADIR']
+    with db.session.begin_nested():
+        Location.query.delete()
+        loc = Location(name='local', uri=d, default=True)
+        db.session.add(loc)
+    db.session.commit()

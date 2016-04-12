@@ -67,6 +67,7 @@ install_requires = [
     'Flask-Login>=0.3.2',
     'elasticsearch-dsl>=2.0.0',
     'invenio-db>=1.0.0a9',
+    'invenio-files-rest>=1.0.0a1',
     'invenio-jsonschemas>=1.0.0a1',
     'invenio-records-rest>=1.0.0a9',
     'invenio-records-ui>=1.0.0a6',

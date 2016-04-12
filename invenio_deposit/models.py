@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,32 +22,33 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+"""Deposit Models."""
 
-[build_sphinx]
-source-dir = docs/
-build-dir = docs/_build
-all_files = 1
+from __future__ import absolute_import
 
-[bdist_wheel]
-universal = 1
+from invenio_db import db
+from invenio_files_rest.models import Bucket
+from invenio_records.models import RecordMetadata
+from sqlalchemy_utils.types import UUIDType
 
-[aliases]
-test=pytest
 
-[compile_catalog]
-directory = invenio_deposit/translations/
+class DepositBucket(db.Model):
+    """Relationship Deposit-Bucket."""
 
-[extract_messages]
-copyright_holder = CERN
-msgid_bugs_address = info@invenio-software.org
-mapping-file = babel.ini
-output-file = invenio_deposit/translations/messages.pot
-add-comments = NOTE
+    __tablename__ = 'deposit_bucket'
 
-[init_catalog]
-input-file = invenio_deposit/translations/messages.pot
-output-dir = invenio_deposit/translations/
+    deposit_id = db.Column(
+        UUIDType,
+        db.ForeignKey(RecordMetadata.id),
+        primary_key=True,
+        nullable=False
+    )
 
-[update_catalog]
-input-file = invenio_deposit/translations/messages.pot
-output-dir = invenio_deposit/translations/
+    bucket_id = db.Column(
+        UUIDType,
+        db.ForeignKey(Bucket.id),
+        primary_key=True,
+        nullable=False
+    )
+
+    bucket = db.relationship(Bucket)

@@ -28,13 +28,17 @@ from __future__ import absolute_import, print_function
 
 from functools import partial
 
-from flask import Blueprint, abort, current_app, request, url_for
-from flask_login import current_user
+import json
+from uuid import UUID
+from flask import Blueprint, url_for, request, abort, current_app, \
+    make_response
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.views import create_url_rules, pass_record
 from invenio_rest import ContentNegotiatedMethodView
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm.exc import NoResultFound
+from invenio_records_rest.utils import obj_or_import_string
+from copy import deepcopy
 
 from ..api import Deposit
 
@@ -48,6 +52,16 @@ def create_blueprint(endpoints):
     )
 
     for endpoint, options in (endpoints or {}).items():
+        options = deepcopy(options)
+
+        if 'files_serializers' in options:
+            files_serializers = options.get('files_serializers')
+            files_serializers = {mime: obj_or_import_string(func)
+                                 for mime, func in files_serializers.items()}
+            del options['files_serializers']
+        else:
+            files_serializers = {}
+
         for rule in create_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
 
@@ -63,6 +77,34 @@ def create_blueprint(endpoints):
             ),
             view_func=deposit_actions,
             methods=['POST']
+        )
+
+        deposit_files = DepositFilesResource.as_view(
+            DepositFilesResource.view_name.format(endpoint),
+            serializers=files_serializers,
+            pid_type=options['pid_type'],
+        )
+
+        blueprint.add_url_rule(
+            '{0}/files'.format(
+                options['item_route']
+            ),
+            view_func=deposit_files,
+            methods=['GET', 'POST', 'PUT']
+        )
+
+        deposit_file = DepositFileResource.as_view(
+            DepositFileResource.view_name.format(endpoint),
+            serializers=files_serializers,
+            pid_type=options['pid_type'],
+        )
+
+        blueprint.add_url_rule(
+            '{0}/files/<path:key>'.format(
+                options['item_route']
+            ),
+            view_func=deposit_file,
+            methods=['GET', 'PUT', 'DELETE']
         )
 
     return blueprint
@@ -96,3 +138,103 @@ class DepositActionResource(ContentNegotiatedMethodView):
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))
         return response
+
+
+class DepositFilesResource(ContentNegotiatedMethodView):
+    """"Deposit files resource."""
+
+    view_name = '{0}_files'
+
+    def __init__(self, serializers, pid_type, *args, **kwargs):
+        """Constructor."""
+        super(DepositFilesResource, self).__init__(
+            serializers,
+            *args,
+            **kwargs
+        )
+        self.resolver = Resolver(
+            pid_type=pid_type, object_type='rec',
+            getter=partial(Deposit.get_record, with_deleted=True)
+        )
+
+    @pass_record
+    def get(self, pid, record):
+        """Get deposit/depositions/:id/files."""
+        return self.make_response(record.get_files())
+
+    @pass_record
+    def post(self, pid, record):
+        """Handle POST deposit files."""
+        # file name
+        key = request.form['name']
+        # load the file
+        uploaded_file = request.files['file']
+        # add it to the deposit
+        obj = record.add_file(
+            key=key, stream=uploaded_file.stream,
+            storage_class=current_app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
+        )
+        db.session.commit()
+        return self.make_response(obj=obj, status=201)
+
+    @pass_record
+    def put(self, pid, record):
+        """Handle PUT deposit files."""
+        ids = [data['id'] for data in json.loads(request.data)]
+        record.update_file_order(ids)
+        db.session.commit()
+        return self.make_response(record.get_files())
+
+
+class DepositFileResource(ContentNegotiatedMethodView):
+    """"Deposit files resource."""
+
+    view_name = '{0}_file'
+
+    def __init__(self, serializers, pid_type, *args, **kwargs):
+        """Constructor."""
+        super(DepositFileResource, self).__init__(
+            serializers,
+            *args,
+            **kwargs
+        )
+        self.resolver = Resolver(
+            pid_type=pid_type, object_type='rec',
+            getter=partial(Deposit.get_record, with_deleted=True)
+        )
+
+    @pass_record
+    def get(self, pid, record, key, **kwargs):
+        """Get deposit/depositions/:id/files/:key."""
+        version_id = UUID(request.headers['version_id']) \
+            if 'version_id' in request.headers else None
+        try:
+            obj = record.get_file(
+                key=key, version_id=version_id) or abort(404)
+            return self.make_response(obj=obj)
+        except NoResultFound:
+            abort(404)
+
+    @pass_record
+    def put(self, pid, record, key):
+        """Handle PUT deposit files."""
+        data = json.loads(request.data)
+        new_key = data['filename']
+        if not new_key:
+            abort(400)
+        try:
+            obj = record.rename_file(old_key=key, new_key=new_key)
+        except NoResultFound:
+            abort(404)
+        db.session.commit()
+        return self.make_response(obj=obj)
+
+    @pass_record
+    def delete(self, pid, record, key):
+        """Handle DELETE deposit files."""
+        if record.delete_file(key=key):
+            db.session.commit()
+            return make_response("", 204)
+        else:
+            abort(404, 'The specified object does not exist or has already '
+                  'been deleted.')
