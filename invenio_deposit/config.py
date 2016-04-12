@@ -62,3 +62,10 @@ DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
         record_class='invenio_deposit.api:Deposit',
     ),
 )
+
+DEPOSIT_UI_JSTEMPLATE_ACTIONS = \
+    'node_modules/invenio-records-js/dist/templates/actions.html'
+DEPOSIT_UI_JSTEMPLATE_ERROR = \
+    'node_modules/invenio-records-js/dist/templates/error.html'
+DEPOSIT_UI_JSTEMPLATE_FORM = \
+    'node_modules/invenio-records-js/dist/templates/form.html'

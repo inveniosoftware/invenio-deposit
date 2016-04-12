@@ -33,6 +33,7 @@ js = NpmBundle(
     'node_modules/tv4/tv4.js',
     'node_modules/angular-schema-form/dist/schema-form.js',
     'node_modules/angular-schema-form/dist/bootstrap-decorator.js',
+    'node_modules/invenio-records-js/dist/invenio-records-js.js',
     'js/invenio_deposit/app.js',
     filters='jsmin',
     output='gen/deposit.%(version)s.js',
@@ -41,7 +42,8 @@ js = NpmBundle(
         'angular': '~1.4.9',
         'angular-sanitize': '~1.4.9',
         'angular-schema-form': '~0.8.13',
-        'tv4': '~1.2.7',
+        'invenio-records-js': '~0.0.1',
         'objectpath': '~1.2.1',
+        'tv4': '~1.2.7',
     },
 )
