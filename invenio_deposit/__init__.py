@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, print_function
 
-from .ext import InvenioDeposit
+from .ext import InvenioDeposit, InvenioDepositREST
 from .version import __version__
 
-__all__ = ('__version__', 'InvenioDeposit')
+__all__ = ('__version__', 'InvenioDeposit', 'InvenioDepositREST')

@@ -44,7 +44,7 @@
       <div class="col-md-12">
         <div id="invenio-records">
           <invenio-records
-            action-endpoint="{{ url_for('invenio_deposit_rest.deposit_item', pid_value=pid.pid_value) }}"
+            action-endpoint="{{ config.DEPOSIT_SEARCH_API }}"
             extra-params="{}"
             form="{{ url_for('static', filename='json/invenio_deposit/form.json') }}"
             record='{{ record | tojson }}'
