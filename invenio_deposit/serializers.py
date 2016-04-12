@@ -26,7 +26,7 @@
 
 import json
 
-from flask import Response
+from flask import Response, jsonify, make_response
 
 
 def json_serializer(pid, data, *args):
@@ -44,3 +44,24 @@ def json_serializer(pid, data, *args):
         response = Response(mimetype='application/json')
     # response.set_etag(str(data.model.version_id))
     return response
+
+
+def file_serializer(obj):
+    """Serialize a object."""
+    return {
+        "id": str(obj.file_id),
+        "filename": obj.key,
+        "filesize": obj.file.size,
+        "checksum": obj.file.checksum,
+    }
+
+
+def json_file_serializer(obj):
+    """JSON File Serializer."""
+    return make_response(jsonify(file_serializer(obj)))
+
+
+def json_files_serializer(objects):
+    """JSON Files Serializer."""
+    files = [file_serializer(obj) for obj in objects]
+    return make_response(jsonify({"files": files}))
