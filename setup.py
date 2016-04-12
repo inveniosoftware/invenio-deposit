@@ -36,6 +36,7 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
+    'invenio-accounts>=1.0.0a9',
     'isort>=4.2.2',
     'psycopg2>=2.6.1',
     'pydocstyle>=1.0.0',
@@ -62,6 +63,7 @@ setup_requires = [
 ]
 
 install_requires = [
+    'elasticsearch_dsl>=0.0.11',
     'Flask-BabelEx>=0.9.2',
     'Flask-Login>=0.3.2',
     'invenio-db>=1.0.0a9',
