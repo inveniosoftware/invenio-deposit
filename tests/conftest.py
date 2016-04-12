@@ -37,14 +37,18 @@ from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
 from invenio_db import db as db_
 from invenio_db import InvenioDB
+from invenio_files_rest import InvenioFilesREST
+from invenio_files_rest.models import Location
 from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_search import InvenioSearch
+from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
 
-from invenio_deposit import InvenioDeposit
+from invenio_deposit import InvenioDeposit, InvenioDepositREST
+from invenio_deposit.api import Deposit
 
 
 @pytest.yield_fixture()
@@ -73,6 +77,8 @@ def app(request):
     InvenioRecordsREST(app_)
     InvenioPIDStore(app_)
     InvenioDeposit(app_)
+    InvenioFilesREST(app_)
+    InvenioDepositREST(app_)
 
     with app_.app_context():
         yield app_
@@ -93,6 +99,7 @@ def db(app):
 
 @pytest.fixture()
 def fake_schemas(app, tmpdir):
+    """Fake schema."""
     schemas = tmpdir.mkdir('schemas')
     empty_schema = '{"title": "Empty"}'
     for path in (('deposit-v1.0.0.json', ),
@@ -105,3 +112,38 @@ def fake_schemas(app, tmpdir):
         schema.write(empty_schema)
 
     app.extensions['invenio-jsonschemas'].register_schemas_dir(schemas.strpath)
+
+
+@pytest.fixture()
+def location(app):
+    """Create default location."""
+    tmppath = tempfile.mkdtemp()
+    with db_.session.begin_nested():
+        Location.query.delete()
+        loc = Location(name='local', uri=tmppath, default=True)
+        db_.session.add(loc)
+    db_.session.commit()
+
+
+@pytest.fixture()
+def deposit(app, location):
+    """New deposit with files."""
+    record = {
+        "title": "fuu"
+    }
+    deposit = Deposit.create(record)
+    db_.session.commit()
+    return deposit
+
+
+@pytest.fixture()
+def files(app, deposit):
+    """Add a file to the deposit."""
+    content = b'### Testing textfile ###'
+    stream = BytesIO(content)
+    key = "hello.txt"
+    storage_class = app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
+    obj = deposit.add_file(key=key, stream=stream,
+                           storage_class=storage_class)
+    db_.session.commit()
+    return [obj]

@@ -69,3 +69,6 @@ DEPOSIT_UI_JSTEMPLATE_ERROR = \
     'node_modules/invenio-records-js/dist/templates/error.html'
 DEPOSIT_UI_JSTEMPLATE_FORM = \
     'node_modules/invenio-records-js/dist/templates/form.html'
+
+DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
+"""Default storage class."""

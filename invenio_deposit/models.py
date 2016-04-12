@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,28 +22,33 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+"""Deposit Models."""
 
-# Check manifest will not automatically add these two files:
-include .dockerignore
-include .editorconfig
-include .tx/config
-recursive-include invenio_deposit *.po *.pot *.mo
+from __future__ import absolute_import
 
-# added by check_manifest.py
-include *.rst
-include *.sh
-include *.txt
-include LICENSE
-include babel.ini
-include pytest.ini
-recursive-include docs *.bat
-recursive-include docs *.py
-recursive-include docs *.rst
-recursive-include docs Makefile
-recursive-include examples *.py
-recursive-include examples *.txt
-recursive-include examples *.gitkeep
-recursive-include invenio_deposit *.html
-recursive-include invenio_deposit *.js
-recursive-include invenio_deposit *.json
-recursive-include tests *.py
+from invenio_db import db
+from invenio_files_rest.models import Bucket
+from invenio_records.models import RecordMetadata
+from sqlalchemy_utils.types import UUIDType
+
+
+class DepositBucket(db.Model):
+    """Relationship Deposit-Bucket."""
+
+    __tablename__ = 'deposit_bucket'
+
+    deposit_id = db.Column(
+        UUIDType,
+        db.ForeignKey(RecordMetadata.id),
+        primary_key=True,
+        nullable=False
+    )
+
+    bucket_id = db.Column(
+        UUIDType,
+        db.ForeignKey(Bucket.id),
+        primary_key=True,
+        nullable=False
+    )
+
+    bucket = db.relationship(Bucket)
