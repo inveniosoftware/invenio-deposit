@@ -24,21 +24,36 @@
 
 """Default configuration of deposit module."""
 
+from flask_login import current_user
+from elasticsearch_dsl import Q
+
+
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
 
 DEPOSIT_RECORDS_API = '/api/deposits/{pid_value}'
+"""URL of record endpoint for deposits."""
 
 DEPOSIT_PID_MINTER = 'recid'
+"""PID minter used for record submissions."""
+
+DEPOSIT_JSONSCHEMAS_PREFIX = 'deposits/'
+"""Prefix for all deposit JSON schemas."""
+
+DEPOSIT_DEFAULT_JSONSCHEMA = 'deposits/deposit-v1.0.0.json'
+"""Default JSON schema used for new deposits."""
 
 DEPOSIT_REST_ENDPOINTS = dict(
-    deposit=dict(
+    dep=dict(
         pid_type='dep',
         pid_minter='deposit',
         pid_fetcher='deposit',
         search_index='deposits',
         search_type=None,
         record_class='invenio_deposit.api:Deposit',
+        record_filter=lambda: Q(
+            'match', **{'_deposit.owner': current_user.get_id()}
+        ),
         record_serializers={
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_response'),
