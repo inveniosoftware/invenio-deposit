@@ -29,6 +29,7 @@ from __future__ import absolute_import, print_function
 import pytest
 from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore.errors import PIDInvalidAction
+from sqlalchemy.orm.exc import NoResultFound
 
 from invenio_deposit.api import Deposit
 
@@ -107,7 +108,7 @@ def test_delete(app, db, fake_schemas):
 
     deposit.delete()
 
-    with pytest.raises(Exception):
+    with pytest.raises(NoResultFound):
         Deposit.get_record(deposit.id)
 
     with pytest.raises(PIDInvalidAction):

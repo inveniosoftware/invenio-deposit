@@ -33,7 +33,7 @@ from invenio_pidstore.providers.base import BaseProvider
 class DepositProvider(BaseProvider):
     """Deposit identifier provider."""
 
-    pid_type = 'deposit'
+    pid_type = 'dep'
     """Type of persistent identifier."""
 
     pid_provider = None

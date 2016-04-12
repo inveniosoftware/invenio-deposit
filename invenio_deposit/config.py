@@ -33,7 +33,7 @@ DEPOSIT_PID_MINTER = 'recid'
 
 DEPOSIT_REST_ENDPOINTS = dict(
     deposit=dict(
-        pid_type='deposit',
+        pid_type='dep',
         pid_minter='deposit',
         pid_fetcher='deposit',
         search_index='deposits',
@@ -56,7 +56,7 @@ DEPOSIT_REST_ENDPOINTS = dict(
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
     deposit=dict(
-        pid_type='deposit',
+        pid_type='dep',
         route='/deposit/<pid_value>',
         template='invenio_deposit/edit.html',
         record_class='invenio_deposit.api:Deposit',

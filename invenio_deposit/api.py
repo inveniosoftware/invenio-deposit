@@ -42,6 +42,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 
 from .minters import deposit_minter
+from .providers import DepositProvider
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -57,7 +58,8 @@ class Deposit(Record):
     @property
     def pid(self):
         """Return an instance of deposit PID."""
-        return PersistentIdentifier.get('deposit', self['_deposit']['id'])
+        return PersistentIdentifier.get(DepositProvider.pid_type,
+                                        self['_deposit']['id'])
 
     @property
     def record_schema(self):
