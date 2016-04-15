@@ -61,3 +61,5 @@ target/
 # Examples
 examples/instance
 examples/static
+examples/*.db
+examples/data/upload/*
