@@ -45,7 +45,7 @@
         <div id="invenio-records">
           <invenio-records
             {%- if pid %}
-              action="{{ config.DEPOSIT_RECORDS_API|format(pid_value=pid.pid_value }}"
+              action="{{ config.DEPOSIT_RECORDS_API|format(pid_value=pid.pid_value) }}"
             {%- else %}
               initialization="{{ config.DEPOSIT_SEARCH_API }}"
             {%- endif %}")}}"

@@ -63,16 +63,16 @@ setup_requires = [
 ]
 
 install_requires = [
-    'elasticsearch_dsl>=0.0.11',
     'Flask-BabelEx>=0.9.2',
     'Flask-Login>=0.3.2',
+    'elasticsearch-dsl>=2.0.0',
     'invenio-db>=1.0.0a9',
     'invenio-jsonschemas>=1.0.0a1',
-    'invenio-records-rest>=1.0.0a6',
-    'invenio-records-ui>=1.0.0a5',
+    'invenio-records-rest>=1.0.0a9',
+    'invenio-records-ui>=1.0.0a6',
     'invenio-records>=1.0.0a14',
     'invenio-search-ui>=1.0.0a2',
-    'invenio-search>=1.0.0a5',
+    'invenio-search>=1.0.0a6',
 ]
 
 packages = find_packages()

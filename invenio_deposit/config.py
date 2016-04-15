@@ -26,6 +26,7 @@
 
 from elasticsearch_dsl import Q
 from flask_login import current_user
+from invenio_records_rest.utils import allow_all, check_elasticsearch
 
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
@@ -47,16 +48,12 @@ DEPOSIT_REST_ENDPOINTS = dict(
         pid_type='dep',
         pid_minter='deposit',
         pid_fetcher='deposit',
-        search_index='deposits',
-        search_type=None,
         record_class='invenio_deposit.api:Deposit',
-        record_filter=lambda: Q(
-            'match', **{'_deposit.owner': current_user.get_id()}
-        ),
         record_serializers={
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_response'),
         },
+        search_class='invenio_deposit.search:DepositSearch',
         search_serializers={
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_search'),
@@ -64,6 +61,10 @@ DEPOSIT_REST_ENDPOINTS = dict(
         list_route='/deposits/',
         item_route='/deposits/<pid_value>',
         default_media_type='application/json',
+        create_permission_factory_imp=allow_all,
+        read_permission_factory_imp=check_elasticsearch,
+        update_permission_factory_imp=check_elasticsearch,
+        delete_permission_factory_imp=check_elasticsearch,
         max_result_window=10000,
     ),
 )
