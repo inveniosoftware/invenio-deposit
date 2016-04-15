@@ -35,6 +35,7 @@ import pytest
 from flask import Flask
 from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
+from invenio_accounts import InvenioAccounts
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_jsonschemas import InvenioJSONSchemas
@@ -67,6 +68,7 @@ def app(request):
     FlaskCLI(app_)
     FlaskCeleryExt(app_)
     InvenioDB(app_)
+    InvenioAccounts(app_)
     InvenioJSONSchemas(app_)
     InvenioSearch(app_)
     InvenioRecords(app_)

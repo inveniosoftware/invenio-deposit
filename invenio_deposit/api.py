@@ -28,6 +28,7 @@ import uuid
 from functools import partial
 
 from flask import current_app, url_for
+from flask_login import current_user
 from invenio_db import db
 from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore import current_pidstore
@@ -52,9 +53,6 @@ current_jsonschemas = LocalProxy(
 class Deposit(Record):
     """Define API for changing deposit state."""
 
-    SCHEMA_PATH_PREFIX = 'deposits/'
-    DEFAULT_SCHEMA = 'deposits/deposit-v1.0.0.json'
-
     @property
     def pid(self):
         """Return an instance of deposit PID."""
@@ -65,17 +63,19 @@ class Deposit(Record):
     def record_schema(self):
         """Convert deposit schema to a valid record schema."""
         schema_path = current_jsonschemas.url_to_path(self['$schema'])
-        if schema_path and schema_path.startswith(self.SCHEMA_PATH_PREFIX):
+        schema_prefix = current_app.config['DEPOSIT_JSONSCHEMAS_PREFIX']
+        if schema_path and schema_path.startswith(schema_prefix):
             return current_jsonschemas.path_to_url(
-                schema_path[len(self.SCHEMA_PATH_PREFIX):]
+                schema_path[len(schema_prefix):]
             )
 
     def build_deposit_schema(self, record):
         """Convert record schema to a valid deposit schema."""
         schema_path = current_jsonschemas.url_to_path(record['$schema'])
+        schema_prefix = current_app.config['DEPOSIT_JSONSCHEMAS_PREFIX']
         if schema_path:
             return current_jsonschemas.path_to_url(
-                self.SCHEMA_PATH_PREFIX + schema_path
+                schema_prefix + schema_path
             )
 
     def fetch_published(self):
@@ -101,7 +101,7 @@ class Deposit(Record):
     def create(cls, data, id_=None):
         """Create a deposit."""
         data.setdefault('$schema', current_jsonschemas.path_to_url(
-            cls.DEFAULT_SCHEMA
+            current_app.config['DEPOSIT_DEFAULT_JSONSCHEMA']
         ))
         if not current_jsonschemas.url_to_path(data['$schema']):
             raise JSONSchemaNotFound(data['$schema'])
@@ -109,6 +109,11 @@ class Deposit(Record):
         if '_deposit' not in data:
             id_ = id_ or uuid.uuid4()
             deposit_minter(id_, data)
+
+        if current_user and current_user.is_authenticated:
+            data['_deposit'].setdefault('owners', list())
+            data['_deposit']['owners'].append(current_user.get_id())
+
         return super(Deposit, cls).create(data, id_=id_)
 
     def publish(self, pid=None, id_=None):
