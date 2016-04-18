@@ -61,7 +61,18 @@ def json_file_serializer(obj, status=None):
     return make_response(jsonify(file_serializer(obj)), status)
 
 
-def json_files_serializer(objects, status=None):
+def json_files_serializer(objs, status=None):
     """JSON Files Serializer."""
-    files = [file_serializer(obj) for obj in objects]
+    files = [file_serializer(obj) for obj in objs]
     return make_response(json.dumps(files), status)
+
+
+def json_file_response(obj, status=None):
+    """JSON Files/File serializer."""
+    if isinstance(obj, list):
+        return json_files_serializer(objs=obj, status=status)
+    else:
+        return json_file_serializer(obj=obj, status=status)
+
+
+json_v1_files_response = json_file_response

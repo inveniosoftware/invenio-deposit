@@ -140,7 +140,6 @@ def test_file_delete(app, db, deposit, files):
             assert deposit.get_file(key=files[0].key) is None
 
 
-# FIXME fix the PUT before
 def test_file_put_not_found_bucket_not_exist(app, db, deposit):
     """Test put file and bucket doesn't exist."""
     with app.test_request_context():

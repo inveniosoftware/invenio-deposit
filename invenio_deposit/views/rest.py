@@ -37,8 +37,9 @@ from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.views import create_url_rules, pass_record
 from invenio_rest import ContentNegotiatedMethodView
 from sqlalchemy.orm.exc import NoResultFound
+from invenio_records_rest.utils import obj_or_import_string
+from copy import deepcopy
 
-from ..serializers import json_files_serializer, json_file_serializer
 from ..api import Deposit
 
 
@@ -51,6 +52,16 @@ def create_blueprint(endpoints):
     )
 
     for endpoint, options in (endpoints or {}).items():
+        options = deepcopy(options)
+
+        if 'files_serializers' in options:
+            files_serializers = options.get('files_serializers')
+            files_serializers = {mime: obj_or_import_string(func)
+                                 for mime, func in files_serializers.items()}
+            del options['files_serializers']
+        else:
+            files_serializers = {}
+
         for rule in create_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
 
@@ -70,7 +81,7 @@ def create_blueprint(endpoints):
 
         deposit_files = DepositFilesResource.as_view(
             DepositFilesResource.view_name.format(endpoint),
-            serializers=options.get('record_serializers'),
+            serializers=files_serializers,
             pid_type=options['pid_type'],
         )
 
@@ -84,7 +95,7 @@ def create_blueprint(endpoints):
 
         deposit_file = DepositFileResource.as_view(
             DepositFileResource.view_name.format(endpoint),
-            serializers=options.get('record_serializers'),
+            serializers=files_serializers,
             pid_type=options['pid_type'],
         )
 
@@ -149,7 +160,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @pass_record
     def get(self, pid, record):
         """Get deposit/depositions/:id/files."""
-        return json_files_serializer(record.get_files())
+        return self.make_response(record.get_files())
 
     @pass_record
     def post(self, pid, record):
@@ -164,7 +175,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
             storage_class=current_app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
         )
         db.session.commit()
-        return json_file_serializer(obj, status=201)
+        return self.make_response(obj=obj, status=201)
 
 
 class DepositFileResource(ContentNegotiatedMethodView):
@@ -190,8 +201,9 @@ class DepositFileResource(ContentNegotiatedMethodView):
         version_id = UUID(request.headers['version_id']) \
             if 'version_id' in request.headers else None
         try:
-            return json_file_serializer(record.get_file(
-                key=key, version_id=version_id) or abort(404))
+            obj = record.get_file(
+                key=key, version_id=version_id) or abort(404)
+            return self.make_response(obj=obj)
         except NoResultFound:
             abort(404)
 
@@ -207,14 +219,13 @@ class DepositFileResource(ContentNegotiatedMethodView):
         except NoResultFound:
             abort(404)
         db.session.commit()
-        return json_file_serializer(obj)
+        return self.make_response(obj=obj)
 
     @pass_record
     def delete(self, pid, record, key):
         """Handle DELETE deposit files."""
         if record.delete_file(key=key):
             db.session.commit()
-            # FIXME
             return make_response("", 204)
         else:
             abort(404, 'The specified object does not exist or has already '
