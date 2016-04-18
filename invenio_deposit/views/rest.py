@@ -90,7 +90,7 @@ def create_blueprint(endpoints):
                 options['item_route']
             ),
             view_func=deposit_files,
-            methods=['GET', 'POST']
+            methods=['GET', 'POST', 'PUT']
         )
 
         deposit_file = DepositFileResource.as_view(
@@ -176,6 +176,14 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         )
         db.session.commit()
         return self.make_response(obj=obj, status=201)
+
+    @pass_record
+    def put(self, pid, record):
+        """Handle PUT deposit files."""
+        ids = [data['id'] for data in json.loads(request.data)]
+        record.update_file_order(ids)
+        db.session.commit()
+        return self.make_response(record.get_files())
 
 
 class DepositFileResource(ContentNegotiatedMethodView):

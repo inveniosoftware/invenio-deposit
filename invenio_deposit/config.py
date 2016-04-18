@@ -76,3 +76,6 @@ DEPOSIT_UI_JSTEMPLATE_FORM = \
 
 DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
 """Default storage class."""
+
+DEPOSIT_REGISTER_RECORD_SIGNALS = True
+"""Catch record insert/update signals and update the `_files` field."""

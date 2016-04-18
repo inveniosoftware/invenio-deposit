@@ -33,6 +33,8 @@ import json
 from flask import url_for
 from six import BytesIO
 
+from invenio_deposit.api import Deposit
+
 
 def test_files_get(app, db, deposit, files):
     """Test rest files get."""
@@ -72,7 +74,6 @@ def test_files_post(app, db, deposit):
                 data={"name": real_filename},
                 content_type="multipart/form-data"
             )
-            files = deposit.get_files()
             assert res.status_code == 400
             # test post
             content = '### Testing textfile ###'
@@ -85,6 +86,9 @@ def test_files_post(app, db, deposit):
                 data={'file': file_to_upload, "name": real_filename},
                 content_type="multipart/form-data"
             )
+            deposit_id = deposit.id
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
             files = deposit.get_files()
             assert res.status_code == 201
             assert real_filename == files[0].key
@@ -94,6 +98,44 @@ def test_files_post(app, db, deposit):
             assert data['filename'] == obj.key
             assert data['checksum'] == obj.file.checksum
             assert data['id'] == str(obj.file.id)
+
+
+def test_files_put(app, db, deposit, files):
+    """Test put deposit files."""
+    with app.test_request_context():
+        with app.test_client() as client:
+            key0 = files[0].key
+            # add new file
+            content = b'### Testing textfile 2 ###'
+            stream = BytesIO(content)
+            key = "world.txt"
+            storage_class = app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
+            deposit.add_file(key=key, stream=stream,
+                             storage_class=storage_class)
+            db.session.commit()
+            deposit_id = deposit.id
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
+            files = deposit.get_files()
+            assert deposit['files'][0]['key'] == str(key0)
+            assert deposit['files'][1]['key'] == str(key)
+            res = client.put(
+                url_for('invenio_deposit_rest.deposit_files',
+                        pid_value=deposit['_deposit']['id']),
+                data=json.dumps([
+                    {"id": key},
+                    {"id": key0}
+                ])
+            )
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
+            files = deposit.get_files()
+            assert len(deposit['files']) == 2
+            assert deposit['files'][0]['key'] == str(key)
+            assert deposit['files'][1]['key'] == str(key0)
+            data = json.loads(res.data)
+            assert data[0]['filename'] == str(key)
+            assert data[1]['filename'] == str(key0)
 
 
 def test_file_get(app, db, deposit, files):
@@ -179,6 +221,9 @@ def test_file_put(app, db, deposit, files):
                         pid_value=deposit['_deposit']['id'],
                         key=old_filename),
                 data=json.dumps({"filename": new_filename}))
+            deposit_id = deposit.id
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
             files = deposit.get_files()
             assert res.status_code == 200
             files = deposit.get_files()

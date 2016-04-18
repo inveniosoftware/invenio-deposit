@@ -57,6 +57,7 @@ def app(request):
     instance_path = tempfile.mkdtemp()
     app_ = Flask(__name__, instance_path=instance_path)
     app_.config.update(
+        SQLALCHEMY_ECHO=True,
         CELERY_ALWAYS_EAGER=True,
         CELERY_CACHE_BACKEND='memory',
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
@@ -64,7 +65,7 @@ def app(request):
         SECRET_KEY='CHANGE_ME',
         SECURITY_PASSWORD_SALT='CHANGE_ME_ALSO',
         SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
+            'SQLALCHEMY_DATABASE_URI', 'sqlite://'),
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
         TESTING=True,
     )

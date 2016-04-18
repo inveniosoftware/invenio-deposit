@@ -26,7 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
-from invenio_records_rest.views import create_blueprint
+#  from invenio_records_rest.views import create_blueprint
+from invenio_records import signals
 
 from . import config
 from .cli import deposit as cmd
@@ -49,6 +50,8 @@ class InvenioDeposit(object):
             app.config['DEPOSIT_RECORDS_UI_ENDPOINTS']
         ))
         app.extensions['invenio-deposit'] = self
+        if app.config['DEPOSIT_REGISTER_RECORD_SIGNALS']:
+            self.register_signals()
 
     def init_config(self, app):
         """Initialize configuration."""
@@ -59,6 +62,22 @@ class InvenioDeposit(object):
         for k in dir(config):
             if k.startswith('DEPOSIT_'):
                 app.config.setdefault(k, getattr(config, k))
+
+    def register_signals(self):
+        """Register signals."""
+        from .receivers import deposit_list_files_update
+        # Register Record signals to update record['_files']
+        signals.before_record_insert.connect(deposit_list_files_update,
+                                             weak=False)
+        signals.before_record_update.connect(deposit_list_files_update,
+                                             weak=False)
+
+    def unregister_signals(self):
+        """Unregister signals."""
+        from .receivers import deposit_list_files_update
+        # Unregister Record signals
+        signals.before_record_insert.disconnect(deposit_list_files_update)
+        signals.before_record_update.disconnect(deposit_list_files_update)
 
 
 class InvenioDepositREST(object):

@@ -44,6 +44,8 @@ from werkzeug.local import LocalProxy
 from .minters import deposit_minter
 from .models import DepositBucket
 from .providers import DepositProvider
+from .receivers import deposit_add_file, deposit_rename_file, \
+    deposit_delete_file, deposit_get_files_ordered, deposit_update_files_order
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -224,6 +226,9 @@ class Deposit(Record):
             # save the file
             obj = ObjectVersion.create(bucket=bucket, key=key, stream=stream)
 
+            # update deposit['files']
+            deposit_add_file(self, obj)
+
         return obj
 
     def rename_file(self, old_key, new_key):
@@ -235,6 +240,8 @@ class Deposit(Record):
         # create a new version with the new name
         new_obj = ObjectVersion.create(bucket=bucket, key=new_key,
                                        _file_id=obj.file_id)
+        # update deposit['files']
+        deposit_rename_file(self, obj, new_obj)
         # delete the old version
         ObjectVersion.delete(bucket=bucket, key=obj.key)
         return new_obj
@@ -245,7 +252,14 @@ class Deposit(Record):
             # get the Bucket
             bucket = self.get_bucket()
             # get the list of files
-            return ObjectVersion.get_by_bucket(bucket).all()
+            objs = ObjectVersion.get_by_bucket(bucket).all()
+            # order files
+            ordered = []
+            for f in deposit_get_files_ordered(self):
+                for (index, obj) in enumerate(objs):
+                    if f['key'] == obj.key:
+                        ordered.append(objs.pop(index))
+            return ordered
         except NoResultFound:
             return []
 
@@ -263,7 +277,10 @@ class Deposit(Record):
             # get the Bucket
             bucket = self.get_bucket()
             # delete the object
-            return ObjectVersion.delete(bucket=bucket, key=key)
+            new_obj = ObjectVersion.delete(bucket=bucket, key=key)
+            # update deposit['files']
+            deposit_delete_file(self, old_key=key)
+            return new_obj
         except NoResultFound:
             return False
 
@@ -271,3 +288,7 @@ class Deposit(Record):
         """Get bucket."""
         return DepositBucket.query.filter_by(
             deposit_id=self.id).one().bucket
+
+    def update_file_order(self, ids):
+        """Update files order."""
+        deposit_update_files_order(self, ids)
