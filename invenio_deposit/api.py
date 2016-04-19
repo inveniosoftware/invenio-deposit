@@ -37,6 +37,7 @@ from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_pidstore.resolver import Resolver
 from invenio_records.api import Record
+from invenio_records.errors import MissingModelError
 from invenio_records.signals import after_record_update, before_record_update
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm.exc import NoResultFound
@@ -45,8 +46,6 @@ from werkzeug.local import LocalProxy
 from .minters import deposit_minter
 from .models import DepositBucket
 from .providers import DepositProvider
-from .receivers import deposit_add_file, deposit_rename_file, \
-    deposit_delete_file, deposit_get_files_ordered, deposit_update_files_order
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -112,8 +111,8 @@ class Deposit(Record):
             id_ = id_ or uuid.uuid4()
             deposit_minter(id_, data)
 
+        data['_deposit'].setdefault('owners', list())
         if current_user and current_user.is_authenticated:
-            data['_deposit'].setdefault('owners', list())
             data['_deposit']['owners'].append(current_user.get_id())
 
         return super(Deposit, cls).create(data, id_=id_)
@@ -213,87 +212,142 @@ class Deposit(Record):
             pid.delete()
         return super(Deposit, self).delete(force=force)
 
-    def add_file(self, key, stream, location=None, storage_class=None):
-        """Add new file inside a deposit."""
+    @property
+    def files(self):
+        """Get files iterator."""
+        if self.model is None:
+            raise MissingModelError()
+
+        return FilesIterator(self)
+
+
+class FileObject(dict):
+    """Wrapper for files."""
+
+    def __init__(self, bucket, *args, **kwargs):
+        """Bind to current bucket."""
+        super(FileObject, self).__init__(*args, **kwargs)
+        self.bucket = bucket
+
+    @property
+    def obj(self):
+        """Return ``ObjectVersion`` instance."""
+        return ObjectVersion.get(bucket=self.bucket, **self)
+
+    def get_version(self, version_id=None):
+        """Return specific version ``ObjectVersion`` instance or HEAD."""
+        return ObjectVersion.get(bucket=self.bucket, key=self['key'],
+                                 version_id=version_id)
+
+    def __getattr__(self, key):
+        """Proxy to ``obj``."""
+        return getattr(self.obj, key)
+
+
+class FilesIterator(object):
+    """Iterator for files."""
+
+    def __init__(self, record):
+        """Initialize iterator."""
+        self._it = None
+        self.record = record
+        self.model = record.model
+
+        self.record.setdefault('files', [])
+
+    @property
+    def bucket(self):
+        """Return file bucket."""
+        if not self.model.deposit_bucket:
+            self.model.deposit_bucket = DepositBucket(
+                bucket=Bucket.create(storage_class=current_app.config[
+                    'DEPOSIT_DEFAULT_STORAGE_CLASS'
+                ])
+            )
+        return self.model.deposit_bucket.bucket
+
+    def __len__(self):
+        """Get number of files."""
+        return len(self.record['files'])
+
+    def __iter__(self):
+        """Get iterator."""
+        self._it = iter(self.record['files'])
+        return self
+
+    def next(self):
+        """Python 2.7 compatibility."""
+        return self.__next__()  # pragma: no cover
+
+    def __next__(self):
+        """Get next file item."""
+        return FileObject(self.bucket, next(self._it))
+
+    def __contains__(self, key):
+        """Test if file exists."""
+        for file_ in self:
+            if file_['key'] == key:
+                return True
+        return False
+
+    def __getitem__(self, key):
+        """Get a specific file."""
+        for file_ in self.record['files']:
+            if file_['key'] == key:
+                return FileObject(self.bucket, file_)
+
+        if isinstance(key, int):
+            return FileObject(self.bucket, self.record['files'][key])
+
+        raise KeyError(key)
+
+    def __setitem__(self, key, stream):
+        """Add file inside a deposit."""
         with db.session.begin_nested():
-            # get the bucket
-            try:
-                bucket = self.get_bucket()
-            except NoResultFound:
-                # if doesn't exist, create it
-                bucket = Bucket.create(location=location,
-                                       storage_class=storage_class)
-                # and connect to the deposit
-                dbucket = DepositBucket(deposit_id=self.id,
-                                        bucket_id=bucket.id)
-                db.session.add(dbucket)
-
             # save the file
-            obj = ObjectVersion.create(bucket=bucket, key=key, stream=stream)
+            obj = ObjectVersion.create(bucket=self.bucket, key=key,
+                                       stream=stream)
 
             # update deposit['files']
-            deposit_add_file(self, obj)
+            file_ = dict(key=str(obj.key), version_id=str(obj.version_id))
+            for index, old in enumerate(self.record['files']):
+                if old['key'] == key:
+                    self.record['files'][index] = file_
+                    break
+            else:
+                self.record['files'].append(file_)
 
-        return obj
-
-    def rename_file(self, old_key, new_key):
-        """Rename a file."""
-        bucket = self.get_bucket()
-        obj = self.get_file(key=old_key)
-        if not obj:
-            raise NoResultFound("{0} not found", old_key)
-        # create a new version with the new name
-        new_obj = ObjectVersion.create(bucket=bucket, key=new_key,
-                                       _file_id=obj.file_id)
-        # update deposit['files']
-        deposit_rename_file(self, obj, new_obj)
-        # delete the old version
-        ObjectVersion.delete(bucket=bucket, key=obj.key)
-        return new_obj
-
-    def get_files(self):
-        """Get files."""
-        try:
-            # get the Bucket
-            bucket = self.get_bucket()
-            # get the list of files
-            objs = ObjectVersion.get_by_bucket(bucket).all()
-            # order files
-            ordered = []
-            for f in deposit_get_files_ordered(self):
-                for (index, obj) in enumerate(objs):
-                    if f['key'] == obj.key:
-                        ordered.append(objs.pop(index))
-            return ordered
-        except NoResultFound:
-            return []
-
-    def get_file(self, key, version_id=None):
-        """Get a file."""
-        # get the Bucket
-        bucket = self.get_bucket()
-        # serialize the file
-        return ObjectVersion.get(
-            bucket=bucket, key=key, version_id=version_id)
-
-    def delete_file(self, key):
+    def __delitem__(self, key):
         """Delete a file from the deposit."""
-        try:
-            # get the Bucket
-            bucket = self.get_bucket()
-            # delete the object
-            new_obj = ObjectVersion.delete(bucket=bucket, key=key)
-            # update deposit['files']
-            deposit_delete_file(self, old_key=key)
-            return new_obj
-        except NoResultFound:
-            return False
+        for index, old in enumerate(self):
+            if old['key'] == key:
+                # delete the object
+                obj = ObjectVersion.delete(bucket=self.bucket, key=key)
+                del self.record['files'][index]
+                return obj
+        raise KeyError(key)
 
-    def get_bucket(self):
-        """Get bucket."""
-        return DepositBucket.query.filter_by(
-            deposit_id=self.id).one().bucket
-
-    def update_file_order(self, ids):
+    def sort_by(self, *ids):
         """Update files order."""
-        deposit_update_files_order(self, ids)
+        keys = dict(zip(ids, range(len(ids))))
+        self.record['files'] = list(sorted(
+            self.record['files'], key=lambda x: keys[x['key']]
+        ))
+
+    def rename(self, old_key, new_key):
+        """Rename a file."""
+        assert new_key not in self
+
+        for index, file_ in enumerate(self):
+            if file_['key'] == old_key:
+                # create a new version with the new name
+                obj = ObjectVersion.create(
+                    bucket=self.bucket, key=new_key,
+                    _file_id=file_.obj.file_id
+                )
+                self.record['files'][index] = dict(
+                    key=str(obj.key), version_id=str(obj.version_id)
+                )
+                # delete the old version
+                ObjectVersion.delete(bucket=self.bucket, key=old_key)
+                return obj

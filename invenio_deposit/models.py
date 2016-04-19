@@ -52,3 +52,8 @@ class DepositBucket(db.Model):
     )
 
     bucket = db.relationship(Bucket)
+    record = db.relationship(
+        RecordMetadata,
+        backref=db.backref('deposit_bucket', uselist=False),
+        uselist=False
+    )

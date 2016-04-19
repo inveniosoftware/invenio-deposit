@@ -69,7 +69,9 @@ def json_files_serializer(objs, status=None):
 
 def json_file_response(obj, status=None):
     """JSON Files/File serializer."""
-    if isinstance(obj, list):
+    from .api import FilesIterator
+
+    if isinstance(obj, FilesIterator):
         return json_files_serializer(objs=obj, status=status)
     else:
         return json_file_serializer(obj=obj, status=status)

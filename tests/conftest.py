@@ -58,7 +58,6 @@ def app(request):
     instance_path = tempfile.mkdtemp()
     app_ = Flask(__name__, instance_path=instance_path)
     app_.config.update(
-        SQLALCHEMY_ECHO=True,
         CELERY_ALWAYS_EAGER=True,
         CELERY_CACHE_BACKEND='memory',
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
@@ -135,6 +134,7 @@ def deposit(app, location):
         "title": "fuu"
     }
     deposit = Deposit.create(record)
+    deposit.commit()
     db_.session.commit()
     return deposit
 
@@ -146,7 +146,7 @@ def files(app, deposit):
     stream = BytesIO(content)
     key = "hello.txt"
     storage_class = app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
-    obj = deposit.add_file(key=key, stream=stream,
-                           storage_class=storage_class)
+    deposit.files[key] = stream
+    deposit.commit()
     db_.session.commit()
-    return [obj]
+    return list(deposit.files)

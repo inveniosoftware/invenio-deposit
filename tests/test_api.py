@@ -29,6 +29,8 @@ from __future__ import absolute_import, print_function
 import pytest
 from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore.errors import PIDInvalidAction
+from invenio_records.errors import MissingModelError
+from six import BytesIO
 from sqlalchemy.orm.exc import NoResultFound
 
 from invenio_deposit.api import Deposit
@@ -113,3 +115,68 @@ def test_delete(app, db, fake_schemas):
 
     with pytest.raises(PIDInvalidAction):
         deposit.publish(pid=pid)
+
+
+def test_files_property(app, db, fake_schemas, location):
+    """Test deposit files property."""
+    with pytest.raises(MissingModelError):
+        Deposit({}).files
+
+    deposit = Deposit.create({})
+
+    assert 0 == len(deposit.files)
+    assert 'invalid' not in deposit.files
+
+    with pytest.raises(KeyError):
+        deposit.files['invalid']
+
+    bucket = deposit.files.bucket
+    assert bucket
+
+    # Create first file:
+    deposit.files['hello.txt'] = BytesIO(b'Hello world!')
+
+    file_0 = deposit.files['hello.txt']
+    assert 'hello.txt' == file_0['key']
+    assert 1 == len(deposit.files)
+
+    # Update first file with new content:
+    deposit.files['hello.txt'] = BytesIO(b'Hola mundo!')
+    file_1 = deposit.files['hello.txt']
+    assert 'hello.txt' == file_1['key']
+    assert 1 == len(deposit.files)
+
+    assert file_0['version_id'] != file_1['version_id']
+
+    # Create second file and check number of items in files.
+    deposit.files['second.txt'] = BytesIO(b'Second file.')
+    file_2 = deposit.files['second.txt']
+    assert 2 == len(deposit.files)
+    assert 'hello.txt' in deposit.files
+    assert 'second.txt' in deposit.files
+
+    # Check order of files.
+    order_0 = [f['key'] for f in deposit.files]
+    assert ['hello.txt', 'second.txt'] == order_0
+
+    deposit.files.sort_by(*reversed(order_0))
+    order_1 = [f['key'] for f in deposit.files]
+    assert ['second.txt', 'hello.txt'] == order_1
+
+    # Try to rename second file to 'hello.txt'.
+    with pytest.raises(Exception):
+        deposit.files.rename('second.txt', 'hello.txt')
+
+    # Remove the 'hello.txt' file.
+    del deposit.files['hello.txt']
+    assert 'hello.txt' not in deposit.files
+    # Make sure that 'second.txt' is still there.
+    assert 'second.txt' in deposit.files
+
+    with pytest.raises(KeyError):
+        del deposit.files['hello.txt']
+
+    # Now you can rename 'second.txt' to 'hello.txt'.
+    deposit.files.rename('second.txt', 'hello.txt')
+    assert 'second.txt' not in deposit.files
+    assert 'hello.txt' in deposit.files
