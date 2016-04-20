@@ -126,6 +126,9 @@ class Deposit(Record):
 
         self['_deposit']['status'] = 'published'
 
+        # TODO
+        # self['_deposit']['snapshot'] = self.files.bucket.snapshot(lock=True)
+
         if self['_deposit'].get('pid') is None:  # First publishing
             minter = current_pidstore.minters[
                 current_app.config['DEPOSIT_PID_MINTER']
@@ -221,25 +224,24 @@ class Deposit(Record):
         return FilesIterator(self)
 
 
-class FileObject(dict):
+class FileObject(object):
     """Wrapper for files."""
 
-    def __init__(self, bucket, *args, **kwargs):
+    def __init__(self, bucket, obj):
         """Bind to current bucket."""
-        super(FileObject, self).__init__(*args, **kwargs)
+        self.obj = obj
         self.bucket = bucket
-
-    @property
-    def obj(self):
-        """Return ``ObjectVersion`` instance."""
-        return ObjectVersion.get(bucket=self.bucket, **self)
 
     def get_version(self, version_id=None):
         """Return specific version ``ObjectVersion`` instance or HEAD."""
-        return ObjectVersion.get(bucket=self.bucket, key=self['key'],
+        return ObjectVersion.get(bucket=self.bucket, key=self.obj.key,
                                  version_id=version_id)
 
     def __getattr__(self, key):
+        """Proxy to ``obj``."""
+        return getattr(self.obj, key)
+
+    def __getitem__(self, key):
         """Proxy to ``obj``."""
         return getattr(self.obj, key)
 
@@ -268,11 +270,15 @@ class FilesIterator(object):
 
     def __len__(self):
         """Get number of files."""
-        return len(self.record['files'])
+        return ObjectVersion.get_by_bucket(self.bucket).count()
 
     def __iter__(self):
         """Get iterator."""
-        self._it = iter(self.record['files'])
+        ids = self.record['files']
+        total = len(ids)
+        keys = dict(zip(ids, range(total)))
+        values = ObjectVersion.get_by_bucket(self.bucket).all()
+        self._it = iter(sorted(values, key=lambda x: keys.get(x.key, total)))
         return self
 
     def next(self):
@@ -281,24 +287,19 @@ class FilesIterator(object):
 
     def __next__(self):
         """Get next file item."""
-        return FileObject(self.bucket, next(self._it))
+        obj = next(self._it)
+        return FileObject(self.bucket, obj)
 
     def __contains__(self, key):
         """Test if file exists."""
-        for file_ in self:
-            if file_['key'] == key:
-                return True
-        return False
+        return ObjectVersion.get_by_bucket(
+            self.bucket).filter_by(key=str(key)).count()
 
     def __getitem__(self, key):
         """Get a specific file."""
-        for file_ in self.record['files']:
-            if file_['key'] == key:
-                return FileObject(self.bucket, file_)
-
-        if isinstance(key, int):
-            return FileObject(self.bucket, self.record['files'][key])
-
+        obj = ObjectVersion.get(self.bucket, key)
+        if obj:
+            return FileObject(self.bucket, obj)
         raise KeyError(key)
 
     def __setitem__(self, key, stream):
@@ -309,45 +310,32 @@ class FilesIterator(object):
                                        stream=stream)
 
             # update deposit['files']
-            file_ = dict(key=str(obj.key), version_id=str(obj.version_id))
-            for index, old in enumerate(self.record['files']):
-                if old['key'] == key:
-                    self.record['files'][index] = file_
-                    break
-            else:
-                self.record['files'].append(file_)
+            if key not in self.record['files']:
+                self.record['files'].append(key)
 
     def __delitem__(self, key):
         """Delete a file from the deposit."""
-        for index, old in enumerate(self):
-            if old['key'] == key:
-                # delete the object
-                obj = ObjectVersion.delete(bucket=self.bucket, key=key)
-                del self.record['files'][index]
-                return obj
-        raise KeyError(key)
+        obj = ObjectVersion.delete(bucket=self.bucket, key=key)
+        try:
+            self.record['files'].remove(key)
+        except ValueError:
+            raise KeyError(key)
 
     def sort_by(self, *ids):
         """Update files order."""
-        keys = dict(zip(ids, range(len(ids))))
-        self.record['files'] = list(sorted(
-            self.record['files'], key=lambda x: keys[x['key']]
-        ))
+        self.record['files'] = list(ids)
 
     def rename(self, old_key, new_key):
         """Rename a file."""
         assert new_key not in self
 
-        for index, file_ in enumerate(self):
-            if file_['key'] == old_key:
-                # create a new version with the new name
-                obj = ObjectVersion.create(
-                    bucket=self.bucket, key=new_key,
-                    _file_id=file_.obj.file_id
-                )
-                self.record['files'][index] = dict(
-                    key=str(obj.key), version_id=str(obj.version_id)
-                )
-                # delete the old version
-                ObjectVersion.delete(bucket=self.bucket, key=old_key)
-                return obj
+        file_ = self[old_key]
+        # create a new version with the new name
+        obj = ObjectVersion.create(
+            bucket=self.bucket, key=new_key,
+            _file_id=file_.obj.file_id
+        )
+        self.record['files'][self.record['files'].index(old_key)] = new_key
+        # delete the old version
+        ObjectVersion.delete(bucket=self.bucket, key=old_key)
+        return obj
