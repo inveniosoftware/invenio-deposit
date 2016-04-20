@@ -89,7 +89,7 @@ def test_files_post(app, db, deposit):
             deposit_id = deposit.id
             db.session.expunge(deposit.model)
             deposit = Deposit.get_record(deposit_id)
-            files = deposit.files
+            files = list(deposit.files)
             assert res.status_code == 201
             assert real_filename == files[0].key
             assert digest == files[0].file.checksum
@@ -116,9 +116,9 @@ def test_files_put(app, db, deposit, files):
             deposit_id = deposit.id
             db.session.expunge(deposit.model)
             deposit = Deposit.get_record(deposit_id)
-            files = deposit.files
-            assert deposit['files'][0]['key'] == str(key0)
-            assert deposit['files'][1]['key'] == str(key)
+            files = list(deposit.files)
+            assert files[0]['key'] == str(key0)
+            assert files[1]['key'] == str(key)
             res = client.put(
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']),
@@ -129,10 +129,10 @@ def test_files_put(app, db, deposit, files):
             )
             db.session.expunge(deposit.model)
             deposit = Deposit.get_record(deposit_id)
-            files = deposit.files
-            assert len(deposit['files']) == 2
-            assert deposit['files'][0]['key'] == str(key)
-            assert deposit['files'][1]['key'] == str(key0)
+            files = list(deposit.files)
+            assert len(deposit.files) == 2
+            assert files[0]['key'] == str(key)
+            assert files[1]['key'] == str(key0)
             data = json.loads(res.data.decode('utf-8'))
             assert data[0]['filename'] == str(key)
             assert data[1]['filename'] == str(key0)
@@ -227,9 +227,8 @@ def test_file_put(app, db, deposit, files):
             deposit_id = deposit.id
             db.session.expunge(deposit.model)
             deposit = Deposit.get_record(deposit_id)
-            files = deposit.files
+            files = list(deposit.files)
             assert res.status_code == 200
-            files = deposit.files
             assert new_filename == files[0].key
             assert old_file_id == files[0].file_id
             data = json.loads(res.data.decode('utf-8'))

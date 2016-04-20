@@ -44,6 +44,7 @@ from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
+from invenio_records_rest.utils import allow_all
 from invenio_search import InvenioSearch
 from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
@@ -81,6 +82,12 @@ def app(request):
     InvenioDeposit(app_)
     InvenioFilesREST(app_)
     InvenioDepositREST(app_)
+
+    app_.config['DEPOSIT_REST_ENDPOINTS']['dep'].update(
+        read_permission_factory_imp=allow_all,
+        update_permission_factory_imp=allow_all,
+        delete_permission_factory_imp=allow_all,
+    )
 
     with app_.app_context():
         yield app_

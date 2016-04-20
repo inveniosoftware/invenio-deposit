@@ -26,21 +26,26 @@
 
 from __future__ import absolute_import, print_function
 
-from functools import partial
-
 import json
+from copy import deepcopy
+from functools import partial
 from uuid import UUID
+
 from flask import Blueprint, url_for, request, abort, current_app, \
     make_response
 from invenio_db import db
 from invenio_pidstore.resolver import Resolver
-from invenio_records_rest.views import create_url_rules, pass_record
+from invenio_records_rest.utils import obj_or_import_string
+from invenio_records_rest.views import \
+    create_url_rules as records_rest_url_rules, need_record_permission, \
+    pass_record
 from invenio_rest import ContentNegotiatedMethodView
 from sqlalchemy.orm.exc import NoResultFound
-from invenio_records_rest.utils import obj_or_import_string
-from copy import deepcopy
+from webargs import fields
+from webargs.flaskparser import use_kwargs
 
 from ..api import Deposit
+from ..search import DepositSearch
 
 
 def create_blueprint(endpoints):
@@ -62,8 +67,35 @@ def create_blueprint(endpoints):
         else:
             files_serializers = {}
 
-        for rule in create_url_rules(endpoint, **options):
+        for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
+
+        search_class = obj_or_import_string(
+            options['search_class'], default=DepositSearch
+        )
+
+        search_class_kwargs = {}
+        if options.get('search_index'):
+            search_class_kwargs['index'] = options['search_index']
+
+        if options.get('search_type'):
+            search_class_kwargs['doc_type'] = options['search_type']
+
+        ctx = dict(
+            read_permission_factory=obj_or_import_string(
+                options.get('read_permission_factory_imp')
+            ),
+            create_permission_factory=obj_or_import_string(
+                options.get('create_permission_factory_imp')
+            ),
+            update_permission_factory=obj_or_import_string(
+                options.get('update_permission_factory_imp')
+            ),
+            delete_permission_factory=obj_or_import_string(
+                options.get('delete_permission_factory_imp')
+            ),
+            search_class=partial(search_class, **search_class_kwargs)
+        )
 
         deposit_actions = DepositActionResource.as_view(
             DepositActionResource.view_name.format(endpoint),
@@ -83,12 +115,11 @@ def create_blueprint(endpoints):
             DepositFilesResource.view_name.format(endpoint),
             serializers=files_serializers,
             pid_type=options['pid_type'],
+            ctx=ctx
         )
 
         blueprint.add_url_rule(
-            '{0}/files'.format(
-                options['item_route']
-            ),
+            '{0}/files'.format(options['item_route']),
             view_func=deposit_files,
             methods=['GET', 'POST', 'PUT']
         )
@@ -97,6 +128,7 @@ def create_blueprint(endpoints):
             DepositFileResource.view_name.format(endpoint),
             serializers=files_serializers,
             pid_type=options['pid_type'],
+            ctx=ctx
         )
 
         blueprint.add_url_rule(
@@ -115,7 +147,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
 
     view_name = '{0}_actions'
 
-    def __init__(self, serializers, pid_type, *args, **kwargs):
+    def __init__(self, serializers, pid_type, ctx, *args, **kwargs):
         """Constructor."""
         super(DepositActionResource, self).__init__(
             serializers,
@@ -126,8 +158,11 @@ class DepositActionResource(ContentNegotiatedMethodView):
             pid_type=pid_type, object_type='rec',
             getter=partial(Deposit.get_record, with_deleted=True)
         )
+        for key, value in ctx.items():
+            setattr(self, key, value)
 
     @pass_record
+    @need_record_permission('update_permission_factory')
     def post(self, pid, record, action):
         """Handle deposit action."""
         getattr(record, action)(pid=pid)
@@ -145,7 +180,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
 
     view_name = '{0}_files'
 
-    def __init__(self, serializers, pid_type, *args, **kwargs):
+    def __init__(self, serializers, pid_type, ctx, *args, **kwargs):
         """Constructor."""
         super(DepositFilesResource, self).__init__(
             serializers,
@@ -156,13 +191,17 @@ class DepositFilesResource(ContentNegotiatedMethodView):
             pid_type=pid_type, object_type='rec',
             getter=partial(Deposit.get_record, with_deleted=True)
         )
+        for key, value in ctx.items():
+            setattr(self, key, value)
 
     @pass_record
+    @need_record_permission('read_permission_factory')
     def get(self, pid, record):
         """Get deposit/depositions/:id/files."""
         return self.make_response(record.files)
 
     @pass_record
+    @need_record_permission('update_permission_factory')
     def post(self, pid, record):
         """Handle POST deposit files."""
         # file name
@@ -176,6 +215,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         return self.make_response(obj=record.files[key].obj, status=201)
 
     @pass_record
+    @need_record_permission('update_permission_factory')
     def put(self, pid, record):
         """Handle PUT deposit files."""
         ids = [data['id'] for data in json.loads(request.data.decode('utf-8'))]
@@ -190,7 +230,15 @@ class DepositFileResource(ContentNegotiatedMethodView):
 
     view_name = '{0}_file'
 
-    def __init__(self, serializers, pid_type, *args, **kwargs):
+    get_args = dict(
+        version_id=fields.UUID(
+            location='headers',
+            load_from='version_id',
+        ),
+    )
+    """GET query arguments."""
+
+    def __init__(self, serializers, pid_type, ctx, *args, **kwargs):
         """Constructor."""
         super(DepositFileResource, self).__init__(
             serializers,
@@ -201,12 +249,14 @@ class DepositFileResource(ContentNegotiatedMethodView):
             pid_type=pid_type, object_type='rec',
             getter=partial(Deposit.get_record, with_deleted=True)
         )
+        for key, value in ctx.items():
+            setattr(self, key, value)
 
+    @use_kwargs(get_args)
     @pass_record
-    def get(self, pid, record, key, **kwargs):
+    @need_record_permission('read_permission_factory')
+    def get(self, pid, record, key, version_id, **kwargs):
         """Get deposit/depositions/:id/files/:key."""
-        version_id = UUID(request.headers['version_id']) \
-            if 'version_id' in request.headers else None
         try:
             obj = record.files[key].get_version(version_id=version_id)
             return self.make_response(obj=obj or abort(404))
@@ -214,6 +264,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
             abort(404)
 
     @pass_record
+    @need_record_permission('update_permission_factory')
     def put(self, pid, record, key):
         """Handle PUT deposit files."""
         data = json.loads(request.data.decode('utf-8'))
@@ -229,6 +280,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
         return self.make_response(obj=obj)
 
     @pass_record
+    @need_record_permission('update_permission_factory')
     def delete(self, pid, record, key):
         """Handle DELETE deposit files."""
         try:
