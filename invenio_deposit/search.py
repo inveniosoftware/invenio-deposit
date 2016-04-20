@@ -43,5 +43,5 @@ class DepositSearch(RecordsSearch):
             'status': TermsFacet(field='_deposit.status'),
         }
         default_filter = DefaultFilter(lambda: Q(
-            'match', **{'_deposit.owners': current_user.get_id()}
+            'match', **{'_deposit.owners': getattr(current_user, 'id', 0)}
         ))

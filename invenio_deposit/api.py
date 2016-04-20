@@ -25,12 +25,14 @@
 """Deposit API."""
 
 import uuid
-from functools import partial
+from functools import partial, wraps
 
+from elasticsearch.exceptions import RequestError
 from flask import current_app, url_for
 from flask_login import current_user
 from invenio_db import db
 from invenio_files_rest.models import Bucket, ObjectVersion
+from invenio_indexer.api import RecordIndexer
 from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
@@ -52,8 +54,31 @@ current_jsonschemas = LocalProxy(
 )
 
 
+def index(method=None, delete=False):
+    """Update index."""
+    if method is None:
+        return partial(index, delete=delete)
+
+    @wraps(method)
+    def wrapper(self_or_cls, *args, **kwargs):
+        """Send record for indexing."""
+        result = method(self_or_cls, *args, **kwargs)
+        try:
+            if delete:
+                self_or_cls.indexer.delete(result)
+            else:
+                self_or_cls.indexer.index(result)
+        except RequestError:
+            current_app.logger.exception('Could not index {0}.'.format(record))
+        return result
+    return wrapper
+
+
 class Deposit(Record):
     """Define API for changing deposit state."""
+
+    indexer = RecordIndexer()
+    """Default deposit indexer."""
 
     @property
     def pid(self):
@@ -99,7 +124,13 @@ class Deposit(Record):
         # patch = diff(initial, self)
         # latest.apply(patch)
 
+    @index
+    def commit(self, *args, **kwargs):
+        """Store changes on current instance in database."""
+        return super(Deposit, self).commit(*args, **kwargs)
+
     @classmethod
+    @index
     def create(cls, data, id_=None):
         """Create a deposit."""
         data.setdefault('$schema', current_jsonschemas.path_to_url(
@@ -112,11 +143,13 @@ class Deposit(Record):
             deposit_minter(id_, data)
 
         data['_deposit'].setdefault('owners', list())
-        if current_user and current_user.is_authenticated:
-            data['_deposit']['owners'].append(current_user.get_id())
+        owner = getattr(current_user, 'id', 0)
+        if owner not in data['_deposit']['owners']:
+            data['_deposit']['owners'].append(owner)
 
         return super(Deposit, cls).create(data, id_=id_)
 
+    # No need for indexing as it calls self.commit()
     def publish(self, pid=None, id_=None):
         """Publish a deposit."""
         pid = pid or self.pid
@@ -156,6 +189,7 @@ class Deposit(Record):
         self.commit()
         return self
 
+    @index
     def edit(self, pid=None):
         """Edit deposit."""
         pid = pid or self.pid
@@ -187,6 +221,7 @@ class Deposit(Record):
         after_record_update.send(self)
         return self.__class__(self.model.json, model=self.model)
 
+    @index
     def discard(self, pid=None):
         """Discard deposit changes."""
         pid = pid or self.pid
@@ -204,6 +239,7 @@ class Deposit(Record):
         after_record_update.send(self)
         return self.__class__(self.model.json, model=self.model)
 
+    @index(delete=True)
     def delete(self, force=True, pid=None):
         """Delete deposit."""
         pid = pid or self.pid

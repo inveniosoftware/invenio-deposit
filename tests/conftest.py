@@ -31,7 +31,10 @@ import os
 import shutil
 import tempfile
 
+from time import sleep
+
 import pytest
+from elasticsearch.exceptions import RequestError
 from flask import Flask
 from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
@@ -40,12 +43,14 @@ from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
+from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import allow_all
-from invenio_search import InvenioSearch
+from invenio_search import InvenioSearch, RecordsSearch, current_search, \
+    current_search_client
 from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -79,15 +84,10 @@ def app(request):
     InvenioRecords(app_)
     InvenioRecordsREST(app_)
     InvenioPIDStore(app_)
+    InvenioIndexer(app_)
     InvenioDeposit(app_)
     InvenioFilesREST(app_)
     InvenioDepositREST(app_)
-
-    app_.config['DEPOSIT_REST_ENDPOINTS']['dep'].update(
-        read_permission_factory_imp=allow_all,
-        update_permission_factory_imp=allow_all,
-        delete_permission_factory_imp=allow_all,
-    )
 
     with app_.app_context():
         yield app_
@@ -123,6 +123,19 @@ def fake_schemas(app, tmpdir):
     app.extensions['invenio-jsonschemas'].register_schemas_dir(schemas.strpath)
 
 
+@pytest.yield_fixture()
+def es(app):
+    """Elasticsearch fixture."""
+    try:
+        list(current_search.create())
+    except RequestError:
+        list(current_search.delete(ignore=[404]))
+        list(current_search.create(ignore=[400]))
+    current_search_client.indices.refresh()
+    yield current_search_client
+    list(current_search.delete(ignore=[404]))
+
+
 @pytest.fixture()
 def location(app):
     """Create default location."""
@@ -135,7 +148,7 @@ def location(app):
 
 
 @pytest.fixture()
-def deposit(app, location):
+def deposit(app, es, location):
     """New deposit with files."""
     record = {
         "title": "fuu"
@@ -143,11 +156,12 @@ def deposit(app, location):
     deposit = Deposit.create(record)
     deposit.commit()
     db_.session.commit()
+    sleep(2)
     return deposit
 
 
 @pytest.fixture()
-def files(app, deposit):
+def files(app, es, deposit):
     """Add a file to the deposit."""
     content = b'### Testing textfile ###'
     stream = BytesIO(content)
