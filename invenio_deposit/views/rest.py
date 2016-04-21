@@ -34,12 +34,15 @@ from uuid import UUID
 from flask import Blueprint, url_for, request, abort, current_app, \
     make_response
 from invenio_db import db
+from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import \
     create_url_rules as records_rest_url_rules, need_record_permission, \
     pass_record
 from invenio_rest import ContentNegotiatedMethodView
+from invenio_rest.errors import RESTException
+from invenio_rest.views import create_api_errorhandler
 from sqlalchemy.orm.exc import NoResultFound
 from webargs import fields
 from webargs.flaskparser import use_kwargs
@@ -55,6 +58,9 @@ def create_blueprint(endpoints):
         __name__,
         url_prefix='',
     )
+    blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
+        status=403, message='Invalid action'
+    ))
 
     for endpoint, options in (endpoints or {}).items():
         options = deepcopy(options)
@@ -66,6 +72,13 @@ def create_blueprint(endpoints):
             del options['files_serializers']
         else:
             files_serializers = {}
+
+        if 'record_serializers' in options:
+            serializers = options.get('record_serializers')
+            serializers = {mime: obj_or_import_string(func)
+                           for mime, func in serializers.items()}
+        else:
+            serializers = {}
 
         for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
@@ -94,13 +107,14 @@ def create_blueprint(endpoints):
             delete_permission_factory=obj_or_import_string(
                 options.get('delete_permission_factory_imp')
             ),
-            search_class=partial(search_class, **search_class_kwargs)
+            search_class=partial(search_class, **search_class_kwargs),
         )
 
         deposit_actions = DepositActionResource.as_view(
             DepositActionResource.view_name.format(endpoint),
-            serializers=options.get('record_serializers'),
+            serializers=serializers,
             pid_type=options['pid_type'],
+            ctx=ctx,
         )
 
         blueprint.add_url_rule(
@@ -108,27 +122,27 @@ def create_blueprint(endpoints):
                 options['item_route']
             ),
             view_func=deposit_actions,
-            methods=['POST']
+            methods=['POST'],
         )
 
         deposit_files = DepositFilesResource.as_view(
             DepositFilesResource.view_name.format(endpoint),
             serializers=files_serializers,
             pid_type=options['pid_type'],
-            ctx=ctx
+            ctx=ctx,
         )
 
         blueprint.add_url_rule(
             '{0}/files'.format(options['item_route']),
             view_func=deposit_files,
-            methods=['GET', 'POST', 'PUT']
+            methods=['GET', 'POST', 'PUT'],
         )
 
         deposit_file = DepositFileResource.as_view(
             DepositFileResource.view_name.format(endpoint),
             serializers=files_serializers,
             pid_type=options['pid_type'],
-            ctx=ctx
+            ctx=ctx,
         )
 
         blueprint.add_url_rule(
@@ -136,9 +150,8 @@ def create_blueprint(endpoints):
                 options['item_route']
             ),
             view_func=deposit_file,
-            methods=['GET', 'PUT', 'DELETE']
+            methods=['GET', 'PUT', 'DELETE'],
         )
-
     return blueprint
 
 
@@ -166,6 +179,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
     def post(self, pid, record, action):
         """Handle deposit action."""
         getattr(record, action)(pid=pid)
+
         db.session.commit()
 
         response = self.make_response(pid, record, 201)

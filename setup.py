@@ -69,12 +69,12 @@ install_requires = [
     'invenio-db>=1.0.0a9',
     'invenio-files-rest>=1.0.0a1',
     'invenio-indexer>=1.0.0a2',
-    'invenio-jsonschemas>=1.0.0a1',
-    'invenio-records-rest>=1.0.0a9',
+    'invenio-jsonschemas>=1.0.0a3',
+    'invenio-records-rest>=1.0.0a10',
     'invenio-records-ui>=1.0.0a6',
-    'invenio-records>=1.0.0a14',
-    'invenio-search-ui>=1.0.0a2',
-    'invenio-search>=1.0.0a6',
+    'invenio-records>=1.0.0a15',
+    'invenio-search-ui>=1.0.0a4',
+    'invenio-search>=1.0.0a7',
 ]
 
 packages = find_packages()

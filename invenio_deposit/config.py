@@ -68,6 +68,7 @@ DEPOSIT_REST_ENDPOINTS = dict(
         list_route='/deposits/',
         item_route='/deposits/<pid_value>',
         default_media_type='application/json',
+        links_factory_imp='invenio_deposit.links:deposit_links_factory',
         create_permission_factory_imp=allow_all,
         read_permission_factory_imp=check_elasticsearch,
         update_permission_factory_imp=check_elasticsearch,

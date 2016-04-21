@@ -69,7 +69,7 @@ def index(method=None, delete=False):
             else:
                 self_or_cls.indexer.index(result)
         except RequestError:
-            current_app.logger.exception('Could not index {0}.'.format(record))
+            current_app.logger.exception('Could not index {0}.'.format(result))
         return result
     return wrapper
 
@@ -170,7 +170,8 @@ class Deposit(Record):
             record_pid = minter(id_, self)
 
             self['_deposit']['pid'] = {
-                'type': record_pid.pid_type, 'value': record_pid.pid_value
+                'type': record_pid.pid_type, 'value': record_pid.pid_value,
+                'revision_id': 0,
             }
 
             data = dict(self.dumps())
@@ -282,6 +283,18 @@ class FileObject(object):
         return getattr(self.obj, key)
 
 
+def _not_published(method):
+    """Check that record is in defined status."""
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Send record for indexing."""
+        if 'published' == self.record['_deposit']['status'] or \
+                'pid' in self.record['_deposit']:
+            raise PIDInvalidAction()
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
 class FilesIterator(object):
     """Iterator for files."""
 
@@ -338,6 +351,7 @@ class FilesIterator(object):
             return FileObject(self.bucket, obj)
         raise KeyError(key)
 
+    @_not_published
     def __setitem__(self, key, stream):
         """Add file inside a deposit."""
         with db.session.begin_nested():
@@ -349,6 +363,7 @@ class FilesIterator(object):
             if key not in self.record['files']:
                 self.record['files'].append(key)
 
+    @_not_published
     def __delitem__(self, key):
         """Delete a file from the deposit."""
         obj = ObjectVersion.delete(bucket=self.bucket, key=key)
@@ -359,8 +374,11 @@ class FilesIterator(object):
 
     def sort_by(self, *ids):
         """Update files order."""
-        self.record['files'] = list(ids)
+        files = {str(f_.file_id): f_.key for f_ in self}
+        ids = [files.get(id_, id_) for id_ in ids]
+        self.record['files'] = ids
 
+    @_not_published
     def rename(self, old_key, new_key):
         """Rename a file."""
         assert new_key not in self
