@@ -86,6 +86,12 @@ DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
     ),
 )
 
+DEPOSIT_UI_INDEX_TEMPLATE = 'invenio_deposit/index.html'
+"""Index template."""
+
+DEPOSIT_UI_NEW_TEMPLATE = 'invenio_deposit/edit.html'
+"""New deposit template."""
+
 DEPOSIT_UI_JSTEMPLATE_ACTIONS = \
     'node_modules/invenio-records-js/dist/templates/actions.html'
 DEPOSIT_UI_JSTEMPLATE_ERROR = \

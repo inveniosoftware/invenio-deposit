@@ -26,12 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
-from functools import partial
-
-from flask import Blueprint, abort, current_app, render_template, request, \
-    url_for
-from flask_login import current_user, login_required
-from invenio_db import db
+from flask import Blueprint, current_app, render_template
+from flask_login import login_required
 
 
 def create_blueprint(endpoints):
@@ -53,16 +49,15 @@ def create_blueprint(endpoints):
     @login_required
     def index():
         """List user deposits."""
-        return render_template(
-            'invenio_deposit/index.html',
-        )
+        return render_template(current_app.config['DEPOSIT_UI_INDEX_TEMPLATE'])
 
     @blueprint.route('/deposit/new')
     @login_required
     def new():
         """Create new deposit."""
         return render_template(
-            'invenio_deposit/edit.html', record={'_deposit': {'id': None}},
+            current_app.config['DEPOSIT_UI_NEW_TEMPLATE'],
+            record={'_deposit': {'id': None}},
         )
 
     return blueprint
