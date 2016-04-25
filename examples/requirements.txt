@@ -22,15 +22,18 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+SQLAlchemy-Utils[encrypted]>=0.31.0
 dojson>=1.0.0
-invenio-assets>=1.0.0a4
 invenio-accounts>=1.0.0a9
+invenio-admin>=1.0.0a3
+invenio-assets>=1.0.0a4
 invenio-db>=1.0.0a9
 invenio-indexer>=1.0.0a1
+invenio-oauth2server>=1.0.0a2
 invenio-pidstore>=1.0.0a6
-invenio-rest[cors]>=1.0.0a5
 invenio-records-rest>=1.0.0a4
 invenio-records-ui>=1.0.0a4
 invenio-records>=1.0.0a9
+invenio-rest[cors]>=1.0.0a5
 invenio-search>=1.0.0a3
 invenio-theme>=1.0.0a7

@@ -81,6 +81,7 @@ from flask_babelex import Babel
 from flask_cli import FlaskCLI, with_appcontext
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
+from invenio_admin import InvenioAdmin
 from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
 from invenio_files_rest import InvenioFilesREST
@@ -88,6 +89,8 @@ from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
 from invenio_indexer.api import RecordIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_oauth2server import InvenioOAuth2Server
+from invenio_oauth2server.views import server_blueprint, settings_blueprint
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
@@ -132,7 +135,9 @@ app.config.update(
     RECORDS_UI_DEFAULT_PERMISSION_FACTORY=None,
     SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                       'sqlite:///app.db'),
-    DATADIR=join(dirname(__file__), 'data/upload')
+    DATADIR=join(dirname(__file__), 'data/upload'),
+    OAUTH2SERVER_CACHE_TYPE='simple',
+    OAUTHLIB_INSECURE_TRANSPORT=True,
 )
 
 FlaskCLI(app)
@@ -156,6 +161,8 @@ InvenioSearchUI(app)
 InvenioREST(app)
 InvenioIndexer(app)
 InvenioPIDStore(app)
+InvenioAdmin(app)
+InvenioOAuth2Server(app)
 
 InvenioRecordsREST(app)
 InvenioFilesREST(app)
@@ -168,6 +175,9 @@ InvenioDepositREST(app)
 
 app.register_blueprint(accounts_blueprint)
 
+app.register_blueprint(settings_blueprint)
+app.register_blueprint(server_blueprint)
+
 
 @app.cli.group()
 def fixtures():
@@ -179,7 +189,6 @@ def fixtures():
 def records():
     """Load records."""
     import pkg_resources
-    import uuid
     from dojson.contrib.marc21 import marc21
     from dojson.contrib.marc21.utils import create_record, split_blob
     from flask_login import login_user, logout_user
