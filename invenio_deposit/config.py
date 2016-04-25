@@ -78,7 +78,7 @@ DEPOSIT_REST_ENDPOINTS = dict(
 )
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
-    deposit=dict(
+    dep=dict(
         pid_type='dep',
         route='/deposit/<pid_value>',
         template='invenio_deposit/edit.html',
