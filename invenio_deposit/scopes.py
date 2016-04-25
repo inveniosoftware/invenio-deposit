@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -22,13 +22,25 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
--e git+git://github.com/inveniosoftware/invenio-files-rest.git#egg=invenio-files-rest
--e git+git://github.com/inveniosoftware/invenio-jsonschemas.git#egg=invenio-jsonschemas
--e git+git://github.com/inveniosoftware/invenio-oauth2server.git#egg=invenio-oauth2server
--e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
--e git+git://github.com/inveniosoftware/invenio-records-rest.git#egg=invenio-records-rest
--e git+git://github.com/inveniosoftware/invenio-records-ui.git#egg=invenio-records-ui
--e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
--e git+git://github.com/inveniosoftware/invenio-rest.git#egg=invenio-rest
--e git+git://github.com/inveniosoftware/invenio-search-ui.git#egg=invenio-search-ui
--e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+"""OAuth2 scopes."""
+
+from __future__ import absolute_import, print_function
+
+from flask_babelex import lazy_gettext as _
+from invenio_oauth2server.models import Scope
+
+
+class DepositScope(Scope):
+    """Deposit scope."""
+
+    def __init__(self, id_, *args, **kwargs):
+        """Define the scope."""
+        super(DepositScope, self).__init__(
+            id_='deposit:{0}'.format(id_),
+            group='deposit', *args, **kwargs
+        )
+
+write_scope = DepositScope('write',
+                           help_text=_('Allow upload (but not publishing).'))
+actions_scope = DepositScope('actions',
+                             help_text=_('Allow publishing of uploads.'))

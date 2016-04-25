@@ -70,6 +70,7 @@ install_requires = [
     'invenio-files-rest>=1.0.0a1',
     'invenio-indexer>=1.0.0a2',
     'invenio-jsonschemas>=1.0.0a3',
+    'invenio-oauth2server>=1.0.0a2',
     'invenio-records-rest>=1.0.0a10',
     'invenio-records-ui>=1.0.0a6',
     'invenio-records>=1.0.0a15',
@@ -127,6 +128,10 @@ setup(
         ],
         'invenio_search.mappings': [
             'deposits = invenio_deposit.mappings',
+        ],
+        'invenio_oauth2server.scopes': [
+            'deposit_write = invenio_deposit.scopes:write_scope',
+            'deposit_actions = invenio_deposit.scopes:actions_scope',
         ],
     },
     extras_require=extras_require,

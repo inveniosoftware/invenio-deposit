@@ -63,3 +63,6 @@ examples/instance/
 examples/static/
 examples/*.db
 examples/data/upload/*
+
+# temporary db
+tests/*.db
