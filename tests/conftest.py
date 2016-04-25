@@ -27,24 +27,34 @@
 
 from __future__ import absolute_import, print_function
 
+import datetime
 import os
 import shutil
 import tempfile
-
 from time import sleep
 
 import pytest
 from elasticsearch.exceptions import RequestError
 from flask import Flask
+from flask_babelex import Babel
+from flask_breadcrumbs import Breadcrumbs
 from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
+from flask_oauthlib.provider import OAuth2Provider
+from flask_security import login_user
 from invenio_accounts import InvenioAccounts
+from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
+from invenio_oauth2server import InvenioOAuth2Server, require_api_auth, \
+    require_oauth_scopes
+from invenio_oauth2server.models import Client, Token
+from invenio_oauth2server.views import \
+    settings_blueprint as oauth2server_settings_blueprint
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
@@ -56,6 +66,7 @@ from sqlalchemy_utils.functions import create_database, database_exists
 
 from invenio_deposit import InvenioDeposit, InvenioDepositREST
 from invenio_deposit.api import Deposit
+from invenio_deposit.scopes import write_scope
 
 
 @pytest.yield_fixture()
@@ -74,11 +85,19 @@ def app(request):
             'SQLALCHEMY_DATABASE_URI', 'sqlite://'),
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
         TESTING=True,
+        WTF_CSRF_ENABLED=False,
+        SECURITY_PASSWORD_HASH='plaintext',
+        SECURITY_PASSWORD_SCHEMES=['plaintext'],
+        OAUTHLIB_INSECURE_TRANSPORT=True,
+        OAUTH2_CACHE_TYPE='simple',
     )
     FlaskCLI(app_)
+    Babel(app_)
     FlaskCeleryExt(app_)
     InvenioDB(app_)
+    Breadcrumbs(app_)
     InvenioAccounts(app_)
+    app_.register_blueprint(accounts_blueprint)
     InvenioJSONSchemas(app_)
     InvenioSearch(app_)
     InvenioRecords(app_)
@@ -87,12 +106,67 @@ def app(request):
     InvenioIndexer(app_)
     InvenioDeposit(app_)
     InvenioFilesREST(app_)
+    OAuth2Provider(app_)
+    InvenioOAuth2Server(app_)
+    app_.register_blueprint(oauth2server_settings_blueprint)
     InvenioDepositREST(app_)
 
     with app_.app_context():
         yield app_
 
     shutil.rmtree(instance_path)
+
+
+@pytest.fixture()
+def users(app):
+    """Create users."""
+    with db_.session.begin_nested():
+        datastore = app.extensions['security'].datastore
+        user1 = datastore.create_user(email='info@invenio-software.org',
+                                      password='tester', active=True)
+        user2 = datastore.create_user(email='test@invenio-software.org',
+                                      password='tester2', active=True)
+    db_.session.commit()
+    return [user1, user2]
+
+
+@pytest.fixture()
+def client(app, users):
+    """Create client."""
+    with db_.session.begin_nested():
+        # create resource_owner -> client_1
+        client_ = Client(
+            client_id='client_test_u1c1',
+            client_secret='client_test_u1c1',
+            name='client_test_u1c1',
+            description='',
+            is_confidential=False,
+            user=users[0],
+            _redirect_uris='',
+            _default_scopes='',
+        )
+        db_.session.add(client_)
+    db_.session.commit()
+    return client_
+
+
+@pytest.fixture()
+def write_token(app, client, users):
+    """Create token."""
+    with db_.session.begin_nested():
+        token_ = Token(
+            client=client,
+            user=users[0],
+            access_token='dev_access_2',
+            refresh_token='dev_refresh_2',
+            expires=datetime.datetime.now() + datetime.timedelta(hours=10),
+            is_personal=False,
+            is_internal=True,
+            _scopes=write_scope.id,
+        )
+        db_.session.add(token_)
+    db_.session.commit()
+    return token_
 
 
 @pytest.yield_fixture()
@@ -148,14 +222,16 @@ def location(app):
 
 
 @pytest.fixture()
-def deposit(app, es, location):
+def deposit(app, es, users, location):
     """New deposit with files."""
     record = {
         "title": "fuu"
     }
-    deposit = Deposit.create(record)
-    deposit.commit()
-    db_.session.commit()
+    with app.test_request_context():
+        login_user(users[0])
+        deposit = Deposit.create(record)
+        deposit.commit()
+        db_.session.commit()
     sleep(2)
     return deposit
 

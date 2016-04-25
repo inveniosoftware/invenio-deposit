@@ -46,9 +46,11 @@ from invenio_rest.views import create_api_errorhandler
 from sqlalchemy.orm.exc import NoResultFound
 from webargs import fields
 from webargs.flaskparser import use_kwargs
+from invenio_oauth2server import require_api_auth, require_oauth_scopes
 
 from ..api import Deposit
 from ..search import DepositSearch
+from ..scopes import write_scope
 
 
 def create_blueprint(endpoints):
@@ -214,6 +216,8 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         """Get deposit/depositions/:id/files."""
         return self.make_response(record.files)
 
+    @require_api_auth()
+    @require_oauth_scopes(write_scope.id)
     @pass_record
     @need_record_permission('update_permission_factory')
     def post(self, pid, record):
@@ -228,6 +232,8 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         db.session.commit()
         return self.make_response(obj=record.files[key].obj, status=201)
 
+    @require_api_auth()
+    @require_oauth_scopes(write_scope.id)
     @pass_record
     @need_record_permission('update_permission_factory')
     def put(self, pid, record):
@@ -277,6 +283,8 @@ class DepositFileResource(ContentNegotiatedMethodView):
         except KeyError:
             abort(404)
 
+    @require_api_auth()
+    @require_oauth_scopes(write_scope.id)
     @pass_record
     @need_record_permission('update_permission_factory')
     def put(self, pid, record, key):
@@ -293,6 +301,8 @@ class DepositFileResource(ContentNegotiatedMethodView):
         db.session.commit()
         return self.make_response(obj=obj)
 
+    @require_api_auth()
+    @require_oauth_scopes(write_scope.id)
     @pass_record
     @need_record_permission('update_permission_factory')
     def delete(self, pid, record, key):
