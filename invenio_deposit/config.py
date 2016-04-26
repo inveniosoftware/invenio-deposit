@@ -28,6 +28,8 @@ from elasticsearch_dsl import Q
 from flask_login import current_user
 from invenio_records_rest.utils import allow_all, check_elasticsearch
 
+from .utils import check_oauth2_scope_write
+
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
 
@@ -69,7 +71,7 @@ DEPOSIT_REST_ENDPOINTS = dict(
         item_route='/deposits/<pid_value>',
         default_media_type='application/json',
         links_factory_imp='invenio_deposit.links:deposit_links_factory',
-        create_permission_factory_imp=allow_all,
+        create_permission_factory_imp=check_oauth2_scope_write,
         read_permission_factory_imp=check_elasticsearch,
         update_permission_factory_imp=check_elasticsearch,
         delete_permission_factory_imp=check_elasticsearch,

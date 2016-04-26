@@ -32,12 +32,13 @@ import json
 from time import sleep
 
 from flask import url_for
+from flask_security import url_for_security
 from six import BytesIO
 
 from invenio_deposit.api import Deposit
 
 
-def test_simple_rest_flow(app, db, es, location, fake_schemas):
+def test_simple_rest_flow(app, db, es, location, fake_schemas, users):
     """Test simple flow using REST API."""
     app.config['RECORDS_REST_ENDPOINTS']['recid'][
         'read_permission_factory_imp'] = 'invenio_records_rest.utils:allow_all'
@@ -48,6 +49,18 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas):
                ('Accept', 'application/json')]
     with app.test_request_context():
         with app.test_client() as client:
+            # try create deposit as anonymous user (failing)
+            res = client.post(url_for('invenio_deposit_rest.dep_list'),
+                              data=json.dumps({}), headers=headers)
+            assert res.status_code == 401
+
+            # login
+            client.post(url_for_security('login'), data=dict(
+                email=users[0].email,
+                password="tester"
+            ))
+
+            # try create deposit as logged in user
             res = client.post(url_for('invenio_deposit_rest.dep_list'),
                               data=json.dumps({}), headers=headers)
             assert res.status_code == 201
