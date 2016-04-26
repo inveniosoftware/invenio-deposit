@@ -21,7 +21,7 @@
  * as an Intergovernmental Organization or submit itself to any jurisdiction.
  */
 
-(function (angular) {})
+(function (angular) {
   // Bootstrap it!
   angular.element(document).ready(function() {
     angular.bootstrap(

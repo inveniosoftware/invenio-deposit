@@ -53,7 +53,6 @@
             form="{{ url_for('static', filename=config.DEPOSIT_DEFAULT_SCHEMAFORM) }}"
             record='{{ record | tojson }}'
             schema="{{ url_for('invenio_jsonschemas.get_schema', schema_path=config.DEPOSIT_DEFAULT_JSONSCHEMA) }}">
-          >
             <invenio-records-error
               template="{{ url_for('static', filename=config.DEPOSIT_UI_JSTEMPLATE_ERROR) }}">
             </invenio-records-error>
