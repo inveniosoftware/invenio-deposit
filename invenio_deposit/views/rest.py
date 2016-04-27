@@ -31,6 +31,7 @@ from copy import deepcopy
 from functools import partial
 
 from flask import Blueprint, abort, make_response, request, url_for
+from werkzeug.utils import secure_filename
 from invenio_db import db
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
@@ -45,6 +46,7 @@ from invenio_rest.views import create_api_errorhandler
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 
+from ..errors import FileAlreadyExists, WrongFile
 from ..api import Deposit
 from ..scopes import write_scope
 from ..search import DepositSearch
@@ -232,10 +234,15 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @need_record_permission('update_permission_factory')
     def post(self, pid, record):
         """Handle POST deposit files."""
-        # file name
-        key = request.form['name']
         # load the file
         uploaded_file = request.files['file']
+        # file name
+        key = secure_filename(
+            request.form.get('name') or uploaded_file.filename
+        )
+        # check if already exists a file with this name
+        if key in record.files:
+            raise FileAlreadyExists()
         # add it to the deposit
         record.files[key] = uploaded_file.stream
         record.commit()
@@ -248,7 +255,12 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @need_record_permission('update_permission_factory')
     def put(self, pid, record):
         """Handle PUT deposit files."""
-        ids = [data['id'] for data in json.loads(request.data.decode('utf-8'))]
+        try:
+            ids = [data['id'] for data in json.loads(
+                request.data.decode('utf-8'))]
+        except KeyError:
+            raise WrongFile()
+
         record.files.sort_by(*ids)
         record.commit()
         db.session.commit()
@@ -299,15 +311,19 @@ class DepositFileResource(ContentNegotiatedMethodView):
     @need_record_permission('update_permission_factory')
     def put(self, pid, record, key):
         """Handle PUT deposit files."""
-        data = json.loads(request.data.decode('utf-8'))
-        new_key = data['filename']
+        try:
+            data = json.loads(request.data.decode('utf-8'))
+            new_key = data['filename']
+        except KeyError:
+            raise WrongFile()
+        new_key = secure_filename(new_key)
         if not new_key:
-            abort(400)
-        if key in record.files:
+            raise WrongFile()
+        try:
             obj = record.files.rename(key, new_key)
-            record.commit()
-        else:
+        except KeyError:
             abort(404)
+        record.commit()
         db.session.commit()
         return self.make_response(obj=obj)
 

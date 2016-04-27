@@ -150,6 +150,215 @@ def test_delete_deposit_by_bad_oauth2_token(app, db, es, users, location,
             assert res.status_code == 403
 
 
+def test_deposition_file_operations(app, db, es, location, users,
+                                    write_token_user_1, pdf_file, pdf_file2,
+                                    pdf_file2_samename, oauth2_headers_user_1):
+    """Test deposit file operations."""
+    with app.test_request_context():
+        with app.test_client() as client:
+            # create deposit
+            res = client.post(url_for('invenio_deposit_rest.dep_list'),
+                              data=json.dumps({}),
+                              headers=oauth2_headers_user_1)
+            assert res.status_code == 201
+            data = json.loads(res.data.decode('utf-8'))
+            deposit_id = data['metadata']['_deposit']['id']
+
+            sleep(2)
+
+            # Upload a file
+            res = client.post(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit_id),
+                data=pdf_file,
+                content_type='multipart/form-data',
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 201
+            data = json.loads(res.data.decode('utf-8'))
+            assert data['filename'] == pdf_file['name']
+            assert data['id']
+            assert data['checksum']
+            assert data['filesize']
+            file_data = json.loads(res.data.decode('utf-8'))
+
+            # Upload another file
+            res = client.post(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit_id),
+                data=pdf_file2,
+                content_type='multipart/form-data',
+                headers=oauth2_headers_user_1
+            )
+            file_data2 = json.loads(res.data.decode('utf-8'))
+            assert res.status_code == 201
+
+            # Upload another file with identical name
+            res = client.post(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit_id),
+                data=pdf_file2_samename,
+                content_type='multipart/form-data',
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 400
+
+            # Get file info
+            res = client.get(url_for(
+                'invenio_deposit_rest.dep_file',
+                pid_value=deposit_id,
+                key=file_data['filename']),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 200
+            get_file = json.loads(res.data.decode('utf-8'))
+            assert file_data == get_file
+
+            # Get non-existing file
+            res = client.get(url_for(
+                'invenio_deposit_rest.dep_file',
+                pid_value=deposit_id,
+                key='bad-key'),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 404
+
+            # Delete non-existing file
+            res = client.delete(
+                url_for(
+                    'invenio_deposit_rest.dep_file',
+                    pid_value=deposit_id,
+                    key='bad-key',
+                ),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 404
+
+            # Get list of files
+            res = client.get(
+                url_for(
+                    'invenio_deposit_rest.dep_files',
+                    pid_value=deposit_id
+                ),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 200
+            data = json.loads(res.data.decode('utf-8'))
+            assert len(data) == 2
+
+            # sort ids
+            invalid_files_list = list(map(
+                lambda x: {'filename': x['filename']},
+                data
+            ))
+            id_files_list = list(map(lambda x: {'id': x['id']}, data))
+            id_files_list.reverse()
+
+            # Sort files - invalid query
+            res = client.put(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit_id),
+                data=json.dumps(invalid_files_list),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 400
+
+            # Sort files - valid query
+            res = client.put(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit_id),
+                data=json.dumps(id_files_list),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 200
+            data = json.loads(res.data.decode('utf-8'))
+            assert len(data) == 2
+            assert data[0]['id'] == id_files_list[0]['id']
+            assert data[1]['id'] == id_files_list[1]['id']
+
+            # Delete a file
+            res = client.delete(
+                url_for(
+                    'invenio_deposit_rest.dep_file',
+                    pid_value=deposit_id,
+                    key=file_data['filename']
+                ),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 204
+
+            # Get list of files
+            res = client.get(
+                url_for(
+                    'invenio_deposit_rest.dep_files',
+                    pid_value=deposit_id
+                ),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 200
+            data = json.loads(res.data.decode('utf-8'))
+            assert len(data) == 1
+
+            # Rename file
+            res = client.put(
+                url_for('invenio_deposit_rest.dep_file',
+                        pid_value=deposit_id,
+                        key=file_data2['filename']),
+                data=json.dumps({'filename': 'another_test.pdf'}),
+                headers=oauth2_headers_user_1
+            )
+            data_rename = json.loads(res.data.decode('utf-8'))
+            assert res.status_code == 200
+            assert file_data2['id'] == data_rename['id']
+            assert data_rename['filename'] == 'another_test.pdf'
+
+            # Bad renaming
+            test_cases = [
+                dict(name="another_test.pdf"),
+            ]
+            for test_case in test_cases:
+                res = client.put(
+                    url_for('invenio_deposit_rest.dep_file',
+                            pid_value=deposit_id,
+                            key=data_rename['filename']),
+                    data=json.dumps(test_case),
+                    headers=oauth2_headers_user_1
+                )
+                assert res.status_code == 400
+
+            test_cases = [
+                dict(filename="../../etc/passwd"),
+            ]
+            for test_case in test_cases:
+                res = client.put(
+                    url_for('invenio_deposit_rest.dep_file',
+                            pid_value=deposit_id,
+                            key=data_rename['filename']),
+                    data=json.dumps(test_case),
+                    headers=oauth2_headers_user_1
+                )
+                assert res.status_code == 200
+                data_secured = json.loads(res.data.decode('utf-8'))
+                assert data_secured['filename'] == 'etc_passwd'
+
+            # Delete resource again
+            res = client.delete(
+                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 204
+
+            # No files any more
+            res = client.get(
+                url_for(
+                    'invenio_deposit_rest.dep_files',
+                    pid_value=deposit_id
+                ),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 410
+
+
 def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
                           json_headers):
     """Test simple flow using REST API."""

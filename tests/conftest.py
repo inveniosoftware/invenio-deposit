@@ -42,7 +42,7 @@ from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
 from flask_oauthlib.provider import OAuth2Provider
 from flask_security import login_user
-from helpers import fill_oauth2_headers
+from helpers import fill_oauth2_headers, make_pdf_fixture
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_db import db as db_
@@ -51,7 +51,7 @@ from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
-from invenio_oauth2server import InvenioOAuth2Server
+from invenio_oauth2server import InvenioOAuth2Server, InvenioOAuth2ServerREST
 from invenio_oauth2server.models import Client, Token
 from invenio_oauth2server.views import \
     settings_blueprint as oauth2server_settings_blueprint
@@ -108,6 +108,7 @@ def app(request):
     InvenioFilesREST(app_)
     OAuth2Provider(app_)
     InvenioOAuth2Server(app_)
+    InvenioOAuth2ServerREST(app_)
     app_.register_blueprint(oauth2server_settings_blueprint)
     InvenioDepositREST(app_)
 
@@ -265,6 +266,25 @@ def files(app, es, deposit):
     deposit.commit()
     db_.session.commit()
     return list(deposit.files)
+
+
+@pytest.fixture()
+def pdf_file(app):
+    """Create a test pdf file."""
+    return {'file': make_pdf_fixture('test.pdf'), 'name': 'test.pdf'}
+
+
+@pytest.fixture()
+def pdf_file2(app):
+    """Create a test pdf file."""
+    return {'file': make_pdf_fixture('test2.pdf', 'test'), 'name': 'test2.pdf'}
+
+
+@pytest.fixture()
+def pdf_file2_samename(app):
+    """Create a test pdf file."""
+    return {'file': make_pdf_fixture('test2.pdf', 'test same'),
+            'name': 'test2.pdf'}
 
 
 @pytest.fixture()

@@ -42,6 +42,7 @@ tests_require = [
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
     'pytest>=2.8.0',
+    'reportlab>=3.3.0',
 ]
 
 extras_require = {
@@ -70,7 +71,7 @@ install_requires = [
     'invenio-files-rest>=1.0.0a1',
     'invenio-indexer>=1.0.0a2',
     'invenio-jsonschemas>=1.0.0a3',
-    'invenio-oauth2server>=1.0.0a2',
+    'invenio-oauth2server>=1.0.0a5',
     'invenio-records-files>=1.0.0a2',
     'invenio-records-rest>=1.0.0a13',
     'invenio-records-ui>=1.0.0a6',

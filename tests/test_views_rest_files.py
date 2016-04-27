@@ -69,7 +69,10 @@ def test_files_get(app, db, deposit, files, users):
             # get resources
             res = client.get(
                 url_for('invenio_deposit_rest.dep_files',
-                        pid_value=deposit['_deposit']['id']))
+                        pid_value=deposit['_deposit']['id']),
+                headers=[('Content-Type', 'application/json'),
+                         ('Accept', 'application/json')]
+            )
             assert res.status_code == 200
             data = json.loads(res.data.decode('utf-8'))
             assert data[0]['checksum'] == files[0].file.checksum
@@ -88,6 +91,25 @@ def test_files_get(app, db, deposit, files, users):
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']))
             assert res.status_code == 403
+
+
+def test_files_get_oauth2(app, db, deposit, users, write_token_user_1,
+                          oauth2_headers_user_1, files):
+    """Test rest files get a deposit with oauth2."""
+    with app.test_request_context():
+        with app.test_client() as client:
+            # get resources
+            res = client.get(
+                url_for('invenio_deposit_rest.dep_files',
+                        pid_value=deposit['_deposit']['id']),
+                headers=oauth2_headers_user_1
+            )
+            assert res.status_code == 200
+            data = json.loads(res.data.decode('utf-8'))
+            data = json.loads(res.data.decode('utf-8'))
+            assert data[0]['checksum'] == files[0].file.checksum
+            assert data[0]['filename'] == files[0].key
+            assert data[0]['filesize'] == files[0].file.size
 
 
 def test_files_get_without_files(app, db, deposit, users):
@@ -204,7 +226,7 @@ def test_files_post(app, db, deposit, users):
 
 
 def test_files_put_oauth2(app, db, deposit, files, users, write_token_user_1):
-    """Test put deposito files with oauth2."""
+    """Test put deposit files with oauth2."""
     with app.test_request_context():
         with app.test_client() as client:
             # fixture
@@ -214,20 +236,19 @@ def test_files_put_oauth2(app, db, deposit, files, users, write_token_user_1):
             deposit.files[key] = stream
             deposit.commit()
             db.session.commit()
+            assert deposit['_files'][0]['key'] == files[0].key
+            assert deposit['_files'][1]['key'] == key
+            assert len(deposit.files) == 2
+            assert len(deposit['_files']) == 2
             deposit_id = deposit.id
-            db.session.expunge(deposit.model)
-            deposit = Deposit.get_record(deposit_id)
-            key0 = files[0].key
-            files = list(deposit.files)
-            assert files[0]['key'] == str(key0)
-            assert files[1]['key'] == str(key)
+            file_ids = [f.file_id for f in deposit.files]
             # order files
             res = client.put(
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
-                    {'id': key},
-                    {'id': key0}
+                    {'id': str(file_ids[1])},
+                    {'id': str(file_ids[0])}
                 ]),
                 headers=[
                     ('Authorization',
@@ -236,8 +257,15 @@ def test_files_put_oauth2(app, db, deposit, files, users, write_token_user_1):
             )
             assert res.status_code == 200
             data = json.loads(res.data.decode('utf-8'))
-            assert data[0]['filename'] == str(key)
-            assert data[1]['filename'] == str(key0)
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
+            assert deposit['_files'][0]['key'] == data[0]['filename']
+            assert deposit['_files'][1]['key'] == data[1]['filename']
+            assert data[0]['id'] == str(file_ids[1])
+            assert data[1]['id'] == str(file_ids[0])
+            assert len(deposit.files) == 2
+            assert len(deposit['_files']) == 2
+            assert len(data) == 2
 
 
 def test_files_put(app, db, deposit, files, users):
@@ -253,19 +281,18 @@ def test_files_put(app, db, deposit, files, users):
             deposit.commit()
             db.session.commit()
             deposit_id = deposit.id
-            db.session.expunge(deposit.model)
-            deposit = Deposit.get_record(deposit_id)
-            key0 = files[0].key
-            files = list(deposit.files)
-            assert files[0]['key'] == str(key0)
-            assert files[1]['key'] == str(key)
+            file_ids = [f.file_id for f in deposit.files]
+            assert deposit['_files'][0]['key'] == files[0].key
+            assert deposit['_files'][1]['key'] == key
+            assert len(deposit.files) == 2
+            assert len(deposit['_files']) == 2
             # add new file (without login)
             res = client.put(
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
-                    {'id': key},
-                    {'id': key0}
+                    {'id': str(file_ids[1])},
+                    {'id': str(file_ids[0])}
                 ])
             )
             assert res.status_code == 401
@@ -279,19 +306,20 @@ def test_files_put(app, db, deposit, files, users):
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
-                    {'id': key},
-                    {'id': key0}
+                    {'id': str(file_ids[1])},
+                    {'id': str(file_ids[0])}
                 ])
             )
+            data = json.loads(res.data.decode('utf-8'))
             db.session.expunge(deposit.model)
             deposit = Deposit.get_record(deposit_id)
-            files = list(deposit.files)
+            assert deposit['_files'][0]['key'] == data[0]['filename']
+            assert deposit['_files'][1]['key'] == data[1]['filename']
+            assert data[0]['id'] == str(file_ids[1])
+            assert data[1]['id'] == str(file_ids[0])
             assert len(deposit.files) == 2
-            assert files[0]['key'] == str(key)
-            assert files[1]['key'] == str(key0)
-            data = json.loads(res.data.decode('utf-8'))
-            assert data[0]['filename'] == str(key)
-            assert data[1]['filename'] == str(key0)
+            assert len(deposit['_files']) == 2
+            assert len(data) == 2
 
         # the user is NOT the owner
         with app.test_client() as client:
@@ -300,16 +328,23 @@ def test_files_put(app, db, deposit, files, users):
                 email=users[1].email,
                 password="tester2"
             ))
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
+            order = [f.key for f in deposit.files]
             # test files post
             res = client.put(
                 url_for('invenio_deposit_rest.dep_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
-                    {'id': key},
-                    {'id': key0}
+                    {'id': str(file_ids[1])},
+                    {'id': str(file_ids[0])}
                 ])
             )
             assert res.status_code == 403
+            db.session.expunge(deposit.model)
+            deposit = Deposit.get_record(deposit_id)
+            assert deposit['_files'][0]['key'] == order[0]
+            assert deposit['_files'][1]['key'] == order[1]
 
 
 def test_file_get(app, db, deposit, files, users):
