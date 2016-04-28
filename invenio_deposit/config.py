@@ -45,7 +45,7 @@ DEPOSIT_JSONSCHEMAS_PREFIX = 'deposits/'
 DEPOSIT_DEFAULT_JSONSCHEMA = 'deposits/deposit-v1.0.0.json'
 """Default JSON schema used for new deposits."""
 
-DEPOSIT_DEFAULT_SCHEMAFORM = 'json/invenio_deposit/form.json',
+DEPOSIT_DEFAULT_SCHEMAFORM = 'json/invenio_deposit/form.json'
 """Default Angular Schema Form."""
 
 DEPOSIT_REST_ENDPOINTS = dict(

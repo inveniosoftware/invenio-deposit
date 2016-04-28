@@ -44,11 +44,11 @@
       <div class="col-md-12">
         <div id="invenio-records">
           <invenio-records
-            {%- if pid %}
+            {% if pid %}
               action="{{ config.DEPOSIT_RECORDS_API|format(pid_value=pid.pid_value) }}"
-            {%- else %}
+            {% else %}
               initialization="{{ config.DEPOSIT_SEARCH_API }}"
-            {%- endif %}")}}"
+            {% endif %}
             extra-params="{}"
             form="{{ url_for('static', filename=config.DEPOSIT_DEFAULT_SCHEMAFORM) }}"
             record='{{ record | tojson }}'
@@ -58,7 +58,6 @@
             </invenio-records-error>
             <invenio-records-actions
               template="{{ url_for('static', filename=config.DEPOSIT_UI_JSTEMPLATE_ACTIONS) }}">
-            </invenio-records-error>
             </invenio-records-actions>
             <invenio-records-form
               template="{{ url_for('static', filename=config.DEPOSIT_UI_JSTEMPLATE_FORM) }}">
