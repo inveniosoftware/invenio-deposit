@@ -225,7 +225,7 @@ def location(app):
 def deposit(app, es, users, location):
     """New deposit with files."""
     record = {
-        "title": "fuu"
+        'title': 'fuu'
     }
     with app.test_request_context():
         login_user(users[0])
@@ -241,7 +241,7 @@ def files(app, es, deposit):
     """Add a file to the deposit."""
     content = b'### Testing textfile ###'
     stream = BytesIO(content)
-    key = "hello.txt"
+    key = 'hello.txt'
     storage_class = app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
     deposit.files[key] = stream
     deposit.commit()

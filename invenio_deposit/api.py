@@ -183,7 +183,7 @@ class Deposit(Record):
                     self.files.bucket.snapshot(lock=True).id
                 )
                 # TODO move to before record create signal handler?
-                data['files'] = self.files.dumps(
+                data['_files'] = self.files.dumps(
                     bucket=self['_deposit']['snapshot']
                 )
 
@@ -315,7 +315,7 @@ class FilesIterator(object):
         self.record = record
         self.model = record.model
 
-        self.record.setdefault('files', [])
+        self.record.setdefault('_files', [])
 
     @property
     def bucket(self):
@@ -335,7 +335,7 @@ class FilesIterator(object):
     @property
     def keys(self):
         """Return file keys."""
-        return [file_['key'] for file_ in self.record['files']]
+        return [file_['key'] for file_ in self.record['_files']]
 
     def __len__(self):
         """Get number of files."""
@@ -377,23 +377,23 @@ class FilesIterator(object):
             obj = ObjectVersion.create(bucket=self.bucket, key=key,
                                        stream=stream)
 
-            # update deposit['files']
-            if key not in self.record['files']:
-                self.record['files'].append({'key': key})
+            # update deposit['_files']
+            if key not in self.record['_files']:
+                self.record['_files'].append({'key': key})
 
     @_not_published
     def __delitem__(self, key):
         """Delete a file from the deposit."""
         obj = ObjectVersion.delete(bucket=self.bucket, key=key)
-        self.record['files'] = [file_ for file_ in self.record['files']
-                                if file_['key'] != key]
+        self.record['_files'] = [file_ for file_ in self.record['_files']
+                                 if file_['key'] != key]
         if obj is None:
             raise KeyError(key)
 
     def sort_by(self, *ids):
         """Update files order."""
         files = {str(f_.file_id): f_.key for f_ in self}
-        self.record['files'] = [{'key': files.get(id_, id_)} for id_ in ids]
+        self.record['_files'] = [{'key': files.get(id_, id_)} for id_ in ids]
 
     @_not_published
     def rename(self, old_key, new_key):
@@ -406,7 +406,7 @@ class FilesIterator(object):
             bucket=self.bucket, key=new_key,
             _file_id=file_.obj.file_id
         )
-        self.record['files'][self.keys.index(old_key)]['key'] = new_key
+        self.record['_files'][self.keys.index(old_key)]['key'] = new_key
         # delete the old version
         ObjectVersion.delete(bucket=self.bucket, key=old_key)
         return obj
