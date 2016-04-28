@@ -41,6 +41,7 @@ from invenio_pidstore.resolver import Resolver
 from invenio_records.api import Record
 from invenio_records.errors import MissingModelError
 from invenio_records.signals import after_record_update, before_record_update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
@@ -48,6 +49,7 @@ from werkzeug.local import LocalProxy
 from .minters import deposit_minter
 from .models import DepositBucket
 from .providers import DepositProvider
+from .utils import sorted_files_from_bucket
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -159,9 +161,6 @@ class Deposit(Record):
 
         self['_deposit']['status'] = 'published'
 
-        # TODO
-        # self['_deposit']['snapshot'] = self.files.bucket.snapshot(lock=True)
-
         if self['_deposit'].get('pid') is None:  # First publishing
             minter = current_pidstore.minters[
                 current_app.config['DEPOSIT_PID_MINTER']
@@ -176,6 +175,18 @@ class Deposit(Record):
 
             data = dict(self.dumps())
             data['$schema'] = self.record_schema
+
+            # During first publishing create snapshot the bucket.
+            assert 'snapshot' not in self['_deposit']
+            if self.files.bucket:
+                self['_deposit']['snapshot'] = str(
+                    self.files.bucket.snapshot(lock=True).id
+                )
+                # TODO move to before record create signal handler?
+                data['files'] = self.files.dumps(
+                    bucket=self['_deposit']['snapshot']
+                )
+
             record = Record.create(data, id_=id_)
         else:  # Update after edit
             record_pid, record = self.fetch_published()
@@ -310,12 +321,21 @@ class FilesIterator(object):
     def bucket(self):
         """Return file bucket."""
         if not self.model.deposit_bucket:
-            self.model.deposit_bucket = DepositBucket(
-                bucket=Bucket.create(storage_class=current_app.config[
-                    'DEPOSIT_DEFAULT_STORAGE_CLASS'
-                ])
-            )
+            try:
+                self.model.deposit_bucket = DepositBucket(
+                    bucket=Bucket.create(storage_class=current_app.config[
+                        'DEPOSIT_DEFAULT_STORAGE_CLASS'
+                    ])
+                )
+            except IntegrityError:
+                current_app.logger.exception('Check default location.')
+                return None
         return self.model.deposit_bucket.bucket
+
+    @property
+    def keys(self):
+        """Return file keys."""
+        return [file_['key'] for file_ in self.record['files']]
 
     def __len__(self):
         """Get number of files."""
@@ -323,11 +343,9 @@ class FilesIterator(object):
 
     def __iter__(self):
         """Get iterator."""
-        ids = self.record['files']
-        total = len(ids)
-        keys = dict(zip(ids, range(total)))
-        values = ObjectVersion.get_by_bucket(self.bucket).all()
-        self._it = iter(sorted(values, key=lambda x: keys.get(x.key, total)))
+        self._it = iter(sorted_files_from_bucket(
+            self.bucket, self.keys
+        ))
         return self
 
     def next(self):
@@ -361,22 +379,21 @@ class FilesIterator(object):
 
             # update deposit['files']
             if key not in self.record['files']:
-                self.record['files'].append(key)
+                self.record['files'].append({'key': key})
 
     @_not_published
     def __delitem__(self, key):
         """Delete a file from the deposit."""
         obj = ObjectVersion.delete(bucket=self.bucket, key=key)
-        try:
-            self.record['files'].remove(key)
-        except ValueError:
+        self.record['files'] = [file_ for file_ in self.record['files']
+                                if file_['key'] != key]
+        if obj is None:
             raise KeyError(key)
 
     def sort_by(self, *ids):
         """Update files order."""
         files = {str(f_.file_id): f_.key for f_ in self}
-        ids = [files.get(id_, id_) for id_ in ids]
-        self.record['files'] = ids
+        self.record['files'] = [{'key': files.get(id_, id_)} for id_ in ids]
 
     @_not_published
     def rename(self, old_key, new_key):
@@ -389,7 +406,19 @@ class FilesIterator(object):
             bucket=self.bucket, key=new_key,
             _file_id=file_.obj.file_id
         )
-        self.record['files'][self.record['files'].index(old_key)] = new_key
+        self.record['files'][self.keys.index(old_key)]['key'] = new_key
         # delete the old version
         ObjectVersion.delete(bucket=self.bucket, key=old_key)
         return obj
+
+    def dumps(self, bucket=None):
+        """Serialize files from a bucket."""
+        return [{
+            'bucket': str(file_.bucket_id),
+            'checksum': file_.file.checksum,
+            'key': file_.key,  # IMPORTANT it must stay here!
+            'size': file_.file.size,
+            'version_id': str(file_.version_id),
+        } for file_ in sorted_files_from_bucket(
+            bucket or self.bucket, self.keys
+        )]
