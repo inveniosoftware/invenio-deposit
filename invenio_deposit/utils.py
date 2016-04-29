@@ -44,7 +44,7 @@ def check_oauth2_scope(*myscopes):
     return check
 
 
-check_oauth2_scope_write = check_oauth2_scope(write_scope)
+check_oauth2_scope_write = check_oauth2_scope(write_scope.id)
 
 
 def sorted_files_from_bucket(bucket, keys=None):
