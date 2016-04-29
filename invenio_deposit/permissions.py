@@ -22,40 +22,23 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
-"""Configuration for deposit search."""
+"""Permissions for deposit."""
 
-from elasticsearch_dsl import Q, TermsFacet
-from flask import has_request_context
-from flask_login import current_user
-from invenio_search import RecordsSearch
-from invenio_search.api import DefaultFilter
+import pkg_resources
+from flask_principal import ActionNeed
 
-from .permissions import admin_permission_factory
+action_admin_access = ActionNeed('deposit-admin-access')
 
 
-def deposits_filter():
-    """Filter list of deposits.
+def admin_permission_factory():
+    """Factory for creating a permission for an admin.
 
-    Allow admin to see all or if we're not in a request.
+    :returns: Permission instance.
     """
-    if not has_request_context() or admin_permission_factory().can():
-        return Q()
-    else:
-        return Q(
-            'match', **{'_deposit.owners': getattr(current_user, 'id', 0)}
-        )
+    try:
+        pkg_resources.get_distribution('invenio-access')
+        from invenio_access.permissions import DynamicPermission as Permission
+    except pkg_resources.DistributionNotFound:
+        from flask_principal import Permission
 
-
-class DepositSearch(RecordsSearch):
-    """Default search class."""
-
-    class Meta:
-        """Configuration for deposit search."""
-
-        index = 'deposits'
-        doc_types = None
-        fields = ('*', )
-        facets = {
-            'status': TermsFacet(field='_deposit.status'),
-        }
-        default_filter = DefaultFilter(deposits_filter)
+    return Permission(action_admin_access)

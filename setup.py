@@ -107,15 +107,16 @@ setup(
         'invenio_base.api_apps': [
             'invenio_deposit_rest = invenio_deposit:InvenioDepositREST',
         ],
+        'invenio_access.actions': [
+            'deposit_admin_access'
+            ' = invenio_deposit.permissions:action_admin_access',
+        ],
         'invenio_assets.bundles': [
             'invenio_deposit_js = invenio_deposit.bundles:js',
         ],
         'invenio_i18n.translations': [
             'messages = invenio_deposit',
         ],
-        # 'invenio_assets.bundles': [],
-        # 'invenio_base.blueprints': [],
-        # 'invenio_celery.tasks': [],
         'invenio_pidstore.fetchers': [
             'deposit = invenio_deposit.fetchers:deposit_fetcher',
         ],
