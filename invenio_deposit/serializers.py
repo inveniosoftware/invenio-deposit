@@ -69,7 +69,7 @@ def json_files_serializer(objs, status=None):
 
 def json_file_response(obj, status=None):
     """JSON Files/File serializer."""
-    from .api import FilesIterator
+    from invenio_records_files.api import FilesIterator
 
     if isinstance(obj, FilesIterator):
         return json_files_serializer(objs=obj, status=status)

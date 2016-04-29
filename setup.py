@@ -71,6 +71,7 @@ install_requires = [
     'invenio-indexer>=1.0.0a2',
     'invenio-jsonschemas>=1.0.0a3',
     'invenio-oauth2server>=1.0.0a2',
+    'invenio-records-files>=1.0.0a1',
     'invenio-records-rest>=1.0.0a10',
     'invenio-records-ui>=1.0.0a6',
     'invenio-records>=1.0.0a15',

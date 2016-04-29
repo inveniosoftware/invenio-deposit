@@ -34,6 +34,7 @@ from uuid import UUID
 from flask import Blueprint, url_for, request, abort, current_app, \
     make_response
 from invenio_db import db
+from invenio_files_rest.errors import InvalidOperationError
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.utils import obj_or_import_string
@@ -62,6 +63,9 @@ def create_blueprint(endpoints):
     )
     blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
         status=403, message='Invalid action'
+    ))
+    blueprint.errorhandler(InvalidOperationError)(create_api_errorhandler(
+        status=403, message='Invalid operation'
     ))
 
     for endpoint, options in (endpoints or {}).items():
