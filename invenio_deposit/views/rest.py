@@ -86,6 +86,15 @@ def create_blueprint(endpoints):
         else:
             serializers = {}
 
+        file_list_route = options.pop(
+            'file_list_route',
+            '{0}/files'.format(options['item_route'])
+        )
+        file_item_route = options.pop(
+            'file_item_route',
+            '{0}/files/<path:key>'.format(options['item_route'])
+        )
+
         for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
 
@@ -139,7 +148,7 @@ def create_blueprint(endpoints):
         )
 
         blueprint.add_url_rule(
-            '{0}/files'.format(options['item_route']),
+            file_list_route,
             view_func=deposit_files,
             methods=['GET', 'POST', 'PUT'],
         )
@@ -152,9 +161,7 @@ def create_blueprint(endpoints):
         )
 
         blueprint.add_url_rule(
-            '{0}/files/<path:key>'.format(
-                options['item_route']
-            ),
+            file_item_route,
             view_func=deposit_file,
             methods=['GET', 'PUT', 'DELETE'],
         )
@@ -188,7 +195,8 @@ class DepositActionResource(ContentNegotiatedMethodView):
 
         db.session.commit()
 
-        response = self.make_response(pid, record, 201)
+        response = self.make_response(pid, record,
+                                      202 if action == 'publish' else 201)
         endpoint = '.{0}_item'.format(pid.pid_type)
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
         response.headers.extend(dict(location=location))

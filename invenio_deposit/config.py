@@ -48,6 +48,8 @@ DEPOSIT_DEFAULT_JSONSCHEMA = 'deposits/deposit-v1.0.0.json'
 DEPOSIT_DEFAULT_SCHEMAFORM = 'json/invenio_deposit/form.json'
 """Default Angular Schema Form."""
 
+_PID = 'pid(dep,record_class="invenio_deposit.api:Deposit")'
+
 DEPOSIT_REST_ENDPOINTS = dict(
     dep=dict(
         pid_type='dep',
@@ -68,7 +70,10 @@ DEPOSIT_REST_ENDPOINTS = dict(
                                  ':json_v1_search'),
         },
         list_route='/deposits/',
-        item_route='/deposits/<pid_value>',
+        item_route='/deposits/<{0}:pid_value>'.format(_PID),
+        file_list_route='/deposits/<{0}:pid_value>/files'.format(_PID),
+        file_item_route='/deposits/<{0}:pid_value>/files/<path:key>'.format(
+            _PID),
         default_media_type='application/json',
         links_factory_imp='invenio_deposit.links:deposit_links_factory',
         create_permission_factory_imp=check_oauth2_scope_write,

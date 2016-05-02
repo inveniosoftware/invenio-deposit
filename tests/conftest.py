@@ -58,7 +58,7 @@ from invenio_oauth2server.views import \
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
-from invenio_records_rest.utils import allow_all
+from invenio_records_rest.utils import PIDConverter, allow_all
 from invenio_search import InvenioSearch, RecordsSearch, current_search, \
     current_search_client
 from six import BytesIO
@@ -101,6 +101,7 @@ def app(request):
     InvenioJSONSchemas(app_)
     InvenioSearch(app_)
     InvenioRecords(app_)
+    app_.url_map.converters['pid'] = PIDConverter
     InvenioRecordsREST(app_)
     InvenioPIDStore(app_)
     InvenioIndexer(app_)

@@ -158,7 +158,8 @@ class Deposit(Record):
         """Publish a deposit."""
         pid = pid or self.pid
 
-        if not pid.is_registered():
+        if not pid.is_registered() or \
+                self['_deposit']['status'] == 'published':
             raise PIDInvalidAction()
 
         self['_deposit']['status'] = 'published'
@@ -246,11 +247,15 @@ class Deposit(Record):
         """Discard deposit changes."""
         pid = pid or self.pid
 
+        if 'draft' != self['_deposit']['status']:
+            raise PIDInvalidAction()
+
         with db.session.begin_nested():
             before_record_update.send(self)
 
             _, record = self.fetch_published()
             self.model.json = record.model.json
+            self.model.json['_deposit']['status'] = 'draft'
             self.model.json['$schema'] = self.build_deposit_schema(record)
 
             flag_modified(self.model, 'json')
@@ -271,8 +276,40 @@ class Deposit(Record):
             pid.delete()
         return super(Deposit, self).delete(force=force)
 
+    def clear(self, *args, **kwargs):
+        """Clear only drafts."""
+        if 'draft' != self['_deposit']['status']:
+            raise PIDInvalidAction()
+
+        return super(Deposit, self).clear(*args, **kwargs)
+
+    def patch(self, *args, **kwargs):
+        """Patch only drafts."""
+        if 'draft' != self['_deposit']['status']:
+            raise PIDInvalidAction()
+
+        return super(Deposit, self).patch(*args, **kwargs)
+
     def _create_bucket(self):
         """Override bucket creation."""
         return Bucket.create(storage_class=current_app.config[
             'DEPOSIT_DEFAULT_STORAGE_CLASS'
         ])
+
+    @property
+    def files(self):
+        """Add validation on ``sort_by`` method."""
+        files_ = super(Deposit, self).files
+
+        if files_:
+            sort_by_ = files_.sort_by
+
+            def sort_by(*args, **kwargs):
+                """Only in draft state."""
+                if 'draft' != self['_deposit']['status']:
+                    raise PIDInvalidAction()
+                return sort_by_(*args, **kwargs)
+
+            files_.sort_by = sort_by
+
+        return files_

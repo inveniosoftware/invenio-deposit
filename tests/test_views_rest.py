@@ -129,7 +129,7 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users):
             assert file_2 == data[1]['id']
 
             res = client.post(links['publish'], data=None, headers=headers)
-            assert res.status_code == 201
+            assert res.status_code == 202
 
             # Check that the published record is created:
             data = json.loads(res.data.decode('utf-8'))
@@ -197,7 +197,7 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users):
             assert res.status_code == 200
 
             res = client.post(links['publish'], data=None, headers=headers)
-            assert res.status_code == 201
+            assert res.status_code == 202
 
             # Edited record should contain new title:
             res = client.get(record_url)
