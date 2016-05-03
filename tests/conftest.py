@@ -42,6 +42,7 @@ from flask_celeryext import FlaskCeleryExt
 from flask_cli import FlaskCLI
 from flask_oauthlib.provider import OAuth2Provider
 from flask_security import login_user
+from helpers import fill_oauth2_headers
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_db import db as db_
@@ -50,17 +51,15 @@ from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
-from invenio_oauth2server import InvenioOAuth2Server, require_api_auth, \
-    require_oauth_scopes
+from invenio_oauth2server import InvenioOAuth2Server
 from invenio_oauth2server.models import Client, Token
 from invenio_oauth2server.views import \
     settings_blueprint as oauth2server_settings_blueprint
 from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
-from invenio_records_rest.utils import PIDConverter, allow_all
-from invenio_search import InvenioSearch, RecordsSearch, current_search, \
-    current_search_client
+from invenio_records_rest.utils import PIDConverter
+from invenio_search import InvenioSearch, current_search, current_search_client
 from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -152,12 +151,31 @@ def client(app, users):
 
 
 @pytest.fixture()
-def write_token(app, client, users):
+def write_token_user_1(app, client, users):
     """Create token."""
     with db_.session.begin_nested():
         token_ = Token(
             client=client,
             user=users[0],
+            access_token='dev_access_1',
+            refresh_token='dev_refresh_1',
+            expires=datetime.datetime.now() + datetime.timedelta(hours=10),
+            is_personal=False,
+            is_internal=True,
+            _scopes=write_scope.id,
+        )
+        db_.session.add(token_)
+    db_.session.commit()
+    return token_
+
+
+@pytest.fixture()
+def write_token_user_2(app, client, users):
+    """Create token."""
+    with db_.session.begin_nested():
+        token_ = Token(
+            client=client,
+            user=users[1],
             access_token='dev_access_2',
             refresh_token='dev_refresh_2',
             expires=datetime.datetime.now() + datetime.timedelta(hours=10),
@@ -243,8 +261,32 @@ def files(app, es, deposit):
     content = b'### Testing textfile ###'
     stream = BytesIO(content)
     key = 'hello.txt'
-    storage_class = app.config['DEPOSIT_DEFAULT_STORAGE_CLASS']
     deposit.files[key] = stream
     deposit.commit()
     db_.session.commit()
     return list(deposit.files)
+
+
+@pytest.fixture()
+def json_headers(app):
+    """JSON headers."""
+    return [('Content-Type', 'application/json'),
+            ('Accept', 'application/json')]
+
+
+@pytest.fixture()
+def oauth2_headers_user_1(app, json_headers, write_token_user_1):
+    """Authentication headers (with a valid oauth2 token).
+
+    It uses the token associated with the first user.
+    """
+    return fill_oauth2_headers(json_headers, write_token_user_1)
+
+
+@pytest.fixture()
+def oauth2_headers_user_2(app, json_headers, write_token_user_2):
+    """Authentication headers (with a valid oauth2 token).
+
+    It uses the token associated with the second user.
+    """
+    return fill_oauth2_headers(json_headers, write_token_user_2)

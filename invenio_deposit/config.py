@@ -26,7 +26,8 @@
 
 from invenio_records_rest.utils import check_elasticsearch
 
-from .utils import check_oauth2_scope_write
+from .utils import check_oauth2_scope_write, \
+    check_oauth2_scope_write_elasticsearch
 
 DEPOSIT_SEARCH_API = '/api/deposits'
 """URL of search endpoint for deposits."""
@@ -76,8 +77,8 @@ DEPOSIT_REST_ENDPOINTS = dict(
         links_factory_imp='invenio_deposit.links:deposit_links_factory',
         create_permission_factory_imp=check_oauth2_scope_write,
         read_permission_factory_imp=check_elasticsearch,
-        update_permission_factory_imp=check_elasticsearch,
-        delete_permission_factory_imp=check_elasticsearch,
+        update_permission_factory_imp=check_oauth2_scope_write_elasticsearch,
+        delete_permission_factory_imp=check_oauth2_scope_write_elasticsearch,
         max_result_window=10000,
     ),
 )

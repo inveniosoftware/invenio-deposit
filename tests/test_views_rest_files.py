@@ -93,7 +93,7 @@ def test_files_get_without_files(app, db, deposit, users):
             assert data == []
 
 
-def test_files_post_oauth2(app, db, deposit, files, users, write_token):
+def test_files_post_oauth2(app, db, deposit, files, users, write_token_user_1):
     """Test rest files get + oauth2."""
     real_filename = 'real_test.json'
     content = b'### Testing textfile ###'
@@ -110,7 +110,7 @@ def test_files_post_oauth2(app, db, deposit, files, users, write_token):
                 content_type='multipart/form-data',
                 headers=[
                     ('Authorization',
-                     'Bearer {0}'.format(write_token.access_token))
+                     'Bearer {0}'.format(write_token_user_1.access_token))
                 ]
             )
             assert res.status_code == 201
@@ -188,7 +188,7 @@ def test_files_post(app, db, deposit, users):
             assert res.status_code == 403
 
 
-def test_files_put_oauth2(app, db, deposit, files, users, write_token):
+def test_files_put_oauth2(app, db, deposit, files, users, write_token_user_1):
     """Test put deposito files with oauth2."""
     with app.test_request_context():
         with app.test_client() as client:
@@ -216,7 +216,7 @@ def test_files_put_oauth2(app, db, deposit, files, users, write_token):
                 ]),
                 headers=[
                     ('Authorization',
-                     'Bearer {0}'.format(write_token.access_token))
+                     'Bearer {0}'.format(write_token_user_1.access_token))
                 ]
             )
             assert res.status_code == 200
@@ -361,7 +361,8 @@ def test_file_get_not_found(app, db, deposit, users):
             assert res.status_code == 404
 
 
-def test_file_delete_oauth2(app, db, deposit, files, users, write_token):
+def test_file_delete_oauth2(app, db, deposit, files, users,
+                            write_token_user_1):
     """Test delete file with oauth2."""
     with app.test_request_context():
         with app.test_client() as client:
@@ -375,7 +376,7 @@ def test_file_delete_oauth2(app, db, deposit, files, users, write_token):
                 ),
                 headers=[
                     ('Authorization',
-                     'Bearer {0}'.format(write_token.access_token))
+                     'Bearer {0}'.format(write_token_user_1.access_token))
                 ]
             )
             assert res.status_code == 204
@@ -469,7 +470,7 @@ def test_file_put_not_found_file_not_exist(app, db, deposit, files, users):
             assert res.status_code == 404
 
 
-def test_file_put_oauth2(app, db, deposit, files, users, write_token):
+def test_file_put_oauth2(app, db, deposit, files, users, write_token_user_1):
     """PUT a deposit file with oauth2."""
     with app.test_request_context():
         with app.test_client() as client:
@@ -484,7 +485,7 @@ def test_file_put_oauth2(app, db, deposit, files, users, write_token):
                 data=json.dumps({'filename': new_filename}),
                 headers=[
                     ('Authorization',
-                     'Bearer {0}'.format(write_token.access_token))
+                     'Bearer {0}'.format(write_token_user_1.access_token))
                 ]
             )
             deposit_id = deposit.id
