@@ -29,29 +29,24 @@ from contextlib import contextmanager
 from functools import partial, wraps
 
 from elasticsearch.exceptions import RequestError
-from flask import current_app, url_for
+from flask import current_app
 from flask_login import current_user
 from invenio_db import db
-from invenio_files_rest.models import Bucket, ObjectVersion
+from invenio_files_rest.models import Bucket
 from invenio_indexer.api import RecordIndexer
 from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_pidstore.resolver import Resolver
-from invenio_records.errors import MissingModelError
 from invenio_records.signals import after_record_update, before_record_update
 from invenio_records_files.api import Record
 from invenio_records_files.models import RecordsBuckets
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import flag_modified
-from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 
 from .minters import deposit_minter
-from .models import DepositBucket
 from .providers import DepositProvider
-from .utils import sorted_files_from_bucket
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']

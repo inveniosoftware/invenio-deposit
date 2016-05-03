@@ -26,22 +26,12 @@
 
 from __future__ import absolute_import, print_function
 
-import json
 import sys
-import uuid
 
 import click
-import pkg_resources
 from flask import current_app
 from flask_cli import with_appcontext
-from invenio_db import db
 from invenio_pidstore import current_pidstore
-from sqlalchemy import exc
-
-try:
-    from itertools import zip_longest
-except ImportError:
-    from itertools import izip_longest as zip_longest
 
 
 def process_minter(value):

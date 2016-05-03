@@ -31,27 +31,27 @@ from copy import deepcopy
 from functools import partial
 from uuid import UUID
 
-from flask import Blueprint, url_for, request, abort, current_app, \
-    make_response
+from flask import Blueprint, abort, current_app, make_response, request, \
+    url_for
 from invenio_db import db
 from invenio_files_rest.errors import InvalidOperationError
+from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import \
-    create_url_rules as records_rest_url_rules, need_record_permission, \
-    pass_record
+    create_url_rules as records_rest_url_rules
+from invenio_records_rest.views import need_record_permission, pass_record
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_rest.errors import RESTException
 from invenio_rest.views import create_api_errorhandler
 from sqlalchemy.orm.exc import NoResultFound
 from webargs import fields
 from webargs.flaskparser import use_kwargs
-from invenio_oauth2server import require_api_auth, require_oauth_scopes
 
 from ..api import Deposit
-from ..search import DepositSearch
 from ..scopes import write_scope
+from ..search import DepositSearch
 
 
 def create_blueprint(endpoints):

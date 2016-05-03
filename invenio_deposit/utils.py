@@ -26,7 +26,6 @@
 
 from __future__ import absolute_import, print_function
 
-from invenio_files_rest.models import ObjectVersion
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
 
 from .scopes import write_scope
@@ -45,12 +44,3 @@ def check_oauth2_scope(*myscopes):
 
 
 check_oauth2_scope_write = check_oauth2_scope(write_scope.id)
-
-
-def sorted_files_from_bucket(bucket, keys=None):
-    """Return files from bucket sorted by given keys."""
-    keys = keys or []
-    total = len(keys)
-    sortby = dict(zip(keys, range(total)))
-    values = ObjectVersion.get_by_bucket(bucket).all()
-    return sorted(values, key=lambda x: sortby.get(x.key, total))
