@@ -16,9 +16,9 @@
           "type": "integer",
           "name": "created_by"
         },
-        "editors": {
+        "owners": {
           "type": "array",
-          "name": "editors",
+          "name": "owners",
           "items": [
             {
               "type": "integer"

@@ -1,21 +1,22 @@
 {
-    "_all": {
-        "enable": true
-    }, 
-    "properties": {
+  "mappings": {
+    "deposit-v1.0.0": {
+      "properties": {
         "_deposit": {
-            "type": "object", 
-            "properties": {
-                "id": {
-                    "type": "string"
-                }, 
-                "created_by": {
-                    "type": "integer"
-                }, 
-                "editors": {
-                    "type": "integer"
-                }
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "created_by": {
+              "type": "integer"
+            },
+            "owners": {
+              "type": "integer"
             }
+          }
         }
+      }
     }
+  }
 }
