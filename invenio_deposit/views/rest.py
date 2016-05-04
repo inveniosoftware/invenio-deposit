@@ -119,6 +119,7 @@ def create_blueprint(endpoints):
                 options.get('delete_permission_factory_imp')
             ),
             search_class=partial(search_class, **search_class_kwargs),
+            default_media_type=options.get('default_media_type')
         )
 
         deposit_actions = DepositActionResource.as_view(
@@ -173,6 +174,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
         """Constructor."""
         super(DepositActionResource, self).__init__(
             serializers,
+            default_media_type=ctx.get('default_media_type'),
             *args,
             **kwargs
         )
