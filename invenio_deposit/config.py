@@ -36,6 +36,9 @@ DEPOSIT_SEARCH_API = '/api/deposits'
 DEPOSIT_RECORDS_API = '/api/deposits/{pid_value}'
 """URL of record endpoint for deposits."""
 
+DEPOSIT_FILES_API = '/api/files'
+"""URL of files endpoints for uploading."""
+
 DEPOSIT_PID_MINTER = 'recid'
 """PID minter used for record submissions."""
 
