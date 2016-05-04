@@ -26,17 +26,11 @@
 {%- block css %}
     {% assets "invenio_deposit_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
     {{ super() }}
-    {#
-    {% assets "invenio_search_ui_search_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
-    #}
 {%- endblock css %}
 
 {%- block javascript %}
-  {# FIXME: Move it probably to UI package and AMD it. #}
+  {% assets "invenio_deposit_dependencies_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
   {% assets "invenio_deposit_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
-  {#
-  {% assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
-  #}
 {%- endblock javascript %}
 
 {%- block page_body %}

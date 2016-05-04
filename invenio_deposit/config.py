@@ -36,6 +36,9 @@ DEPOSIT_SEARCH_API = '/api/deposits'
 DEPOSIT_RECORDS_API = '/api/deposits/{pid_value}'
 """URL of record endpoint for deposits."""
 
+DEPOSIT_FILES_API = '/api/files'
+"""URL of files endpoints for uploading."""
+
 DEPOSIT_PID_MINTER = 'recid'
 """PID minter used for record submissions."""
 
@@ -191,3 +194,21 @@ DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
 
 DEPOSIT_REGISTER_SIGNALS = True
 """Enable the signals registration."""
+
+DEPOSIT_FORM_TEMPLATES_BASE = 'node_modules/invenio-records-js/dist/templates'
+"""Angular Schema Form temmplates location."""
+
+DEPOSIT_FORM_TEMPLATES = {
+    'default': 'default.html',
+    'fieldset': 'fieldset.html',
+    'array': 'array.html',
+    'radios_inline': 'radios_inline.html',
+    'radios': 'radios.html',
+    'select': 'select.html',
+    'button': 'button.html',
+    'textarea': 'textarea.html'
+}
+"""Templates for Angular Schema Form."""
+
+DEPOSIT_RESPONSE_MESSAGES = {}
+"""Alerts shown when actions are completed on deposit."""
