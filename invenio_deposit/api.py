@@ -142,9 +142,13 @@ class Deposit(Record):
             deposit_minter(id_, data)
 
         data['_deposit'].setdefault('owners', list())
-        owner = getattr(current_user, 'id', 0)
-        if owner not in data['_deposit']['owners']:
-            data['_deposit']['owners'].append(owner)
+        if current_user and current_user.is_authenticated:
+            creator_id = int(current_user.get_id())
+
+            if creator_id not in data['_deposit']['owners']:
+                data['_deposit']['owners'].append(creator_id)
+
+            data['_deposit']['created_by'] = creator_id
 
         return super(Deposit, cls).create(data, id_=id_)
 
