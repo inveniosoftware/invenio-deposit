@@ -30,10 +30,25 @@ import hashlib
 import json
 
 from flask import url_for
-from flask_security import url_for_security
+from flask_security import login_user, url_for_security
 from six import BytesIO
 
 from invenio_deposit.api import Deposit
+
+
+def test_created_by_population(app, db, users):
+    """Test created_by gets populated correctly."""
+    record = {
+        'title': 'fuu'
+    }
+
+    deposit = Deposit.create(record)
+    assert 'created_by' not in deposit['_deposit']
+
+    with app.test_request_context():
+        login_user(users[0])
+        deposit = Deposit.create(record)
+        assert deposit['_deposit']['created_by'] == users[0].id
 
 
 def test_files_get(app, db, deposit, files, users):

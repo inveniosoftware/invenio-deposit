@@ -4,6 +4,9 @@
   "title": "Deposit schema.",
   "description": "Describe information needed for deposit module.",
   "properties": {
+    "$schema": {
+      "type": "string"
+    },
     "_deposit": {
       "type": "object",
       "name": "_deposit",
@@ -11,6 +14,21 @@
         "id": {
           "type": "string",
           "name": "id"
+        },
+        "pid": {
+          "type": "object",
+          "name": "pid",
+          "properties": {
+            "revision_id": {
+              "type": "integer"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
         },
         "created_by": {
           "type": "integer",
@@ -24,11 +42,26 @@
               "type": "integer"
             }
           ]
+        },
+        "status": {
+          "type": "string",
+          "name": "status",
+          "enum": [
+            "draft",
+            "published"
+          ]
         }
       },
       "required": [
         "id"
       ]
+    },
+    "_files": {
+      "type": "array",
+      "name": "_files",
+      "items": {
+        "$ref": "/schemas/records-files/records-files-v1.0.0.json"
+      }
     }
   },
   "required": [
