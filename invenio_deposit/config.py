@@ -24,6 +24,7 @@
 
 """Default configuration of deposit module."""
 
+from invenio_records_rest.facets import terms_filter
 from invenio_records_rest.utils import check_elasticsearch
 
 from .utils import check_oauth2_scope_write
@@ -82,6 +83,43 @@ DEPOSIT_REST_ENDPOINTS = dict(
     ),
 )
 
+DEPOSIT_REST_SORT_OPTIONS = dict(
+    deposits=dict(
+        bestmatch=dict(
+            fields=['-_score'],
+            title='Best match',
+            default_order='asc',
+            order=2
+        ),
+        mostrecent=dict(
+            fields=['-_updated'],
+            title='Most recent',
+            default_order='asc',
+            order=1
+        )
+    )
+)
+
+DEPOSIT_REST_DEFAULT_SORT = dict(
+    deposits=dict(
+        query='bestmatch',
+        noquery='mostrecent'
+    )
+)
+
+DEPOSIT_REST_FACETS = dict(
+    deposits=dict(
+        aggs=dict(
+            status=dict(
+                terms=dict(field='_deposit.status'),
+            )
+        ),
+        post_filters=dict(
+            status=terms_filter('_deposit.status'),
+        )
+    )
+)
+
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
     dep=dict(
         pid_type='dep',
@@ -103,6 +141,8 @@ DEPOSIT_UI_JSTEMPLATE_ERROR = \
     'node_modules/invenio-records-js/dist/templates/error.html'
 DEPOSIT_UI_JSTEMPLATE_FORM = \
     'node_modules/invenio-records-js/dist/templates/form.html'
+DEPOSIT_UI_SEARCH_INDEX = 'deposits'
+"""Search index name for the deposit."""
 
 DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
 """Default storage class."""
