@@ -60,7 +60,7 @@
       "type": "array",
       "name": "_files",
       "items": {
-        "$ref": "/schemas/records-files/records-files-v1.0.0.json"
+        "$ref": "../records-files/records-files-v1.0.0.json"
       }
     }
   },
