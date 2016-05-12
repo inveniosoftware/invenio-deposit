@@ -69,6 +69,10 @@ def test_simple_flow(app, db, fake_schemas):
 
     with pytest.raises(PIDInvalidAction):
         deposit.delete()
+    with pytest.raises(PIDInvalidAction):
+        deposit.clear()
+    with pytest.raises(PIDInvalidAction):
+        deposit.update(title='Revision 2')
     assert 'published' == deposit['_deposit']['status']
 
     deposit = deposit.edit()

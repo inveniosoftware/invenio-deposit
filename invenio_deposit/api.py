@@ -73,6 +73,21 @@ def index(method=None, delete=False):
     return wrapper
 
 
+def has_status(method=None, status='draft'):
+    """Check that deposit has defined status (default: draft)."""
+    if method is None:
+        return partial(has_status, status=status)
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Check current deposit status."""
+        if status != self['_deposit']['status']:
+            raise PIDInvalidAction()
+
+        return method(self, *args, **kwargs)
+    return wrapper
+
+
 class Deposit(Record):
     """Define API for changing deposit state."""
 
@@ -153,12 +168,12 @@ class Deposit(Record):
         return super(Deposit, cls).create(data, id_=id_)
 
     # No need for indexing as it calls self.commit()
+    @has_status
     def publish(self, pid=None, id_=None):
         """Publish a deposit."""
         pid = pid or self.pid
 
-        if not pid.is_registered() or \
-                self['_deposit']['status'] == 'published':
+        if not pid.is_registered():
             raise PIDInvalidAction()
 
         self['_deposit']['status'] = 'published'
@@ -209,13 +224,11 @@ class Deposit(Record):
         self.commit()
         return self
 
+    @has_status(status='published')
     @index
     def edit(self, pid=None):
         """Edit deposit."""
         pid = pid or self.pid
-
-        if 'published' != self['_deposit']['status']:
-            raise PIDInvalidAction()
 
         def _edit(record):
             """Update selected keys."""
@@ -241,13 +254,11 @@ class Deposit(Record):
         after_record_update.send(self)
         return self.__class__(self.model.json, model=self.model)
 
+    @has_status
     @index
     def discard(self, pid=None):
         """Discard deposit changes."""
         pid = pid or self.pid
-
-        if 'draft' != self['_deposit']['status']:
-            raise PIDInvalidAction()
 
         with db.session.begin_nested():
             before_record_update.send(self)
@@ -263,31 +274,39 @@ class Deposit(Record):
         after_record_update.send(self)
         return self.__class__(self.model.json, model=self.model)
 
+    @has_status
     @index(delete=True)
     def delete(self, force=True, pid=None):
         """Delete deposit."""
         pid = pid or self.pid
 
-        if self['_deposit']['status'] == 'published' or \
-                self['_deposit'].get('pid'):
+        if self['_deposit'].get('pid'):
             raise PIDInvalidAction()
         if pid:
             pid.delete()
         return super(Deposit, self).delete(force=force)
 
+    @has_status
     def clear(self, *args, **kwargs):
         """Clear only drafts."""
-        if 'draft' != self['_deposit']['status']:
-            raise PIDInvalidAction()
+        _deposit = self['_deposit']
+        super(Deposit, self).clear(*args, **kwargs)
+        self['_deposit'] = _deposit
 
-        return super(Deposit, self).clear(*args, **kwargs)
+    @has_status
+    def update(self, *args, **kwargs):
+        """Update only drafts."""
+        _deposit = self['_deposit']
+        super(Deposit, self).update(*args, **kwargs)
+        self['_deposit'] = _deposit
 
+    @has_status
     def patch(self, *args, **kwargs):
         """Patch only drafts."""
-        if 'draft' != self['_deposit']['status']:
-            raise PIDInvalidAction()
-
-        return super(Deposit, self).patch(*args, **kwargs)
+        _deposit = self['_deposit']
+        patched = super(Deposit, self).patch(*args, **kwargs)
+        patched['_deposit'] = _deposit
+        return patched
 
     def _create_bucket(self):
         """Override bucket creation."""
