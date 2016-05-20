@@ -28,7 +28,6 @@
 from __future__ import absolute_import, print_function
 
 from flask import Flask
-from flask_babelex import Babel
 from flask_cli import FlaskCLI
 from invenio_records_rest.utils import PIDConverter
 

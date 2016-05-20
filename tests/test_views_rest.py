@@ -54,7 +54,8 @@ def test_edit_deposit_users(app, db, es, users, location, deposit,
                 # login
                 res = client.post(url_for_security('login'), data=user_info)
             res = client.put(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=json_headers
             )
@@ -70,7 +71,8 @@ def test_edit_deposit_by_good_oauth2_token(app, db, es, users, location,
         # with oauth2
         with app.test_client() as client:
             res = client.put(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=oauth2_headers_user_1
             )
@@ -86,7 +88,8 @@ def test_edit_deposit_by_bad_oauth2_token(app, db, es, users, location,
         # with oauth2
         with app.test_client() as client:
             res = client.put(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=oauth2_headers_user_2
             )
@@ -111,7 +114,8 @@ def test_delete_deposit_users(app, db, es, users, location, deposit,
                 # login
                 res = client.post(url_for_security('login'), data=user_info)
             res = client.delete(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=json_headers
             )
@@ -127,7 +131,8 @@ def test_delete_deposit_by_good_oauth2_token(app, db, es, users, location,
         # with oauth2
         with app.test_client() as client:
             res = client.delete(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=oauth2_headers_user_1
             )
@@ -143,7 +148,8 @@ def test_delete_deposit_by_bad_oauth2_token(app, db, es, users, location,
         # with oauth2
         with app.test_client() as client:
             res = client.delete(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 data=json.dumps({"title": "bar"}),
                 headers=oauth2_headers_user_2
             )
@@ -157,7 +163,7 @@ def test_deposition_file_operations(app, db, es, location, users,
     with app.test_request_context():
         with app.test_client() as client:
             # create deposit
-            res = client.post(url_for('invenio_deposit_rest.dep_list'),
+            res = client.post(url_for('invenio_deposit_rest.depid_list'),
                               data=json.dumps({}),
                               headers=oauth2_headers_user_1)
             assert res.status_code == 201
@@ -168,7 +174,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Upload a file
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit_id),
                 data=pdf_file,
                 content_type='multipart/form-data',
@@ -184,7 +190,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Upload another file
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit_id),
                 data=pdf_file2,
                 content_type='multipart/form-data',
@@ -195,7 +201,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Upload another file with identical name
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit_id),
                 data=pdf_file2_samename,
                 content_type='multipart/form-data',
@@ -205,7 +211,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Get file info
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit_id,
                 key=file_data['filename']),
                 headers=oauth2_headers_user_1
@@ -216,7 +222,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Get non-existing file
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit_id,
                 key='bad-key'),
                 headers=oauth2_headers_user_1
@@ -226,7 +232,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             # Delete non-existing file
             res = client.delete(
                 url_for(
-                    'invenio_deposit_rest.dep_file',
+                    'invenio_deposit_rest.depid_file',
                     pid_value=deposit_id,
                     key='bad-key',
                 ),
@@ -237,7 +243,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             # Get list of files
             res = client.get(
                 url_for(
-                    'invenio_deposit_rest.dep_files',
+                    'invenio_deposit_rest.depid_files',
                     pid_value=deposit_id
                 ),
                 headers=oauth2_headers_user_1
@@ -256,7 +262,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Sort files - invalid query
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit_id),
                 data=json.dumps(invalid_files_list),
                 headers=oauth2_headers_user_1
@@ -265,7 +271,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Sort files - valid query
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit_id),
                 data=json.dumps(id_files_list),
                 headers=oauth2_headers_user_1
@@ -279,7 +285,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             # Delete a file
             res = client.delete(
                 url_for(
-                    'invenio_deposit_rest.dep_file',
+                    'invenio_deposit_rest.depid_file',
                     pid_value=deposit_id,
                     key=file_data['filename']
                 ),
@@ -290,7 +296,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             # Get list of files
             res = client.get(
                 url_for(
-                    'invenio_deposit_rest.dep_files',
+                    'invenio_deposit_rest.depid_files',
                     pid_value=deposit_id
                 ),
                 headers=oauth2_headers_user_1
@@ -301,7 +307,7 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Rename file
             res = client.put(
-                url_for('invenio_deposit_rest.dep_file',
+                url_for('invenio_deposit_rest.depid_file',
                         pid_value=deposit_id,
                         key=file_data2['filename']),
                 data=json.dumps({'filename': 'another_test.pdf'}),
@@ -318,7 +324,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             ]
             for test_case in test_cases:
                 res = client.put(
-                    url_for('invenio_deposit_rest.dep_file',
+                    url_for('invenio_deposit_rest.depid_file',
                             pid_value=deposit_id,
                             key=data_rename['filename']),
                     data=json.dumps(test_case),
@@ -331,7 +337,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             ]
             for test_case in test_cases:
                 res = client.put(
-                    url_for('invenio_deposit_rest.dep_file',
+                    url_for('invenio_deposit_rest.depid_file',
                             pid_value=deposit_id,
                             key=data_rename['filename']),
                     data=json.dumps(test_case),
@@ -343,7 +349,8 @@ def test_deposition_file_operations(app, db, es, location, users,
 
             # Delete resource again
             res = client.delete(
-                url_for('invenio_deposit_rest.dep_item', pid_value=deposit_id),
+                url_for('invenio_deposit_rest.depid_item',
+                        pid_value=deposit_id),
                 headers=oauth2_headers_user_1
             )
             assert res.status_code == 204
@@ -351,7 +358,7 @@ def test_deposition_file_operations(app, db, es, location, users,
             # No files any more
             res = client.get(
                 url_for(
-                    'invenio_deposit_rest.dep_files',
+                    'invenio_deposit_rest.depid_files',
                     pid_value=deposit_id
                 ),
                 headers=oauth2_headers_user_1
@@ -363,14 +370,15 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
                           json_headers):
     """Test simple flow using REST API."""
     app.config['RECORDS_REST_ENDPOINTS']['recid'][
-        'read_permission_factory_imp'] = 'invenio_records_rest.utils:allow_all'
+        'read_permission_factory_imp'] = \
+        'invenio_records_rest.utils:allow_all'
     app.config['RECORDS_REST_DEFAULT_READ_PERMISSION_FACTORY'] = \
         'invenio_records_rest.utils:allow_all'
 
     with app.test_request_context():
         with app.test_client() as client:
             # try create deposit as anonymous user (failing)
-            res = client.post(url_for('invenio_deposit_rest.dep_list'),
+            res = client.post(url_for('invenio_deposit_rest.depid_list'),
                               data=json.dumps({}), headers=json_headers)
             assert res.status_code == 401
 
@@ -381,7 +389,7 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
             ))
 
             # try create deposit as logged in user
-            res = client.post(url_for('invenio_deposit_rest.dep_list'),
+            res = client.post(url_for('invenio_deposit_rest.depid_list'),
                               data=json.dumps({}), headers=json_headers)
             assert res.status_code == 201
 
