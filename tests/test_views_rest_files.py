@@ -58,7 +58,7 @@ def test_files_get(app, db, deposit, files, users):
         with app.test_client() as client:
             # get resources without login
             res = client.get(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']))
             assert res.status_code == 401
             # login
@@ -68,7 +68,7 @@ def test_files_get(app, db, deposit, files, users):
             ))
             # get resources
             res = client.get(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 headers=[('Content-Type', 'application/json'),
                          ('Accept', 'application/json')]
@@ -88,7 +88,7 @@ def test_files_get(app, db, deposit, files, users):
             ))
             # get resources
             res = client.get(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']))
             assert res.status_code == 403
 
@@ -100,7 +100,7 @@ def test_files_get_oauth2(app, db, deposit, users, write_token_user_1,
         with app.test_client() as client:
             # get resources
             res = client.get(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 headers=oauth2_headers_user_1
             )
@@ -123,7 +123,7 @@ def test_files_get_without_files(app, db, deposit, users):
             ))
             # get resources
             res = client.get(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']))
             assert res.status_code == 200
             data = json.loads(res.data.decode('utf-8'))
@@ -141,7 +141,7 @@ def test_files_post_oauth2(app, db, deposit, files, users, write_token_user_1):
             # get resources
             file_to_upload = (BytesIO(content), filename)
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data={'file': file_to_upload, 'name': real_filename},
                 content_type='multipart/form-data',
@@ -167,7 +167,7 @@ def test_files_post(app, db, deposit, users):
             # test post without login
             file_to_upload = (BytesIO(content), filename)
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data={'file': file_to_upload, 'name': real_filename},
                 content_type='multipart/form-data'
@@ -180,7 +180,7 @@ def test_files_post(app, db, deposit, users):
             ))
             # test empty post
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data={'name': real_filename},
                 content_type='multipart/form-data'
@@ -189,7 +189,7 @@ def test_files_post(app, db, deposit, users):
             # test post
             file_to_upload = (BytesIO(content), filename)
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data={'file': file_to_upload, 'name': real_filename},
                 content_type='multipart/form-data'
@@ -217,7 +217,7 @@ def test_files_post(app, db, deposit, users):
             # test post
             file_to_upload = (BytesIO(content), filename)
             res = client.post(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data={'file': file_to_upload, 'name': real_filename},
                 content_type='multipart/form-data'
@@ -244,7 +244,7 @@ def test_files_put_oauth2(app, db, deposit, files, users, write_token_user_1):
             file_ids = [f.file_id for f in deposit.files]
             # order files
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
                     {'id': str(file_ids[1])},
@@ -288,7 +288,7 @@ def test_files_put(app, db, deposit, files, users):
             assert len(deposit['_files']) == 2
             # add new file (without login)
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
                     {'id': str(file_ids[1])},
@@ -303,7 +303,7 @@ def test_files_put(app, db, deposit, files, users):
             ))
             # order files
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
                     {'id': str(file_ids[1])},
@@ -333,7 +333,7 @@ def test_files_put(app, db, deposit, files, users):
             order = [f.key for f in deposit.files]
             # test files post
             res = client.put(
-                url_for('invenio_deposit_rest.dep_files',
+                url_for('invenio_deposit_rest.depid_files',
                         pid_value=deposit['_deposit']['id']),
                 data=json.dumps([
                     {'id': str(file_ids[1])},
@@ -354,7 +354,7 @@ def test_file_get(app, db, deposit, files, users):
         with app.test_client() as client:
             # get resource without login
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -366,7 +366,7 @@ def test_file_get(app, db, deposit, files, users):
             ))
             # get resource
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -386,7 +386,7 @@ def test_file_get(app, db, deposit, files, users):
             ))
             # get resource
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -404,7 +404,7 @@ def test_file_get_not_found(app, db, deposit, users):
             ))
             # get resource
             res = client.get(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key='not_found'
             ))
@@ -420,7 +420,7 @@ def test_file_delete_oauth2(app, db, deposit, files, users,
             # delete resource
             res = client.delete(
                 url_for(
-                    'invenio_deposit_rest.dep_file',
+                    'invenio_deposit_rest.depid_file',
                     pid_value=deposit['_deposit']['id'],
                     key=files[0].key
                 ),
@@ -442,7 +442,7 @@ def test_file_delete(app, db, deposit, files, users):
         with app.test_client() as client:
             deposit_id = deposit.id
             res = client.delete(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -458,7 +458,7 @@ def test_file_delete(app, db, deposit, files, users):
             ))
             # delete resource
             res = client.delete(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -477,7 +477,7 @@ def test_file_delete(app, db, deposit, files, users):
             ))
             # delete resource
             res = client.delete(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key=files[0].key
             ))
@@ -494,7 +494,7 @@ def test_file_put_not_found_bucket_not_exist(app, db, deposit, users):
                 password="tester"
             ))
             res = client.put(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key='not_found'),
                 data=json.dumps({'filename': 'foobar'})
@@ -512,7 +512,7 @@ def test_file_put_not_found_file_not_exist(app, db, deposit, files, users):
                 password="tester"
             ))
             res = client.put(url_for(
-                'invenio_deposit_rest.dep_file',
+                'invenio_deposit_rest.depid_file',
                 pid_value=deposit['_deposit']['id'],
                 key='not_found'),
                 data=json.dumps({'filename': 'foobar'})
@@ -529,7 +529,7 @@ def test_file_put_oauth2(app, db, deposit, files, users, write_token_user_1):
             new_filename = '{0}-new-name'.format(old_filename)
             # test rename file
             res = client.put(
-                url_for('invenio_deposit_rest.dep_file',
+                url_for('invenio_deposit_rest.depid_file',
                         pid_value=deposit['_deposit']['id'],
                         key=old_filename),
                 data=json.dumps({'filename': new_filename}),
@@ -561,7 +561,7 @@ def test_file_put(app, db, deposit, files, users):
             new_filename = '{0}-new-name'.format(old_filename)
             # test rename file (without login)
             res = client.put(
-                url_for('invenio_deposit_rest.dep_file',
+                url_for('invenio_deposit_rest.depid_file',
                         pid_value=deposit['_deposit']['id'],
                         key=old_filename),
                 data=json.dumps({'filename': new_filename}))
@@ -573,7 +573,7 @@ def test_file_put(app, db, deposit, files, users):
             ))
             # test rename file
             res = client.put(
-                url_for('invenio_deposit_rest.dep_file',
+                url_for('invenio_deposit_rest.depid_file',
                         pid_value=deposit['_deposit']['id'],
                         key=old_filename),
                 data=json.dumps({'filename': new_filename}))

@@ -48,11 +48,11 @@ DEPOSIT_DEFAULT_JSONSCHEMA = 'deposits/deposit-v1.0.0.json'
 DEPOSIT_DEFAULT_SCHEMAFORM = 'json/invenio_deposit/form.json'
 """Default Angular Schema Form."""
 
-_PID = 'pid(dep,record_class="invenio_deposit.api:Deposit")'
+_PID = 'pid(depid,record_class="invenio_deposit.api:Deposit")'
 
 DEPOSIT_REST_ENDPOINTS = dict(
-    dep=dict(
-        pid_type='dep',
+    depid=dict(
+        pid_type='depid',
         pid_minter='deposit',
         pid_fetcher='deposit',
         record_class='invenio_deposit.api:Deposit',
@@ -122,8 +122,8 @@ DEPOSIT_REST_FACETS = dict(
 )
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
-    dep=dict(
-        pid_type='dep',
+    depid=dict(
+        pid_type='depid',
         route='/deposit/<pid_value>',
         template='invenio_deposit/edit.html',
         record_class='invenio_deposit.api:Deposit',

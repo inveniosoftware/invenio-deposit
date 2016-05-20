@@ -90,6 +90,7 @@ def app(request):
         OAUTHLIB_INSECURE_TRANSPORT=True,
         OAUTH2_CACHE_TYPE='simple',
     )
+    app_.url_map.converters['pid'] = PIDConverter
     FlaskCLI(app_)
     Babel(app_)
     FlaskCeleryExt(app_)
