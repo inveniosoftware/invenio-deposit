@@ -28,6 +28,8 @@ import uuid
 from contextlib import contextmanager
 from functools import partial, wraps
 
+from dictdiffer import patch
+from dictdiffer.merge import Merger, UnresolvedConflictsException
 from elasticsearch.exceptions import RequestError
 from flask import current_app
 from flask_login import current_user
@@ -45,6 +47,7 @@ from invenio_records_files.models import RecordsBuckets
 from sqlalchemy.orm.attributes import flag_modified
 from werkzeug.local import LocalProxy
 
+from .errors import MergeConflict
 from .minters import deposit_minter
 from .providers import DepositProvider
 
@@ -131,12 +134,26 @@ class Deposit(Record):
         return resolver.resolve(pid_value)
 
     def merge_with_published(self):
-        """."""
-        # TODO if revisions are the same then we can apply directly
-        # latest = self.fetch_published()
-        # initial = A.revisions[self['_deposit']['pid']['revision']]
-        # patch = diff(initial, self)
-        # latest.apply(patch)
+        """Merge changes with latest published version."""
+        pid, first = self.fetch_published()
+        lca = first.revisions[self['_deposit']['pid']['revision_id']]
+        second = self
+        # ignore _deposit and $schema field
+        lca_dict = lca.dumps()
+        first_dict = first.dumps()
+        second_dict = second.dumps()
+        lca_dict.pop('$schema')
+        lca_dict.pop('_deposit')
+        first_dict.pop('$schema')
+        first_dict.pop('_deposit')
+        second_dict.pop('$schema')
+        second_dict.pop('_deposit')
+        m = Merger(lca_dict, first_dict, second_dict, {})
+        try:
+            m.run()
+        except UnresolvedConflictsException:
+            raise MergeConflict()
+        return patch(m.unified_patches, lca)
 
     @index
     def commit(self, *args, **kwargs):
@@ -211,13 +228,16 @@ class Deposit(Record):
 
             with process_files(data) as data:
                 record = Record.create(data, id_=id_)
+
         else:  # Update after edit
             record_pid, record = self.fetch_published()
-            # TODO add support for patching
-            assert record.revision_id == self['_deposit']['pid']['revision_id']
+            if record.revision_id == self['_deposit']['pid']['revision_id']:
+                data = dict(self.dumps())
+            else:
+                data = self.merge_with_published()
 
-            data = dict(self.dumps())
             data['$schema'] = self.record_schema
+            data['_deposit'] = self['_deposit']
             record = record.__class__(data, model=record.model)
             record.commit()
 

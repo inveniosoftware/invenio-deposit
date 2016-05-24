@@ -34,6 +34,7 @@ from six import BytesIO
 from sqlalchemy.orm.exc import NoResultFound
 
 from invenio_deposit.api import Deposit
+from invenio_deposit.errors import MergeConflict
 
 
 def test_schemas(app, db, fake_schemas):
@@ -184,3 +185,71 @@ def test_files_property(app, db, fake_schemas, location):
     deposit.files.rename('second.txt', 'hello.txt')
     assert 'second.txt' not in deposit.files
     assert 'hello.txt' in deposit.files
+
+
+def test_publish_revision_changed_mergeable(app, db, location, fake_schemas):
+    """Try to Publish and someone change the deposit in the while."""
+    # create a deposit
+    deposit = Deposit.create({"metadata": {"title": "title-1"}})
+    deposit.commit()
+    db.session.commit()
+    # publish
+    deposit.publish()
+    db.session.commit()
+    # edit
+    deposit = deposit.edit()
+    db.session.commit()
+    # simulate a externally modification
+    rid, record = deposit.fetch_published()
+    rev_id = record.revision_id
+    # try to change metadata
+    record.update({
+        'metadata': {"title": "title-1", 'poster': 'myposter'},
+    })
+    record.commit()
+    db.session.commit()
+    assert rev_id != record.revision_id
+    # edit again and check the merging
+    deposit.update({"metadata": {"title": "title-1", "description": "mydesc"}})
+    deposit.commit()
+    deposit.publish()
+    db.session.commit()
+    # check if is properly merged
+    did, deposit = deposit.fetch_published()
+    assert deposit['metadata']['title'] == 'title-1'
+    assert deposit['metadata']['poster'] == 'myposter'
+    assert deposit['metadata']['description'] == 'mydesc'
+    assert deposit['$schema'] == 'http://localhost/schemas/deposit-v1.0.0.json'
+
+
+def test_publish_revision_changed_not_mergeable(app, db, location,
+                                                fake_schemas):
+    """Try to Publish and someone change the deposit in the while."""
+    # create a deposit
+    deposit = Deposit.create({"metadata": {
+        "title": "title-1",
+    }})
+    deposit.commit()
+    db.session.commit()
+    # publish
+    deposit.publish()
+    db.session.commit()
+    # edit
+    deposit = deposit.edit()
+    db.session.commit()
+    # simulate a externally modification
+    rid, record = deposit.fetch_published()
+    rev_id = record.revision_id
+    record.update({'metadata': {
+        "title": "title-2.1",
+    }})
+    record.commit()
+    db.session.commit()
+    assert rev_id != record.revision_id
+    # edit again and check the merging
+    deposit.update({"metadata": {
+        "title": "title-2.2",
+    }})
+    deposit.commit()
+    with pytest.raises(MergeConflict):
+        deposit.publish()

@@ -33,7 +33,56 @@ from time import sleep
 import pytest
 from flask import url_for
 from flask_security import url_for_security
+from invenio_search import current_search
 from six import BytesIO
+
+from invenio_deposit.api import Deposit
+
+
+def test_publish_merge_conflict(app, db, es, users, location, deposit,
+                                json_headers, fake_schemas):
+    """Test publish with merge conflicts."""
+    with app.test_request_context():
+        with app.test_client() as client:
+            user_info = dict(email=users[0].email, password='tester')
+            # login
+            res = client.post(url_for_security('login'), data=user_info)
+
+            # create a deposit
+            deposit = Deposit.create({"metadata": {
+                "title": "title-1",
+            }})
+            deposit.commit()
+            db.session.commit()
+            # publish
+            deposit.publish()
+            db.session.commit()
+            # edit
+            deposit = deposit.edit()
+            db.session.commit()
+            # simulate a externally modification
+            rid, record = deposit.fetch_published()
+            rev_id = record.revision_id
+            record.update({'metadata': {
+                "title": "title-2.1",
+            }})
+            record.commit()
+            db.session.commit()
+            assert rev_id != record.revision_id
+            # edit again and check the merging
+            deposit.update({"metadata": {
+                "title": "title-2.2",
+            }})
+            deposit.commit()
+
+            current_search.flush_and_refresh('_all')
+
+            deposit_id = deposit.pid.pid_value
+            res = client.post(
+                url_for('invenio_deposit_rest.depid_actions',
+                        pid_value=deposit_id, action='publish'),
+            )
+            assert res.status_code == 409
 
 
 @pytest.mark.parametrize('user_info,status', [

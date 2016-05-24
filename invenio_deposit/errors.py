@@ -37,7 +37,14 @@ class FileAlreadyExists(RESTException):
 
 
 class WrongFile(RESTException):
-    """Error iwrong file."""
+    """Error wrong file."""
 
     code = 400
     description = 'Wrong file on input.'
+
+
+class MergeConflict(RESTException):
+    """Error on merging a deposit."""
+
+    code = 409
+    description = 'Deposit merge conflicts.'

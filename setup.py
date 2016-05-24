@@ -66,6 +66,7 @@ install_requires = [
     'Flask-Login>=0.3.2',
     'SQLAlchemy-Continuum>=1.2.1',
     'SQLAlchemy-Utils[encrypted]>=0.31.0',
+    'dictdiffer>=0.5.0.post1',
     'elasticsearch-dsl>=2.0.0',
     'invenio-db[versioning]>=1.0.0a9',
     'invenio-files-rest>=1.0.0a3',
