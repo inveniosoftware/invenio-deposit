@@ -26,7 +26,7 @@
 -e git+git://github.com/inveniosoftware/invenio-jsonschemas.git#egg=invenio-jsonschemas
 -e git+git://github.com/inveniosoftware/invenio-oauth2server.git#egg=invenio-oauth2server
 -e git+git://github.com/inveniosoftware/invenio-pidstore.git#egg=invenio-pidstore
--e git+git://github.com/inveniosoftware/invenio-records-files.git#egg=invenio-records-files
+# FIXME -e git+git://github.com/inveniosoftware/invenio-records-files.git#egg=invenio-records-files
 -e git+git://github.com/inveniosoftware/invenio-records-rest.git#egg=invenio-records-rest
 -e git+git://github.com/inveniosoftware/invenio-records-ui.git#egg=invenio-records-ui
 -e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
