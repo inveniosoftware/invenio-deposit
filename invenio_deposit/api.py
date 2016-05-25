@@ -210,6 +210,7 @@ class Deposit(Record):
                     yield data
 
             with process_files(data) as data:
+                del data['_deposit']
                 record = Record.create(data, id_=id_)
         else:  # Update after edit
             record_pid, record = self.fetch_published()
@@ -218,6 +219,7 @@ class Deposit(Record):
 
             data = dict(self.dumps())
             data['$schema'] = self.record_schema
+            del data['_deposit']
             record = record.__class__(data, model=record.model)
             record.commit()
 
