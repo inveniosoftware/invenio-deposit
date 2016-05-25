@@ -35,7 +35,10 @@
 
 {%- block body_inner %}
 <div id="invenio-search">
-  <invenio-search search-endpoint="{{ config.DEPOSIT_SEARCH_API }}">
+  <invenio-search
+   search-endpoint="{{ config.DEPOSIT_SEARCH_API }}"
+   search-headers='{"Accept": "{{ config.DEPOSIT_SEARCH_MIMETYPE|default('application/json')}}"}'
+  >
   {{super()}}
   </invenio-search>
 </div>
