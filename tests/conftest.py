@@ -87,6 +87,7 @@ def app(request):
         WTF_CSRF_ENABLED=False,
         SECURITY_PASSWORD_HASH='plaintext',
         SECURITY_PASSWORD_SCHEMES=['plaintext'],
+        SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
         OAUTHLIB_INSECURE_TRANSPORT=True,
         OAUTH2_CACHE_TYPE='simple',
     )
