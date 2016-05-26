@@ -241,6 +241,7 @@ def location(app):
         loc = Location(name='local', uri=tmppath, default=True)
         db_.session.add(loc)
     db_.session.commit()
+    return location
 
 
 @pytest.fixture()

@@ -56,7 +56,7 @@ def test_schemas(app, db, fake_schemas):
         })
 
 
-def test_simple_flow(app, db, fake_schemas):
+def test_simple_flow(app, db, fake_schemas, location):
     """Test simple flow of deposit states through its lifetime."""
     deposit = Deposit.create({})
     assert deposit['_deposit']['id']
@@ -104,7 +104,7 @@ def test_simple_flow(app, db, fake_schemas):
     assert 6 == deposit.revision_id
 
 
-def test_delete(app, db, fake_schemas):
+def test_delete(app, db, fake_schemas, location):
     """Test simple delete."""
     deposit = Deposit.create({})
     pid = deposit.pid
@@ -154,7 +154,7 @@ def test_files_property(app, db, fake_schemas, location):
 
     # Create second file and check number of items in files.
     deposit.files['second.txt'] = BytesIO(b'Second file.')
-    file_2 = deposit.files['second.txt']
+    assert deposit.files['second.txt']
     assert 2 == len(deposit.files)
     assert 'hello.txt' in deposit.files
     assert 'second.txt' in deposit.files
