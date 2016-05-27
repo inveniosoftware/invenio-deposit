@@ -91,6 +91,25 @@ def has_status(method=None, status='draft'):
     return wrapper
 
 
+def preserve(method=None, result=True, fields=None):
+    """Preserve fields in deposit."""
+    if method is None:
+        return partial(preserve, result=result, fields=fields)
+
+    fields = fields or ('_deposit', )
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """Check current deposit status."""
+        data = {field: self[field] for field in fields if field in self}
+        result_ = method(self, *args, **kwargs)
+        replace = result_ if result else self
+        for field in data:
+            replace[field] = data[field]
+        return result_
+    return wrapper
+
+
 class Deposit(Record):
     """Define API for changing deposit state."""
 
@@ -133,22 +152,17 @@ class Deposit(Record):
         )
         return resolver.resolve(pid_value)
 
+    @preserve(fields=('_deposit', '$schema'))
     def merge_with_published(self):
         """Merge changes with latest published version."""
         pid, first = self.fetch_published()
         lca = first.revisions[self['_deposit']['pid']['revision_id']]
-        second = self
         # ignore _deposit and $schema field
-        lca_dict = lca.dumps()
-        first_dict = first.dumps()
-        second_dict = second.dumps()
-        lca_dict.pop('$schema')
-        lca_dict.pop('_deposit')
-        first_dict.pop('$schema')
-        first_dict.pop('_deposit')
-        second_dict.pop('$schema')
-        second_dict.pop('_deposit')
-        m = Merger(lca_dict, first_dict, second_dict, {})
+        args = [lca.dumps(), first.dumps(), self.dumps()]
+        for arg in args:
+            del arg['$schema'], arg['_deposit']
+        args.append({})
+        m = Merger(*args)
         try:
             m.run()
         except UnresolvedConflictsException:
@@ -307,26 +321,22 @@ class Deposit(Record):
         return super(Deposit, self).delete(force=force)
 
     @has_status
+    @preserve(result=False)
     def clear(self, *args, **kwargs):
         """Clear only drafts."""
-        _deposit = self['_deposit']
         super(Deposit, self).clear(*args, **kwargs)
-        self['_deposit'] = _deposit
 
     @has_status
+    @preserve(result=False)
     def update(self, *args, **kwargs):
         """Update only drafts."""
-        _deposit = self['_deposit']
         super(Deposit, self).update(*args, **kwargs)
-        self['_deposit'] = _deposit
 
     @has_status
+    @preserve
     def patch(self, *args, **kwargs):
         """Patch only drafts."""
-        _deposit = self['_deposit']
-        patched = super(Deposit, self).patch(*args, **kwargs)
-        patched['_deposit'] = _deposit
-        return patched
+        return super(Deposit, self).patch(*args, **kwargs)
 
     def _create_bucket(self):
         """Override bucket creation."""
