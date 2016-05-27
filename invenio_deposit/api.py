@@ -228,7 +228,8 @@ class Deposit(Record):
             @contextmanager
             def process_files(data):
                 """Process deposit files."""
-                if self.files and self.files.bucket:
+                if RecordsBuckets.query.filter_by(
+                        record_id=self.model.id).count():
                     assert not self.files.bucket.locked
                     self.files.bucket.locked = True
                     snapshot = self.files.bucket.snapshot(lock=True)
