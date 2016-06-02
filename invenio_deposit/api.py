@@ -198,6 +198,57 @@ class Deposit(Record):
 
         return super(Deposit, cls).create(data, id_=id_)
 
+    def _publish_new(self, id_=None):
+        """Publish new deposit."""
+        minter = current_pidstore.minters[
+            current_app.config['DEPOSIT_PID_MINTER']
+        ]
+        id_ = id_ or uuid.uuid4()
+        record_pid = minter(id_, self)
+
+        self['_deposit']['pid'] = {
+            'type': record_pid.pid_type,
+            'value': record_pid.pid_value,
+            'revision_id': 0,
+        }
+
+        data = dict(self.dumps())
+        data['$schema'] = self.record_schema
+
+        # During first publishing create snapshot the bucket.
+        @contextmanager
+        def process_files(data):
+            """Process deposit files."""
+            if RecordsBuckets.query.filter_by(
+                    record_id=self.model.id).count():
+                assert not self.files.bucket.locked
+                self.files.bucket.locked = True
+                snapshot = self.files.bucket.snapshot(lock=True)
+                data['_files'] = self.files.dumps(bucket=snapshot.id)
+                yield data
+                db.session.add(RecordsBuckets(
+                    record_id=id_, bucket_id=snapshot.id
+                ))
+            else:
+                yield data
+
+        with process_files(data) as data:
+            record = Record.create(data, id_=id_)
+        return record
+
+    def _publish_edited(self):
+        """Publish the deposit after for editing."""
+        record_pid, record = self.fetch_published()
+        if record.revision_id == self['_deposit']['pid']['revision_id']:
+            data = dict(self.dumps())
+        else:
+            data = self.merge_with_published()
+
+        data['$schema'] = self.record_schema
+        data['_deposit'] = self['_deposit']
+        record = record.__class__(data, model=record.model)
+        return record
+
     # No need for indexing as it calls self.commit()
     @has_status
     def publish(self, pid=None, id_=None):
@@ -210,69 +261,27 @@ class Deposit(Record):
         self['_deposit']['status'] = 'published'
 
         if self['_deposit'].get('pid') is None:  # First publishing
-            minter = current_pidstore.minters[
-                current_app.config['DEPOSIT_PID_MINTER']
-            ]
-            id_ = id_ or uuid.uuid4()
-            record_pid = minter(id_, self)
-
-            self['_deposit']['pid'] = {
-                'type': record_pid.pid_type, 'value': record_pid.pid_value,
-                'revision_id': 0,
-            }
-
-            data = dict(self.dumps())
-            data['$schema'] = self.record_schema
-
-            # During first publishing create snapshot the bucket.
-            @contextmanager
-            def process_files(data):
-                """Process deposit files."""
-                if RecordsBuckets.query.filter_by(
-                        record_id=self.model.id).count():
-                    assert not self.files.bucket.locked
-                    self.files.bucket.locked = True
-                    snapshot = self.files.bucket.snapshot(lock=True)
-                    data['_files'] = self.files.dumps(bucket=snapshot.id)
-                    yield data
-                    db.session.add(RecordsBuckets(
-                        record_id=id_, bucket_id=snapshot.id
-                    ))
-                else:
-                    yield data
-
-            with process_files(data) as data:
-                record = Record.create(data, id_=id_)
-
+            self._publish_new(id_=id_)
         else:  # Update after edit
-            record_pid, record = self.fetch_published()
-            if record.revision_id == self['_deposit']['pid']['revision_id']:
-                data = dict(self.dumps())
-            else:
-                data = self.merge_with_published()
-
-            data['$schema'] = self.record_schema
-            data['_deposit'] = self['_deposit']
-            record = record.__class__(data, model=record.model)
+            record = self._publish_edited()
             record.commit()
-
         self.commit()
         return self
+
+    def _prepare_edit(self, record):
+        """Update selected keys."""
+        data = record.dumps()
+        # Keep current record revision for merging.
+        data['_deposit']['pid']['revision_id'] = record.revision_id
+        data['_deposit']['status'] = 'draft'
+        data['$schema'] = self.build_deposit_schema(record)
+        return data
 
     @has_status(status='published')
     @index
     def edit(self, pid=None):
         """Edit deposit."""
         pid = pid or self.pid
-
-        def _edit(record):
-            """Update selected keys."""
-            data = record.dumps()
-            # Keep current record revision for merging.
-            data['_deposit']['pid']['revision_id'] = record.revision_id
-            data['_deposit']['status'] = 'draft'
-            data['$schema'] = self.build_deposit_schema(record)
-            return data
 
         with db.session.begin_nested():
             before_record_update.send(self)
@@ -281,7 +290,7 @@ class Deposit(Record):
             assert PIDStatus.REGISTERED == record_pid.status
             assert record['_deposit'] == self['_deposit']
 
-            self.model.json = _edit(record)
+            self.model.json = self._prepare_edit(record)
 
             flag_modified(self.model, 'json')
             db.session.merge(self.model)
