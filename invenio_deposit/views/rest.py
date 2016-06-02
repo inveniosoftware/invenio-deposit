@@ -195,11 +195,15 @@ class DepositActionResource(ContentNegotiatedMethodView):
 
         db.session.commit()
 
+        # Index record.
+        if action == 'publish':
+            record.indexer.index(record.fetch_published()[1])
+
         response = self.make_response(pid, record,
                                       202 if action == 'publish' else 201)
         endpoint = '.{0}_item'.format(pid.pid_type)
         location = url_for(endpoint, pid_value=pid.pid_value, _external=True)
-        response.headers.extend(dict(location=location))
+        response.headers.extend(dict(Location=location))
         return response
 
 
