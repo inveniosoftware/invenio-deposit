@@ -116,6 +116,9 @@ class Deposit(Record):
     indexer = RecordIndexer()
     """Default deposit indexer."""
 
+    published_record_class = Record
+    """Record API class used for published records."""
+
     @property
     def pid(self):
         """Return an instance of deposit PID."""
@@ -148,7 +151,8 @@ class Deposit(Record):
 
         resolver = Resolver(
             pid_type=pid_type, object_type='rec',
-            getter=partial(Record.get_record, with_deleted=True)
+            getter=partial(self.published_record_class.get_record,
+                           with_deleted=True)
         )
         return resolver.resolve(pid_value)
 
@@ -181,8 +185,6 @@ class Deposit(Record):
         data.setdefault('$schema', current_jsonschemas.path_to_url(
             current_app.config['DEPOSIT_DEFAULT_JSONSCHEMA']
         ))
-        if not current_jsonschemas.url_to_path(data['$schema']):
-            raise JSONSchemaNotFound(data['$schema'])
         if '_deposit' not in data:
             id_ = id_ or uuid.uuid4()
             deposit_minter(id_, data)
@@ -233,7 +235,8 @@ class Deposit(Record):
                 yield data
 
         with process_files(data) as data:
-            record = Record.create(data, id_=id_)
+            record = self.published_record_class.create(data,
+                                                        id_=id_)
         return record
 
     def _publish_edited(self):

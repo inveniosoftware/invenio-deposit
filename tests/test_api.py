@@ -27,9 +27,9 @@
 from __future__ import absolute_import, print_function
 
 import pytest
-from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.errors import MissingModelError
+from jsonschema.exceptions import RefResolutionError
 from six import BytesIO
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -51,7 +51,7 @@ def test_schemas(app, db, fake_schemas):
             '$schema': 'http://localhost/schemas/test-v1.0.0.json',
         })
 
-    with pytest.raises(JSONSchemaNotFound):
+    with pytest.raises(RefResolutionError):
         Deposit.create({
             '$schema': 'http://localhost/schemas/deposits/invalid.json',
         })

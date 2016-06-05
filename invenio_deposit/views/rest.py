@@ -36,7 +36,6 @@ from invenio_db import db
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidstore.errors import PIDInvalidAction
-from invenio_pidstore.resolver import Resolver
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import \
     create_url_rules as records_rest_url_rules
@@ -93,12 +92,15 @@ def create_blueprint(endpoints):
             '{0}/files/<path:key>'.format(options['item_route'])
         )
 
+        options.setdefault('search_class', DepositSearch)
+        search_class = obj_or_import_string(options['search_class'])
+
+        # records rest endpoints will use the deposit class as record class
+        options.setdefault('record_class', Deposit)
+        record_class = obj_or_import_string(options['record_class'])
+
         for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
-
-        search_class = obj_or_import_string(
-            options['search_class'], default=DepositSearch
-        )
 
         search_class_kwargs = {}
         if options.get('search_index'):
@@ -120,8 +122,9 @@ def create_blueprint(endpoints):
             delete_permission_factory=obj_or_import_string(
                 options.get('delete_permission_factory_imp')
             ),
+            record_class=record_class,
             search_class=partial(search_class, **search_class_kwargs),
-            default_media_type=options.get('default_media_type')
+            default_media_type=options.get('default_media_type'),
         )
 
         deposit_actions = DepositActionResource.as_view(
@@ -180,10 +183,6 @@ class DepositActionResource(ContentNegotiatedMethodView):
             *args,
             **kwargs
         )
-        self.resolver = Resolver(
-            pid_type=pid_type, object_type='rec',
-            getter=partial(Deposit.get_record, with_deleted=True)
-        )
         for key, value in ctx.items():
             setattr(self, key, value)
 
@@ -218,10 +217,6 @@ class DepositFilesResource(ContentNegotiatedMethodView):
             serializers,
             *args,
             **kwargs
-        )
-        self.resolver = Resolver(
-            pid_type=pid_type, object_type='rec',
-            getter=partial(Deposit.get_record, with_deleted=True)
         )
         for key, value in ctx.items():
             setattr(self, key, value)
@@ -290,10 +285,6 @@ class DepositFileResource(ContentNegotiatedMethodView):
             serializers,
             *args,
             **kwargs
-        )
-        self.resolver = Resolver(
-            pid_type=pid_type, object_type='rec',
-            getter=partial(Deposit.get_record, with_deleted=True)
         )
         for key, value in ctx.items():
             setattr(self, key, value)

@@ -27,11 +27,13 @@
 
 from __future__ import absolute_import, print_function
 
+import pytest
 from flask import Flask
 from flask_cli import FlaskCLI
 from invenio_records_rest.utils import PIDConverter
 
 from invenio_deposit import InvenioDeposit
+from invenio_deposit.proxies import current_deposit
 
 
 def test_version():
@@ -51,7 +53,17 @@ def test_init():
     app = Flask('testapp')
     FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
+
+    # check that current_deposit cannot be resolved
+    with app.app_context():
+        with pytest.raises(KeyError):
+            current_deposit.init_app
+
     ext = InvenioDeposit()
     assert 'invenio-deposit' not in app.extensions
     ext.init_app(app)
     assert 'invenio-deposit' in app.extensions
+
+    # check that current_deposit resolves correctly
+    with app.app_context():
+        current_deposit.init_app
