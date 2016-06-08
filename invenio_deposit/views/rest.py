@@ -30,8 +30,8 @@ import json
 from copy import deepcopy
 from functools import partial
 
-from flask import Blueprint, abort, make_response, request, url_for
-from werkzeug.utils import secure_filename
+from flask import Blueprint, abort, current_app, make_response, request, \
+    url_for
 from invenio_db import db
 from invenio_files_rest.errors import InvalidOperationError
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
@@ -44,11 +44,13 @@ from invenio_rest import ContentNegotiatedMethodView
 from invenio_rest.views import create_api_errorhandler
 from webargs import fields
 from webargs.flaskparser import use_kwargs
+from werkzeug.utils import secure_filename
 
-from ..errors import FileAlreadyExists, WrongFile
 from ..api import Deposit
+from ..errors import FileAlreadyExists, WrongFile
 from ..scopes import write_scope
 from ..search import DepositSearch
+from ..signals import post_action
 
 
 def create_blueprint(endpoints):
@@ -193,11 +195,11 @@ class DepositActionResource(ContentNegotiatedMethodView):
         getattr(record, action)(pid=pid)
 
         db.session.commit()
-
-        # Index record.
-        if action == 'publish':
-            record.indexer.index(record.fetch_published()[1])
-
+        # Refresh the PID and record metadata
+        db.session.refresh(pid)
+        db.session.refresh(record.model)
+        post_action.send(current_app._get_current_object(), action=action,
+                         pid=pid, deposit=record)
         response = self.make_response(pid, record,
                                       202 if action == 'publish' else 201)
         endpoint = '.{0}_item'.format(pid.pid_type)

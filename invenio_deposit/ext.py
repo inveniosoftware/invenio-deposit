@@ -28,6 +28,8 @@ from __future__ import absolute_import, print_function
 
 from . import config
 from .cli import deposit as cmd
+from .receivers import index_deposit_after_publish
+from .signals import post_action
 from .views import rest, ui
 
 
@@ -47,6 +49,9 @@ class InvenioDeposit(object):
             app.config['DEPOSIT_RECORDS_UI_ENDPOINTS']
         ))
         app.extensions['invenio-deposit'] = self
+        if app.config['DEPOSIT_REGISTER_SIGNALS']:
+            post_action.connect(index_deposit_after_publish, sender=app,
+                                weak=False)
 
     def init_config(self, app):
         """Initialize configuration."""
@@ -74,6 +79,9 @@ class InvenioDepositREST(object):
             app.config['DEPOSIT_REST_ENDPOINTS']
         ))
         app.extensions['invenio-deposit-rest'] = self
+        if app.config['DEPOSIT_REGISTER_SIGNALS']:
+            post_action.connect(index_deposit_after_publish, sender=app,
+                                weak=False)
 
     def init_config(self, app):
         """Initialize configuration."""

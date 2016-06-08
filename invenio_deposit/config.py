@@ -147,3 +147,6 @@ DEPOSIT_UI_SEARCH_INDEX = 'deposits'
 
 DEPOSIT_DEFAULT_STORAGE_CLASS = 'S'
 """Default storage class."""
+
+DEPOSIT_REGISTER_SIGNALS = True
+"""Enable the signals registration."""
