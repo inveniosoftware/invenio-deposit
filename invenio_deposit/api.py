@@ -36,7 +36,6 @@ from flask_login import current_user
 from invenio_db import db
 from invenio_files_rest.models import Bucket
 from invenio_indexer.api import RecordIndexer
-from invenio_jsonschemas.errors import JSONSchemaNotFound
 from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
@@ -48,8 +47,8 @@ from sqlalchemy.orm.attributes import flag_modified
 from werkzeug.local import LocalProxy
 
 from .errors import MergeConflict
-from .minters import deposit_minter
-from .providers import DepositProvider
+from .fetchers import deposit_fetcher as default_deposit_fetcher
+from .minters import deposit_minter as default_deposit_minter
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -119,11 +118,18 @@ class Deposit(Record):
     published_record_class = Record
     """Record API class used for published records."""
 
+    deposit_fetcher = staticmethod(default_deposit_fetcher)
+    """Function used to retrieve the deposit PID."""
+
+    deposit_minter = staticmethod(default_deposit_minter)
+    """Function used to mint the deposit PID."""
+
     @property
     def pid(self):
         """Return an instance of deposit PID."""
-        return PersistentIdentifier.get(DepositProvider.pid_type,
-                                        self['_deposit']['id'])
+        pid = self.deposit_fetcher(self.id, self)
+        return PersistentIdentifier.get(pid.pid_type,
+                                        pid.pid_value)
 
     @property
     def record_schema(self):
@@ -187,7 +193,7 @@ class Deposit(Record):
         ))
         if '_deposit' not in data:
             id_ = id_ or uuid.uuid4()
-            deposit_minter(id_, data)
+            cls.deposit_minter(id_, data)
 
         data['_deposit'].setdefault('owners', list())
         if current_user and current_user.is_authenticated:
