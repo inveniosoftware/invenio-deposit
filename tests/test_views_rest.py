@@ -370,18 +370,6 @@ def test_deposition_file_operations(app, db, es, location, users,
             # Bad renaming
             test_cases = [
                 dict(name="another_test.pdf"),
-            ]
-            for test_case in test_cases:
-                res = client.put(
-                    url_for('invenio_deposit_rest.depid_file',
-                            pid_value=deposit_id,
-                            key=data_rename['filename']),
-                    data=json.dumps(test_case),
-                    headers=oauth2_headers_user_1
-                )
-                assert res.status_code == 400
-
-            test_cases = [
                 dict(filename="../../etc/passwd"),
             ]
             for test_case in test_cases:
@@ -392,9 +380,7 @@ def test_deposition_file_operations(app, db, es, location, users,
                     data=json.dumps(test_case),
                     headers=oauth2_headers_user_1
                 )
-                assert res.status_code == 200
-                data_secured = json.loads(res.data.decode('utf-8'))
-                assert data_secured['filename'] == 'etc_passwd'
+                assert res.status_code == 400
 
             # Delete resource again
             res = client.delete(

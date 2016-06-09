@@ -297,7 +297,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
     def get(self, pid, record, key, version_id, **kwargs):
         """Get deposit/depositions/:id/files/:key."""
         try:
-            obj = record.files[key].get_version(version_id=version_id)
+            obj = record.files[str(key)].get_version(version_id=version_id)
             return self.make_response(obj=obj or abort(404))
         except KeyError:
             abort(404)
@@ -313,11 +313,11 @@ class DepositFileResource(ContentNegotiatedMethodView):
             new_key = data['filename']
         except KeyError:
             raise WrongFile()
-        new_key = secure_filename(new_key)
-        if not new_key:
+        new_key_secure = secure_filename(new_key)
+        if not new_key_secure or new_key != new_key_secure:
             raise WrongFile()
         try:
-            obj = record.files.rename(key, new_key)
+            obj = record.files.rename(str(key), new_key_secure)
         except KeyError:
             abort(404)
         record.commit()
@@ -331,7 +331,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
     def delete(self, pid, record, key):
         """Handle DELETE deposit files."""
         try:
-            del record.files[key]
+            del record.files[str(key)]
             record.commit()
             db.session.commit()
             return make_response('', 204)
