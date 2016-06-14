@@ -68,7 +68,7 @@ def create_blueprint(endpoints):
         status=403, message='Invalid operation'
     ))
     blueprint.errorhandler(ValidationError)(create_api_errorhandler(
-        status=400, message='ValidationError'
+        status=400, message='Validation error'
     ))
 
     for endpoint, options in (endpoints or {}).items():

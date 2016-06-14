@@ -80,3 +80,4 @@ deploy:
   on:
     tags: true
     python: "2.7"
+    condition: $REQUIREMENTS = release
