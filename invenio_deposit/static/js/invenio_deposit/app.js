@@ -26,7 +26,9 @@
   angular.element(document).ready(function() {
     angular.bootstrap(
       document.getElementById("invenio-records"),
-      ['invenioRecords', 'schemaForm']
+      ['invenioRecords', 'schemaForm', 'mgcrea.ngStrap',
+       'mgcrea.ngStrap.modal', 'pascalprecht.translate', 'ui.select',
+       'mgcrea.ngStrap.select']
     );
   });
 })(angular);

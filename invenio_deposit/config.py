@@ -124,7 +124,6 @@ See :data:`invenio_records_rest.config.RECORDS_REST_DEFAULT_SORT` for more
 information.
 """
 
-
 DEPOSIT_REST_FACETS = {
     'deposits': {
         'aggs': {
@@ -141,7 +140,6 @@ DEPOSIT_REST_FACETS = {
 See :data:`invenio_records_rest.config.RECORDS_REST_FACETS` for more
 information.
 """
-
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = {
     'depid': {
