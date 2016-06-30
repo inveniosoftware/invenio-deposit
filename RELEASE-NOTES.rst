@@ -29,8 +29,8 @@ Documentation
 Happy hacking and thanks for flying Invenio-Deposit.
 
 | Invenio Development Team
-|   Email: info@invenio-software.org
+|   Email: info@inveniosoftware.org
 |   IRC: #invenio on irc.freenode.net
 |   Twitter: http://twitter.com/inveniosoftware
 |   GitHub: https://github.com/inveniosoftware/invenio-deposit
-|   URL: http://invenio-software.org
+|   URL: http://inveniosoftware.org

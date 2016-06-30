@@ -125,9 +125,9 @@ def users(app):
     """Create users."""
     with db_.session.begin_nested():
         datastore = app.extensions['security'].datastore
-        user1 = datastore.create_user(email='info@invenio-software.org',
+        user1 = datastore.create_user(email='info@inveniosoftware.org',
                                       password='tester', active=True)
-        user2 = datastore.create_user(email='test@invenio-software.org',
+        user2 = datastore.create_user(email='test@inveniosoftware.org',
                                       password='tester2', active=True)
     db_.session.commit()
     return [user1, user2]

@@ -89,9 +89,9 @@ def test_publish_merge_conflict(app, db, es, users, location, deposit,
     # anonymous user
     (None, 401),
     # owner
-    (dict(email='info@invenio-software.org', password='tester'), 200),
+    (dict(email='info@inveniosoftware.org', password='tester'), 200),
     # user that not have permissions
-    (dict(email='test@invenio-software.org', password='tester2'), 403),
+    (dict(email='test@inveniosoftware.org', password='tester2'), 403),
 ])
 def test_edit_deposit_users(app, db, es, users, location, deposit,
                             json_headers, user_info, status):
@@ -149,9 +149,9 @@ def test_edit_deposit_by_bad_oauth2_token(app, db, es, users, location,
     # anonymous user
     (None, 401),
     # owner
-    (dict(email='info@invenio-software.org', password='tester'), 204),
+    (dict(email='info@inveniosoftware.org', password='tester'), 204),
     # user that not have permissions
-    (dict(email='test@invenio-software.org', password='tester2'), 403),
+    (dict(email='test@inveniosoftware.org', password='tester2'), 403),
 ])
 def test_delete_deposit_users(app, db, es, users, location, deposit,
                               json_headers, user_info, status):
