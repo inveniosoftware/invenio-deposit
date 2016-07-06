@@ -33,7 +33,6 @@ from functools import partial
 from flask import Blueprint, abort, current_app, make_response, request, \
     url_for
 from invenio_db import db
-from invenio_files_rest.errors import InvalidOperationError
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records_rest.utils import obj_or_import_string
@@ -63,9 +62,6 @@ def create_blueprint(endpoints):
     )
     blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
         status=403, message='Invalid action'
-    ))
-    blueprint.errorhandler(InvalidOperationError)(create_api_errorhandler(
-        status=403, message='Invalid operation'
     ))
     blueprint.errorhandler(ValidationError)(create_api_errorhandler(
         status=400, message='Validation error'
