@@ -84,6 +84,27 @@ DEPOSIT_REST_ENDPOINTS = dict(
     ),
 )
 
+DEPOSIT_FORM_TEMPLATES = dict(
+    default='/static/node_modules/invenio-records-js/dist/'
+            'templates/default.html',
+    fieldset='/static/node_modules/invenio-records-js/dist/'
+             'templates/fieldset.html',
+    array='/static/node_modules/invenio-records-js/dist/templates/array.html',
+    radios_inline='/static/node_modules/invenio-records-js/dist/'
+                  'templates/radios_inline.html',
+    radios='/static/node_modules/invenio-records-js/dist/'
+           'templates/radios.html',
+    select='/static/node_modules/invenio-records-js/dist/'
+           'templates/select.html',
+    button='/static/node_modules/invenio-records-js/dist/'
+           'templates/button.html',
+    textarea='/static/node_modules/invenio-records-js/dist/'
+             'templates/textarea.html'
+)
+
+DEPOSIT_RESPONSE_MESSAGES = dict()
+"""Alerts shown when actions are completed on deposit."""
+
 DEPOSIT_REST_SORT_OPTIONS = dict(
     deposits=dict(
         bestmatch=dict(
