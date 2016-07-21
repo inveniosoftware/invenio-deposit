@@ -45,6 +45,7 @@ from flask_security import login_user
 from helpers import fill_oauth2_headers, make_pdf_fixture
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
+from invenio_assets import InvenioAssets
 from invenio_db import db as db_
 from invenio_db import InvenioDB
 from invenio_files_rest import InvenioFilesREST
@@ -85,6 +86,7 @@ def app(request):
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
         TESTING=True,
         WTF_CSRF_ENABLED=False,
+        DEPOSIT_SEARCH_API='/api/search',
         SECURITY_PASSWORD_HASH='plaintext',
         SECURITY_PASSWORD_SCHEMES=['plaintext'],
         SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
@@ -99,6 +101,7 @@ def app(request):
     Breadcrumbs(app_)
     InvenioAccounts(app_)
     app_.register_blueprint(accounts_blueprint)
+    InvenioAssets(app_)
     InvenioJSONSchemas(app_)
     InvenioSearch(app_)
     InvenioRecords(app_)

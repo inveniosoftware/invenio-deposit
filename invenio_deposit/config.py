@@ -36,6 +36,9 @@ DEPOSIT_SEARCH_API = '/api/deposits'
 DEPOSIT_RECORDS_API = '/api/deposits/{pid_value}'
 """URL of record endpoint for deposits."""
 
+DEPOSIT_FILES_API = '/api/files'
+"""URL of files endpoints for uploading."""
+
 DEPOSIT_PID_MINTER = 'recid'
 """PID minter used for record submissions."""
 
@@ -83,6 +86,22 @@ DEPOSIT_REST_ENDPOINTS = dict(
         max_result_window=10000,
     ),
 )
+
+DEPOSIT_FORM_TEMPLATES_BASE = 'node_modules/invenio-records-js/dist/templates'
+
+DEPOSIT_FORM_TEMPLATES = dict(
+    default='default.html',
+    fieldset='fieldset.html',
+    array='array.html',
+    radios_inline='radios_inline.html',
+    radios='radios.html',
+    select='select.html',
+    button='button.html',
+    textarea='textarea.html'
+)
+
+DEPOSIT_RESPONSE_MESSAGES = dict()
+"""Alerts shown when actions are completed on deposit."""
 
 DEPOSIT_REST_SORT_OPTIONS = dict(
     deposits=dict(

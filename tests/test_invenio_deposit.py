@@ -28,18 +28,47 @@
 from __future__ import absolute_import, print_function
 
 import pytest
-from flask import Flask
+from flask import Flask, render_template_string
 from flask_cli import FlaskCLI
 from invenio_records_rest.utils import PIDConverter
 
-from invenio_deposit import InvenioDeposit
+from invenio_deposit import InvenioDeposit, bundles
 from invenio_deposit.proxies import current_deposit
+
+
+def _check_template():
+    """Check template."""
+    extended = """
+        {% extends 'invenio_deposit/edit.html' %}
+        {% block javascript %}{% endblock %}
+        {% block css %}{% endblock %}
+        {% block page_body %}{{ super() }}{% endblock %}
+    """
+    rendered = render_template_string(
+        extended,
+        pid=dict(pid_value=None),
+        record=dict()
+    )
+
+    assert 'invenio-records' in rendered
+    assert 'invenio-records-alert' in rendered
+    assert 'invenio-records-form' in rendered
+    assert 'invenio-records-actions' in rendered
+    assert 'invenio-files-uploader' in rendered
+    assert 'invenio-files-upload-zone' in rendered
+    assert 'invenio-files-list' in rendered
 
 
 def test_version():
     """Test version import."""
     from invenio_deposit import __version__
     assert __version__
+
+
+def test_bundles():
+    """Test bundles."""
+    assert bundles.js
+    assert bundles.js_dependecies
 
 
 def test_init():
@@ -67,3 +96,9 @@ def test_init():
     # check that current_deposit resolves correctly
     with app.app_context():
         current_deposit.init_app
+
+
+def test_view(app):
+    """Test view."""
+    with app.test_request_context():
+        _check_template()

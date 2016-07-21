@@ -25,6 +25,7 @@
 """Links for record serialization."""
 
 from flask import url_for
+from invenio_records_files.links import default_bucket_link_factory
 from invenio_records_rest.links import default_links_factory
 
 
@@ -41,4 +42,9 @@ def deposit_links_factory(pid):
     links['files'] = _url('files')
     for action in ('publish', 'edit', 'discard'):
         links[action] = _url('actions', action=action)
+
+    bucket_link = default_bucket_link_factory(pid)
+    if bucket_link is not None:
+        links['bucket'] = bucket_link
+
     return links
