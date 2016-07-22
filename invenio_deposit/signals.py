@@ -32,10 +32,13 @@ post_action = _signals.signal('post-action')
 """Signal is sent after the REST action.
 
 Kwargs:
-    action (str) - name of REST action, e.g. "publish".
-    pid (invenio_pidstore.models.PersistentIdentifier) - PID of the deposit.
+
+#. action (str) - name of REST action, e.g. "publish".
+
+#. pid (invenio_pidstore.models.PersistentIdentifier) - PID of the deposit.
         The pid_type is assumed to be 'depid'.
-    deposit (invenio_depost.api.Deposit) - API instance of the deposit
+
+#. deposit (invenio_depost.api.Deposit) - API instance of the deposit
 
 Example subscriber:
 

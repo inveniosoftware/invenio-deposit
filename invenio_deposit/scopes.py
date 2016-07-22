@@ -31,7 +31,7 @@ from invenio_oauth2server.models import Scope
 
 
 class DepositScope(Scope):
-    """Deposit scope."""
+    """Basic deposit scope."""
 
     def __init__(self, id_, *args, **kwargs):
         """Define the scope."""
@@ -42,5 +42,8 @@ class DepositScope(Scope):
 
 write_scope = DepositScope('write',
                            help_text=_('Allow upload (but not publishing).'))
+"""Allow upload (but not publishing)."""
+
 actions_scope = DepositScope('actions',
                              help_text=_('Allow publishing of uploads.'))
+"""Allow publishing of uploads."""

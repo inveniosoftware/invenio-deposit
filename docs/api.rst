@@ -25,6 +25,59 @@
 API Docs
 ========
 
-invenio_deposit
----------------
+.. automodule:: invenio_deposit.ext
+   :members:
 
+API
+---
+
+.. automodule:: invenio_deposit.api
+   :members:
+
+.. automodule:: invenio_deposit.fetchers
+  :members:
+
+.. automodule:: invenio_deposit.minters
+  :members:
+
+.. automodule:: invenio_deposit.providers
+  :members:
+
+.. automodule:: invenio_deposit.receivers
+   :members:
+
+Configuration
+-------------
+
+.. automodule:: invenio_deposit.config
+   :members:
+
+.. automodule:: invenio_deposit.permissions
+   :members:
+
+.. automodule:: invenio_deposit.signals
+   :members:
+
+.. automodule:: invenio_deposit.utils
+   :members:
+
+Views
+-----
+
+.. automodule:: invenio_deposit.links
+   :members:
+
+.. automodule:: invenio_deposit.scopes
+   :members:
+
+.. automodule:: invenio_deposit.search
+   :members:
+
+.. automodule:: invenio_deposit.serializers
+   :members:
+
+.. automodule:: invenio_deposit.views.rest
+  :members:
+
+.. automodule:: invenio_deposit.views.ui
+  :members:

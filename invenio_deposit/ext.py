@@ -42,7 +42,13 @@ class InvenioDeposit(object):
             self.init_app(app)
 
     def init_app(self, app):
-        """Flask application initialization."""
+        """Flask application initialization.
+
+        Initialize the CLI and all UI endpoints.
+        Connect all signals if `DEPOSIT_REGISTER_SIGNALS` is ``True``.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         self.init_config(app)
         app.cli.add_command(cmd)
         app.register_blueprint(ui.create_blueprint(
@@ -54,7 +60,10 @@ class InvenioDeposit(object):
                                 weak=False)
 
     def init_config(self, app):
-        """Initialize configuration."""
+        """Initialize configuration.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         app.config.setdefault(
             'DEPOSIT_BASE_TEMPLATE',
             app.config.get('BASE_TEMPLATE',
@@ -68,12 +77,21 @@ class InvenioDepositREST(object):
     """Invenio-Deposit REST extension."""
 
     def __init__(self, app=None):
-        """Extension initialization."""
+        """Extension initialization.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         if app:
             self.init_app(app)
 
     def init_app(self, app):
-        """Flask application initialization."""
+        """Flask application initialization.
+
+        Initialize the CLI and all REST endpoints.
+        Connect all signals if `DEPOSIT_REGISTER_SIGNALS` is True.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         self.init_config(app)
         app.register_blueprint(rest.create_blueprint(
             app.config['DEPOSIT_REST_ENDPOINTS']
@@ -84,7 +102,10 @@ class InvenioDepositREST(object):
                                 weak=False)
 
     def init_config(self, app):
-        """Initialize configuration."""
+        """Initialize configuration.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
         for k in dir(config):
             if k.startswith('DEPOSIT_'):
                 app.config.setdefault(k, getattr(config, k))

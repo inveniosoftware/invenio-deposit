@@ -56,7 +56,11 @@ current_jsonschemas = LocalProxy(
 
 
 def index(method=None, delete=False):
-    """Update index."""
+    """Decorator to update index.
+
+    :param method: Function wrapped. (Default: ``None``)
+    :param delete: If `True` delete the indexed record. (Default: ``None``)
+    """
     if method is None:
         return partial(index, delete=delete)
 
@@ -76,7 +80,12 @@ def index(method=None, delete=False):
 
 
 def has_status(method=None, status='draft'):
-    """Check that deposit has defined status (default: draft)."""
+    """Check that deposit has a defined status (default: draft).
+
+    :param method: Function executed if record has a defined status.
+        (Default: ``None``)
+    :param status: Defined status to check. (Default: ``'draft'``)
+    """
     if method is None:
         return partial(has_status, status=status)
 
@@ -91,7 +100,13 @@ def has_status(method=None, status='draft'):
 
 
 def preserve(method=None, result=True, fields=None):
-    """Preserve fields in deposit."""
+    """Preserve fields in deposit.
+
+    :param method: Function to execute. (Default: ``None``)
+    :param result: If `True` returns the result of method execution,
+        otherwise `self`. (Default: ``True``)
+    :param fields: List of fields to preserve (default: ``('_deposit',)``).
+    """
     if method is None:
         return partial(preserve, result=result, fields=fields)
 
@@ -116,7 +131,7 @@ class Deposit(Record):
     """Default deposit indexer."""
 
     published_record_class = Record
-    """Record API class used for published records."""
+    """The Record API class used for published records."""
 
     deposit_fetcher = staticmethod(default_deposit_fetcher)
     """Function used to retrieve the deposit PID."""
@@ -142,7 +157,11 @@ class Deposit(Record):
             )
 
     def build_deposit_schema(self, record):
-        """Convert record schema to a valid deposit schema."""
+        """Convert record schema to a valid deposit schema.
+
+        :param record: The record used to build deposit schema.
+        :returns: The absolute URL to the schema or `None`.
+        """
         schema_path = current_jsonschemas.url_to_path(record['$schema'])
         schema_prefix = current_app.config['DEPOSIT_JSONSCHEMAS_PREFIX']
         if schema_path:
@@ -181,13 +200,31 @@ class Deposit(Record):
 
     @index
     def commit(self, *args, **kwargs):
-        """Store changes on current instance in database."""
+        """Store changes on current instance in database and index it."""
         return super(Deposit, self).commit(*args, **kwargs)
 
     @classmethod
     @index
     def create(cls, data, id_=None):
-        """Create a deposit."""
+        """Create a deposit.
+
+        Initialize the follow information inside the deposit:
+
+        .. code-block:: python
+
+            deposit['_deposit'] = {
+                'id': pid_value,
+                'status': 'draft',
+                'owners': [user_id],
+                'created_by': user_id,
+            }
+
+        The deposit index is updated.
+
+        :param data: Input dictionary to fill the deposit.
+        :param id_: Default uuid for the deposit.
+        :returns: The new created deposit.
+        """
         data.setdefault('$schema', current_jsonschemas.path_to_url(
             current_app.config['DEPOSIT_DEFAULT_JSONSCHEMA']
         ))
@@ -207,7 +244,10 @@ class Deposit(Record):
         return super(Deposit, cls).create(data, id_=id_)
 
     def _publish_new(self, id_=None):
-        """Publish new deposit."""
+        """Publish new deposit.
+
+        :param id_: The forced record UUID.
+        """
         minter = current_pidstore.minters[
             current_app.config['DEPOSIT_PID_MINTER']
         ]
@@ -258,10 +298,39 @@ class Deposit(Record):
         record = record.__class__(data, model=record.model)
         return record
 
-    # No need for indexing as it calls self.commit()
     @has_status
     def publish(self, pid=None, id_=None):
-        """Publish a deposit."""
+        """Publish a deposit.
+
+        If it's the first time:
+
+        * it calls the minter and set the following meta information inside
+            the deposit:
+
+        .. code-block:: python
+
+            deposit['_deposit'] = {
+                'type': pid_type,
+                'value': pid_value,
+                'revision_id': 0,
+            }
+
+        * A dump of all information inside the deposit is done.
+
+        * A snapshot of the files is done.
+
+        Otherwise, published the new edited version.
+        In this case, if in the mainwhile someone already published a new
+        version, it'll try to merge the changes with the latest version.
+
+        .. note:: no need for indexing as it calls `self.commit()`.
+
+        Status required: ``'draft'``.
+
+        :param pid: Force the new pid value. (Default: ``None``)
+        :param id_: Force the new uuid value as deposit id. (Default: ``None``)
+        :returns: Returns itself.
+        """
         pid = pid or self.pid
 
         if not pid.is_registered():
@@ -278,7 +347,10 @@ class Deposit(Record):
         return self
 
     def _prepare_edit(self, record):
-        """Update selected keys."""
+        """Update selected keys.
+
+        :param record: The record to prepare.
+        """
         data = record.dumps()
         # Keep current record revision for merging.
         data['_deposit']['pid']['revision_id'] = record.revision_id
@@ -289,7 +361,32 @@ class Deposit(Record):
     @has_status(status='published')
     @index
     def edit(self, pid=None):
-        """Edit deposit."""
+        """Edit deposit.
+
+        #. The signal :data:`invenio_records.signals.before_record_update`
+           is sent before the edit execution.
+
+        #. The following meta information are saved inside the deposit:
+
+        .. code-block:: python
+
+            deposit['_deposit']['pid'] = record.revision_id
+            deposit['_deposit']['status'] = 'draft'
+            deposit['$schema'] = deposit_schema_from_record_schema
+
+        #. The signal :data:`invenio_records.signals.after_record_update` is
+            sent after the edit execution.
+
+        #. The deposit index is updated.
+
+        Status required: `published`.
+
+        .. note:: the process fails if the pid has status
+            :attr:`invenio_pidstore.models.PIDStatus.REGISTERED`.
+
+        :param pid: Force a pid object. (Default: ``None``)
+        :returns: A new Deposit object.
+        """
         pid = pid or self.pid
 
         with db.session.begin_nested():
@@ -310,7 +407,30 @@ class Deposit(Record):
     @has_status
     @index
     def discard(self, pid=None):
-        """Discard deposit changes."""
+        """Discard deposit changes.
+
+        #. The signal :data:`invenio_records.signals.before_record_update` is
+            sent before the edit execution.
+
+        #. It restores the last published version.
+
+        #. The following meta information are saved inside the deposit:
+
+        .. code-block:: python
+
+            deposit['_deposit']['status'] = 'draft'
+            deposit['$schema'] = deposit_schema_from_record_schema
+
+        #. The signal :data:`invenio_records.signals.after_record_update` is
+            sent after the edit execution.
+
+        #. The deposit index is updated.
+
+        Status required: ``'draft'``.
+
+        :param pid: Force a pid object. (Default: ``None``)
+        :returns: A new Deposit object.
+        """
         pid = pid or self.pid
 
         with db.session.begin_nested():
@@ -330,7 +450,14 @@ class Deposit(Record):
     @has_status
     @index(delete=True)
     def delete(self, force=True, pid=None):
-        """Delete deposit."""
+        """Delete deposit.
+
+        Status required: ``'draft'``.
+
+        :param force: Force deposit delete.  (Default: ``True``)
+        :param pid: Force pid object.  (Default: ``None``)
+        :returns: A new Deposit object.
+        """
         pid = pid or self.pid
 
         if self['_deposit'].get('pid'):
@@ -342,19 +469,34 @@ class Deposit(Record):
     @has_status
     @preserve(result=False)
     def clear(self, *args, **kwargs):
-        """Clear only drafts."""
+        """Clear only drafts.
+
+        Status required: ``'draft'``.
+
+        Meta information inside `_deposit` are preserved.
+        """
         super(Deposit, self).clear(*args, **kwargs)
 
     @has_status
     @preserve(result=False)
     def update(self, *args, **kwargs):
-        """Update only drafts."""
+        """Update only drafts.
+
+        Status required: ``'draft'``.
+
+        Meta information inside `_deposit` are preserved.
+        """
         super(Deposit, self).update(*args, **kwargs)
 
     @has_status
     @preserve
     def patch(self, *args, **kwargs):
-        """Patch only drafts."""
+        """Patch only drafts.
+
+        Status required: ``'draft'``.
+
+        Meta information inside `_deposit` are preserved.
+        """
         return super(Deposit, self).patch(*args, **kwargs)
 
     def _create_bucket(self):
@@ -365,7 +507,12 @@ class Deposit(Record):
 
     @property
     def files(self):
-        """Add validation on ``sort_by`` method."""
+        """List of Files inside the deposit.
+
+        Add validation on ``sort_by`` method: if, at the time of files access,
+        the record is not a ``'draft'`` then a
+        :exc:`invenio_pidstore.errors.PIDInvalidAction` is rised.
+        """
         files_ = super(Deposit, self).files
 
         if files_:

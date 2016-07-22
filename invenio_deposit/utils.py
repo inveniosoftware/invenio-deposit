@@ -33,7 +33,13 @@ from .scopes import write_scope
 
 
 def check_oauth2_scope(can_method, *myscopes):
-    """Check OAuth2 scope."""
+    """Base permission factory that check OAuth2 scope and can_method.
+
+    :param can_method: Permission check function that accept a record in input
+        and return a boolean.
+    :param myscopes: List of scopes required to permit the access.
+    :returns: A :class:`flask_principal.Permission` factory.
+    """
     def check(record, *args, **kwargs):
         @require_api_auth()
         @require_oauth_scopes(*myscopes)
@@ -45,13 +51,25 @@ def check_oauth2_scope(can_method, *myscopes):
 
 
 def can_elasticsearch(record):
-    """Try to search for given record."""
+    """Check if a given record is indexed.
+
+    :param record: A record object.
+    :returns: If the record is indexed returns `True`, otherwise `False`.
+    """
     search = request._methodview.search_class()
     search = search.get_record(str(record.id))
     return search.count() == 1
 
 
 check_oauth2_scope_write = check_oauth2_scope(lambda x: True, write_scope.id)
+"""Permission factory that check oauth2 scope.
+
+The scope :class:`invenio_deposit.scopes.write_scope` is checked.
+"""
 
 check_oauth2_scope_write_elasticsearch = check_oauth2_scope(
     can_elasticsearch, write_scope.id)
+"""Permission factory that check oauth2 scope and if the record is indexed.
+
+The scope :class:`invenio_deposit.scopes.write_scope` is checked.
+"""

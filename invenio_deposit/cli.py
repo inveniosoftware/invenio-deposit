@@ -35,7 +35,11 @@ from invenio_pidstore import current_pidstore
 
 
 def process_minter(value):
-    """Load minter from PIDStore registry based on given value."""
+    """Load minter from PIDStore registry based on given value.
+
+    :param value: Name of the minter.
+    :returns: The minter.
+    """
     try:
         return current_pidstore.minters[value]
     except KeyError:
@@ -47,7 +51,12 @@ def process_minter(value):
 
 
 def process_schema(value):
-    """Load schema from JSONSchema registry based on given value."""
+    """Load schema from JSONSchema registry based on given value.
+
+    :param value: Schema path, relative to the directory when it was
+        registered.
+    :returns: The schema absolute path.
+    """
     schemas = current_app.extensions['invenio-jsonschemas'].schemas
     try:
         return schemas[value]

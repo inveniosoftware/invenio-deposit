@@ -326,6 +326,29 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
+nitpick_ignore = [('py:class', 'Record')]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'https://docs.python.org/': None,
+    'Flask': (
+        'http://flask.pocoo.org/docs/0.11', None
+    ),
+    'Flask-Principal': (
+        'http://pythonhosted.org/Flask-Principal', None
+    ),
+    'invenio-pidstore': ('http://pythonhosted.org/invenio-pidstore', None),
+    'invenio-records': ('http://pythonhosted.org/invenio-records', None),
+    'invenio-records-rest': (
+        'http://pythonhosted.org/invenio-records-rest', None
+    ),
+    'invenio-records-files': (
+        'http://pythonhosted.org/invenio-records-files', None
+    ),
+    'invenio-files-rest': (
+        'http://pythonhosted.org/invenio-files-rest', None
+    ),
+    'invenio-access': (
+        'http://pythonhosted.org/invenio-access', None
+    ),
+}

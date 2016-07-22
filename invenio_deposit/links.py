@@ -29,7 +29,23 @@ from invenio_records_rest.links import default_links_factory
 
 
 def deposit_links_factory(pid):
-    """Factory for record links generation."""
+    """Factory for record links generation.
+
+    The dictionary is formed as:
+
+    .. code-block:: python
+
+        {
+            'files': '/url/to/files',
+            'publish': '/url/to/publish',
+            'edit': '/url/to/edit',
+            'discard': '/url/to/discard',
+            ...
+        }
+
+    :param pid: The record PID object.
+    :returns: A dictionary that contains all the links.
+    """
     links = default_links_factory(pid)
 
     def _url(name, **kwargs):

@@ -54,7 +54,13 @@ from ..signals import post_action
 
 
 def create_blueprint(endpoints):
-    """Create Invenio-Deposit-REST blueprint."""
+    """Create Invenio-Deposit-REST blueprint.
+
+    See: :data:`invenio_deposit.config.DEPOSIT_REST_ENDPOINTS`.
+
+    :param endpoints: List of endpoints configuration.
+    :returns: The configured blueprint.
+    """
     blueprint = Blueprint(
         'invenio_deposit_rest',
         __name__,
@@ -191,7 +197,17 @@ class DepositActionResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('update_permission_factory')
     def post(self, pid, record, action):
-        """Handle deposit action."""
+        """Handle deposit action.
+
+        After the action is executed, a
+        :class:`invenio_deposit.signals.post_action` signal is sent.
+
+        Permission required: `update_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :param action: The action to execute.
+        """
         getattr(record, action)(pid=pid)
 
         db.session.commit()
@@ -226,7 +242,14 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('read_permission_factory')
     def get(self, pid, record):
-        """Get deposit/depositions/:id/files."""
+        """Get files.
+
+        Permission required: `read_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :returns: The files.
+        """
         return self.make_response(obj=record.files, pid=pid, record=record)
 
     @require_api_auth()
@@ -234,7 +257,13 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('update_permission_factory')
     def post(self, pid, record):
-        """Handle POST deposit files."""
+        """Handle POST deposit files.
+
+        Permission required: `update_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        """
         # load the file
         uploaded_file = request.files['file']
         # file name
@@ -256,7 +285,28 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('update_permission_factory')
     def put(self, pid, record):
-        """Handle PUT deposit files."""
+        """Handle the sort of the files through the PUT deposit files.
+
+        Expected input in body PUT:
+
+        .. code-block:: javascript
+
+            [
+                {
+                    "id": 1
+                },
+                {
+                    "id": 2
+                },
+                ...
+            }
+
+        Permission required: `update_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :returns: The files.
+        """
         try:
             ids = [data['id'] for data in json.loads(
                 request.data.decode('utf-8'))]
@@ -296,7 +346,17 @@ class DepositFileResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('read_permission_factory')
     def get(self, pid, record, key, version_id, **kwargs):
-        """Get deposit/depositions/:id/files/:key."""
+        """Get file.
+
+        Permission required: `read_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :param key: Unique identifier for the file in the deposit.
+        :param version_id: File version. Optional. If no version is provided,
+            the last version is retrieved.
+        :returns: the file content.
+        """
         try:
             obj = record.files[str(key)].get_version(version_id=version_id)
             return self.make_response(
@@ -309,7 +369,14 @@ class DepositFileResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('update_permission_factory')
     def put(self, pid, record, key):
-        """Handle PUT deposit files."""
+        """Handle the file rename through the PUT deposit file.
+
+        Permission required: `update_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :param key: Unique identifier for the file in the deposit.
+        """
         try:
             data = json.loads(request.data.decode('utf-8'))
             new_key = data['filename']
@@ -331,7 +398,14 @@ class DepositFileResource(ContentNegotiatedMethodView):
     @pass_record
     @need_record_permission('update_permission_factory')
     def delete(self, pid, record, key):
-        """Handle DELETE deposit files."""
+        """Handle DELETE deposit file.
+
+        Permission required: `update_permission_factory`.
+
+        :param pid: Pid object (from url).
+        :param record: Record object resolved from the pid.
+        :param key: Unique identifier for the file in the deposit.
+        """
         try:
             del record.files[str(key)]
             record.commit()

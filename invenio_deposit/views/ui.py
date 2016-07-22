@@ -31,7 +31,13 @@ from flask_login import login_required
 
 
 def create_blueprint(endpoints):
-    """Create Invenio-Deposit-UI blueprint."""
+    """Create Invenio-Deposit-UI blueprint.
+
+    See: :data:`invenio_deposit.config.DEPOSIT_RECORDS_UI_ENDPOINTS`.
+
+    :param endpoints: List of endpoints configuration.
+    :returns: The configured blueprint.
+    """
     from invenio_records_ui.views import create_url_rule
 
     blueprint = Blueprint(

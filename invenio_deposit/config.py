@@ -83,6 +83,12 @@ DEPOSIT_REST_ENDPOINTS = dict(
         max_result_window=10000,
     ),
 )
+"""Basic REST deposit configuration.
+
+Most of the configurations have the same meaning of the record configuration
+:data:`invenio_records_rest.config.RECORDS_REST_ENDPOINTS`.
+Deposit introduce also configuration for files.
+"""
 
 DEPOSIT_REST_SORT_OPTIONS = dict(
     deposits=dict(
@@ -100,6 +106,10 @@ DEPOSIT_REST_SORT_OPTIONS = dict(
         )
     )
 )
+"""Basic deposit sort configuration.
+See :data:`invenio_records_rest.config.RECORDS_REST_SORT_OPTIONS` for more
+information.
+"""
 
 DEPOSIT_REST_DEFAULT_SORT = dict(
     deposits=dict(
@@ -107,6 +117,11 @@ DEPOSIT_REST_DEFAULT_SORT = dict(
         noquery='mostrecent'
     )
 )
+"""Default deposit sort configuration.
+See :data:`invenio_records_rest.config.RECORDS_REST_DEFAULT_SORT` for more
+information.
+"""
+
 
 DEPOSIT_REST_FACETS = dict(
     deposits=dict(
@@ -120,6 +135,11 @@ DEPOSIT_REST_FACETS = dict(
         )
     )
 )
+"""Basic deposit facts configuration.
+See :data:`invenio_records_rest.config.RECORDS_REST_FACETS` for more
+information.
+"""
+
 
 DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
     depid=dict(
@@ -129,19 +149,40 @@ DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
         record_class='invenio_deposit.api:Deposit',
     ),
 )
+"""Basic deposit UI endpoints configuration.
+
+The structure of the dictionary is as follows:
+
+.. code-block:: python
+
+    DEPOSIT_RECORDS_UI_ENDPOINTS = {
+        '<pid-type>': {
+            'pid_type': '<pid-type>',
+            'route': '/path/to/deposit/<pid_value>',
+            'template': 'invenio_deposit/edit.html',
+            'record_class': 'mypackage.api:MyDeposit',
+        }
+    }
+"""
 
 DEPOSIT_UI_INDEX_TEMPLATE = 'invenio_deposit/index.html'
-"""Index template."""
+"""Template for the index page."""
 
 DEPOSIT_UI_NEW_TEMPLATE = 'invenio_deposit/edit.html'
-"""New deposit template."""
+"""Template for a new deposit page."""
 
 DEPOSIT_UI_JSTEMPLATE_ACTIONS = \
     'node_modules/invenio-records-js/dist/templates/actions.html'
+"""Template for <invenio-records-actions> defined by `invenio-records-js`."""
+
 DEPOSIT_UI_JSTEMPLATE_ERROR = \
     'node_modules/invenio-records-js/dist/templates/error.html'
+"""Template for <invenio-records-error> defined by `invenio-records-js`."""
+
 DEPOSIT_UI_JSTEMPLATE_FORM = \
     'node_modules/invenio-records-js/dist/templates/form.html'
+"""Template for <invenio-records-form> defined by `invenio-records-js`."""
+
 DEPOSIT_UI_SEARCH_INDEX = 'deposits'
 """Search index name for the deposit."""
 

@@ -32,8 +32,11 @@ from flask import Response, jsonify, make_response
 def json_serializer(pid, data, *args):
     """Build a JSON Flask response using the given data.
 
+    :param pid: The `invenio_pidstore.models.PersistentIdentifier` of the
+        record.
+    :param data: The record metadata.
     :returns: A Flask response with JSON data.
-    :returns type: :py:class:`flask.Response`
+    :rtype: :py:class:`flask.Response`.
     """
     if data is not None:
         response = Response(
@@ -42,12 +45,15 @@ def json_serializer(pid, data, *args):
         )
     else:
         response = Response(mimetype='application/json')
-    # response.set_etag(str(data.model.version_id))
     return response
 
 
 def file_serializer(obj):
-    """Serialize a object."""
+    """Serialize a object.
+
+    :param obj: A :class:`invenio_files_rest.models.ObjectVersion` instance.
+    :returns: A dictionary with the fields to serialize.
+    """
     return {
         "id": str(obj.file_id),
         "filename": obj.key,
@@ -57,18 +63,41 @@ def file_serializer(obj):
 
 
 def json_file_serializer(obj, status=None):
-    """JSON File Serializer."""
+    """JSON File Serializer.
+
+    :param obj: A :class:`invenio_files_rest.models.ObjectVersion` instance.
+    :param status: A HTTP Status. (Default: ``None``)
+    :returns: A Flask response with JSON data.
+    :rtype: :py:class:`flask.Response`.
+    """
     return make_response(jsonify(file_serializer(obj)), status)
 
 
 def json_files_serializer(objs, status=None):
-    """JSON Files Serializer."""
+    """JSON Files Serializer.
+
+    :parma objs: A list of:class:`invenio_files_rest.models.ObjectVersion`
+        instances.
+    :param status: A HTTP Status. (Default: ``None``)
+    :returns: A Flask response with JSON data.
+    :rtype: :py:class:`flask.Response`.
+    """
     files = [file_serializer(obj) for obj in objs]
     return make_response(json.dumps(files), status)
 
 
 def json_file_response(obj=None, pid=None, record=None, status=None):
-    """JSON Files/File serializer."""
+    """JSON Files/File serializer.
+
+    :param obj: A :class:`invenio_files_rest.models.ObjectVersion` instance or
+        a :class:`invenio_records_files.api.FilesIterator` if it's a list of
+        files.
+    :param pid: PID value. (not used)
+    :param record: The record metadata. (not used)
+    :param status: The HTTP status code.
+    :returns: A Flask response with JSON data.
+    :rtype: :py:class:`flask.Response`.
+    """
     from invenio_records_files.api import FilesIterator
 
     if isinstance(obj, FilesIterator):
@@ -78,3 +107,4 @@ def json_file_response(obj=None, pid=None, record=None, status=None):
 
 
 json_v1_files_response = json_file_response
+"""Default JSON files response."""
