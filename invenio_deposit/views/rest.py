@@ -227,7 +227,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
     @need_record_permission('read_permission_factory')
     def get(self, pid, record):
         """Get deposit/depositions/:id/files."""
-        return self.make_response(record.files)
+        return self.make_response(obj=record.files, pid=pid, record=record)
 
     @require_api_auth()
     @require_oauth_scopes(write_scope.id)
@@ -248,7 +248,8 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         record.files[key] = uploaded_file.stream
         record.commit()
         db.session.commit()
-        return self.make_response(obj=record.files[key].obj, status=201)
+        return self.make_response(
+            obj=record.files[key].obj, pid=pid, record=record, status=201)
 
     @require_api_auth()
     @require_oauth_scopes(write_scope.id)
@@ -265,7 +266,7 @@ class DepositFilesResource(ContentNegotiatedMethodView):
         record.files.sort_by(*ids)
         record.commit()
         db.session.commit()
-        return self.make_response(record.files)
+        return self.make_response(obj=record.files, pid=pid, record=record)
 
 
 class DepositFileResource(ContentNegotiatedMethodView):
@@ -298,7 +299,8 @@ class DepositFileResource(ContentNegotiatedMethodView):
         """Get deposit/depositions/:id/files/:key."""
         try:
             obj = record.files[str(key)].get_version(version_id=version_id)
-            return self.make_response(obj=obj or abort(404))
+            return self.make_response(
+                obj=obj or abort(404), pid=pid, record=record)
         except KeyError:
             abort(404)
 
@@ -322,7 +324,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
             abort(404)
         record.commit()
         db.session.commit()
-        return self.make_response(obj=obj)
+        return self.make_response(obj=obj, pid=pid, record=record)
 
     @require_api_auth()
     @require_oauth_scopes(write_scope.id)

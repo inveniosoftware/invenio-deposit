@@ -67,14 +67,14 @@ def json_files_serializer(objs, status=None):
     return make_response(json.dumps(files), status)
 
 
-def json_file_response(obj, status=None):
+def json_file_response(obj=None, pid=None, record=None, status=None):
     """JSON Files/File serializer."""
     from invenio_records_files.api import FilesIterator
 
     if isinstance(obj, FilesIterator):
-        return json_files_serializer(objs=obj, status=status)
+        return json_files_serializer(obj, status=status)
     else:
-        return json_file_serializer(obj=obj, status=status)
+        return json_file_serializer(obj, status=status)
 
 
 json_v1_files_response = json_file_response
