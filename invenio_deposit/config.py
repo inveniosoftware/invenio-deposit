@@ -50,39 +50,41 @@ DEPOSIT_DEFAULT_SCHEMAFORM = 'json/invenio_deposit/form.json'
 
 _PID = 'pid(depid,record_class="invenio_deposit.api:Deposit")'
 
-DEPOSIT_REST_ENDPOINTS = dict(
-    depid=dict(
-        pid_type='depid',
-        pid_minter='deposit',
-        pid_fetcher='deposit',
-        record_class='invenio_deposit.api:Deposit',
-        files_serializers={
+DEPOSIT_REST_ENDPOINTS = {
+    'depid': {
+        'pid_type': 'depid',
+        'pid_minter': 'deposit',
+        'pid_fetcher': 'deposit',
+        'record_class': 'invenio_deposit.api:Deposit',
+        'files_serializers': {
             'application/json': ('invenio_deposit.serializers'
                                  ':json_v1_files_response'),
         },
-        record_serializers={
+        'record_serializers': {
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_response'),
         },
-        search_class='invenio_deposit.search:DepositSearch',
-        search_serializers={
+        'search_class': 'invenio_deposit.search:DepositSearch',
+        'search_serializers': {
             'application/json': ('invenio_records_rest.serializers'
                                  ':json_v1_search'),
         },
-        list_route='/deposits/',
-        item_route='/deposits/<{0}:pid_value>'.format(_PID),
-        file_list_route='/deposits/<{0}:pid_value>/files'.format(_PID),
-        file_item_route='/deposits/<{0}:pid_value>/files/<path:key>'.format(
-            _PID),
-        default_media_type='application/json',
-        links_factory_imp='invenio_deposit.links:deposit_links_factory',
-        create_permission_factory_imp=check_oauth2_scope_write,
-        read_permission_factory_imp=check_elasticsearch,
-        update_permission_factory_imp=check_oauth2_scope_write_elasticsearch,
-        delete_permission_factory_imp=check_oauth2_scope_write_elasticsearch,
-        max_result_window=10000,
-    ),
-)
+        'list_route': '/deposits/',
+        'item_route': '/deposits/<{0}:pid_value>'.format(_PID),
+        'file_list_route': '/deposits/<{0}:pid_value>/files'.format(_PID),
+        'file_item_route':
+            '/deposits/<{0}:pid_value>/files/<path:key>'.format(_PID),
+        'default_media_type': 'application/json',
+        'links_factory_imp': 'invenio_deposit.links:deposit_links_factory',
+        'create_permission_factory_imp': check_oauth2_scope_write,
+        'read_permission_factory_imp': check_elasticsearch,
+        'update_permission_factory_imp':
+            check_oauth2_scope_write_elasticsearch,
+        'delete_permission_factory_imp':
+            check_oauth2_scope_write_elasticsearch,
+        'max_result_window': 10000,
+    },
+}
 """Basic REST deposit configuration.
 
 Most of the configurations have the same meaning of the record configuration
@@ -90,65 +92,65 @@ Most of the configurations have the same meaning of the record configuration
 Deposit introduce also configuration for files.
 """
 
-DEPOSIT_REST_SORT_OPTIONS = dict(
-    deposits=dict(
-        bestmatch=dict(
-            fields=['-_score'],
-            title='Best match',
-            default_order='asc',
-            order=2
-        ),
-        mostrecent=dict(
-            fields=['-_updated'],
-            title='Most recent',
-            default_order='asc',
-            order=1
-        )
-    )
-)
+DEPOSIT_REST_SORT_OPTIONS = {
+    'deposits': {
+        'bestmatch': {
+            'fields': ['-_score'],
+            'title': 'Best match',
+            'default_order': 'asc',
+            'order': 2,
+        },
+        'mostrecent': {
+            'fields': ['-_updated'],
+            'title': 'Most recent',
+            'default_order': 'asc',
+            'order': 1,
+        },
+    },
+}
 """Basic deposit sort configuration.
 See :data:`invenio_records_rest.config.RECORDS_REST_SORT_OPTIONS` for more
 information.
 """
 
-DEPOSIT_REST_DEFAULT_SORT = dict(
-    deposits=dict(
-        query='bestmatch',
-        noquery='mostrecent'
-    )
-)
+DEPOSIT_REST_DEFAULT_SORT = {
+    'deposits': {
+        'query': 'bestmatch',
+        'noquery': 'mostrecent',
+    }
+}
 """Default deposit sort configuration.
 See :data:`invenio_records_rest.config.RECORDS_REST_DEFAULT_SORT` for more
 information.
 """
 
 
-DEPOSIT_REST_FACETS = dict(
-    deposits=dict(
-        aggs=dict(
-            status=dict(
-                terms=dict(field='_deposit.status'),
-            )
-        ),
-        post_filters=dict(
-            status=terms_filter('_deposit.status'),
-        )
-    )
-)
+DEPOSIT_REST_FACETS = {
+    'deposits': {
+        'aggs': {
+            'status': {
+                'terms': {'field': '_deposit.status'},
+            },
+        },
+        'post_filters': {
+            'status': terms_filter('_deposit.status'),
+        },
+    },
+}
 """Basic deposit facts configuration.
 See :data:`invenio_records_rest.config.RECORDS_REST_FACETS` for more
 information.
 """
 
 
-DEPOSIT_RECORDS_UI_ENDPOINTS = dict(
-    depid=dict(
-        pid_type='depid',
-        route='/deposit/<pid_value>',
-        template='invenio_deposit/edit.html',
-        record_class='invenio_deposit.api:Deposit',
-    ),
-)
+DEPOSIT_RECORDS_UI_ENDPOINTS = {
+    'depid': {
+        'pid_type': 'depid',
+        'route': '/deposit/<pid_value>',
+        'template': 'invenio_deposit/edit.html',
+        'record_class': 'invenio_deposit.api:Deposit',
+    },
+}
 """Basic deposit UI endpoints configuration.
 
 The structure of the dictionary is as follows:
