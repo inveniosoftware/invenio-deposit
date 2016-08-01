@@ -117,6 +117,7 @@ setup(
         ],
         'invenio_assets.bundles': [
             'invenio_deposit_js = invenio_deposit.bundles:js',
+            'invenio_deposit_css = invenio_deposit.bundles:css',
         ],
         'invenio_i18n.translations': [
             'messages = invenio_deposit',
