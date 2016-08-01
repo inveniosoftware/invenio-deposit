@@ -243,6 +243,21 @@ class Deposit(Record):
 
         return super(Deposit, cls).create(data, id_=id_)
 
+    @contextmanager
+    def _process_files(self, record_id, data):
+        """Snapshot bucket and add files in record during first publishing."""
+        if self.files:
+            assert not self.files.bucket.locked
+            self.files.bucket.locked = True
+            snapshot = self.files.bucket.snapshot(lock=True)
+            data['_files'] = self.files.dumps(bucket=snapshot.id)
+            yield data
+            db.session.add(RecordsBuckets(
+                record_id=record_id, bucket_id=snapshot.id
+            ))
+        else:
+            yield data
+
     def _publish_new(self, id_=None):
         """Publish new deposit.
 
@@ -263,26 +278,9 @@ class Deposit(Record):
         data = dict(self.dumps())
         data['$schema'] = self.record_schema
 
-        # During first publishing create snapshot the bucket.
-        @contextmanager
-        def process_files(data):
-            """Process deposit files."""
-            if RecordsBuckets.query.filter_by(
-                    record_id=self.model.id).count():
-                assert not self.files.bucket.locked
-                self.files.bucket.locked = True
-                snapshot = self.files.bucket.snapshot(lock=True)
-                data['_files'] = self.files.dumps(bucket=snapshot.id)
-                yield data
-                db.session.add(RecordsBuckets(
-                    record_id=id_, bucket_id=snapshot.id
-                ))
-            else:
-                yield data
+        with self._process_files(id_, data):
+            record = self.published_record_class.create(data, id_=id_)
 
-        with process_files(data) as data:
-            record = self.published_record_class.create(data,
-                                                        id_=id_)
         return record
 
     def _publish_edited(self):
