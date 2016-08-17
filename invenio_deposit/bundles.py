@@ -29,8 +29,52 @@ from invenio_assets import NpmBundle
 
 css = Bundle(
     'node_modules/ui-select/dist/select.css',
+    'node_modules/jqueryui/jquery-ui.css',
+    'node_modules/rr-ng-ckeditor/ng-ckeditor.css',
+    'node_modules/pickadate/lib/themes/classic.css',
+    'node_modules/pickadate/lib/themes/classic.date.css',
     filters='cleancss',
     output='gen/deposit.%(version)s.css',
+)
+
+js_dependencies_jquery = NpmBundle(
+    'node_modules/jquery/jquery.js',
+    'node_modules/jqueryui/jquery-ui.js',
+    npm={
+        'jquery': '~1.9.1',
+        'jqueryui': '~1.11.1',
+    }
+)
+
+js_dependencies_ui_sortable = NpmBundle(
+    'node_modules/angular-ui-sortable/dist/sortable.js',
+    npm={
+        'angular-ui-sortable': '~0.14.3',
+    }
+)
+
+js_dependencies_datepicker = NpmBundle(
+    'node_modules/pickadate/lib/picker.js',
+    'node_modules/pickadate/lib/picker.date.js',
+    'node_modules/pickadate/lib/legacy.js',
+    'node_modules/angular-schema-form-datepicker/bootstrap-datepicker.js',
+    npm={
+        'angular-schema-form-datepicker': '~0.4.0',
+        'pickadate': '~3.5.6',
+    }
+)
+
+js_dependencies_ckeditor = NpmBundle(
+    'node_modules/ckeditor/ckeditor.js',
+    'node_modules/rr-ng-ckeditor/ng-ckeditor.js',
+    'node_modules/angular-schema-form-ckeditor/bootstrap-ckeditor.js',
+    npm={
+        'angular-schema-form-ckeditor':
+            'git://github.com/webcanvas/angular-schema-form-ckeditor'
+            '.git#b213fa934759a18b1436e23bfcbd9f0f730f1296',
+        'ckeditor': '~4.5.10',
+        'rr-ng-ckeditor': '~0.2.1',
+    }
 )
 
 js_dependecies_uploader = NpmBundle(
@@ -67,13 +111,13 @@ js_dependecies_autocomplete = NpmBundle(
     'node_modules/angular-schema-form-dynamic-select/'
     'angular-schema-form-dynamic-select.js',
     npm={
-        'angular-sanitize': '~1.4.10',
         'angular-animate': '~1.4.8',
+        'angular-sanitize': '~1.4.10',
+        'angular-schema-form-dynamic-select': '~0.13.1',
         'angular-strap': '~2.3.9',
+        'angular-translate': '~2.11.0',
         'angular-underscore': '~0.0.3',
         'ui-select': '~0.18.1',
-        'angular-translate': '~2.11.0',
-        'angular-schema-form-dynamic-select': '~0.13.1',
     },
 )
 
@@ -88,16 +132,19 @@ js_main = NpmBundle(
     },
 )
 
-
 js_dependecies = NpmBundle(
+    # ui-sortable requires jquery to be already loaded
+    js_dependencies_jquery,
     js_main,
     js_dependecies_uploader,
     js_dependecies_schema_form,
     js_dependecies_autocomplete,
+    js_dependencies_ui_sortable,
+    js_dependencies_ckeditor,
+    js_dependencies_datepicker,
     filters='jsmin',
     output='gen/deposit.dependencies.%(version)s.js',
 )
-
 
 js = Bundle(
     'js/invenio_deposit/app.js',
