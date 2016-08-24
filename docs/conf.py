@@ -137,8 +137,8 @@ html_theme_options = {
     'github_banner': True,
     'show_powered_by': False,
     'extra_nav_links': {
-        'invenio-deposit@GitHub': 'http://github.com/inveniosoftware/invenio-deposit',
-        'invenio-deposit@PyPI': 'http://pypi.python.org/pypi/invenio-deposit/',
+        'invenio-deposit@GitHub': 'https://github.com/inveniosoftware/invenio-deposit',
+        'invenio-deposit@PyPI': 'https://pypi.python.org/pypi/invenio-deposit/',
     }
 }
 
@@ -335,20 +335,23 @@ intersphinx_mapping = {
         'http://flask.pocoo.org/docs/0.11', None
     ),
     'Flask-Principal': (
-        'http://pythonhosted.org/Flask-Principal', None
+        'https://pythonhosted.org/Flask-Principal', None
     ),
-    'invenio-pidstore': ('http://pythonhosted.org/invenio-pidstore', None),
-    'invenio-records': ('http://pythonhosted.org/invenio-records', None),
+    'invenio-pidstore': ('https://pythonhosted.org/invenio-pidstore', None),
+    'invenio-records': ('https://pythonhosted.org/invenio-records', None),
     'invenio-records-rest': (
-        'http://pythonhosted.org/invenio-records-rest', None
+        'https://pythonhosted.org/invenio-records-rest', None
     ),
     'invenio-records-files': (
-        'http://pythonhosted.org/invenio-records-files', None
+        'https://pythonhosted.org/invenio-records-files', None
     ),
     'invenio-files-rest': (
-        'http://pythonhosted.org/invenio-files-rest', None
+        'https://pythonhosted.org/invenio-files-rest', None
     ),
     'invenio-access': (
-        'http://pythonhosted.org/invenio-access', None
+        'https://pythonhosted.org/invenio-access', None
     ),
 }
+
+# Autodoc configuraton.
+autoclass_content = 'both'
