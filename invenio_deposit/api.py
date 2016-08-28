@@ -92,7 +92,7 @@ def has_status(method=None, status='draft'):
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """Check current deposit status."""
-        if status != self['_deposit']['status']:
+        if status != self.status:
             raise PIDInvalidAction()
 
         return method(self, *args, **kwargs)
@@ -504,6 +504,11 @@ class Deposit(Record):
         ])
 
     @property
+    def status(self):
+        """Property for accessing deposit status."""
+        return self['_deposit']['status']
+
+    @property
     def files(self):
         """List of Files inside the deposit.
 
@@ -518,7 +523,7 @@ class Deposit(Record):
 
             def sort_by(*args, **kwargs):
                 """Only in draft state."""
-                if 'draft' != self['_deposit']['status']:
+                if 'draft' != self.status:
                     raise PIDInvalidAction()
                 return sort_by_(*args, **kwargs)
 

@@ -61,11 +61,11 @@ def test_simple_flow(app, db, fake_schemas, location):
     """Test simple flow of deposit states through its lifetime."""
     deposit = Deposit.create({})
     assert deposit['_deposit']['id']
-    assert 'draft' == deposit['_deposit']['status']
+    assert 'draft' == deposit.status
     assert 0 == deposit.revision_id
 
     deposit.publish()
-    assert 'published' == deposit['_deposit']['status']
+    assert 'published' == deposit.status
     assert 1 == deposit.revision_id
 
     with pytest.raises(PIDInvalidAction):
@@ -74,25 +74,25 @@ def test_simple_flow(app, db, fake_schemas, location):
         deposit.clear()
     with pytest.raises(PIDInvalidAction):
         deposit.update(title='Revision 2')
-    assert 'published' == deposit['_deposit']['status']
+    assert 'published' == deposit.status
 
     deposit = deposit.edit()
-    assert 'draft' == deposit['_deposit']['status']
+    assert 'draft' == deposit.status
     assert 2 == deposit.revision_id
     assert 0 == deposit['_deposit']['pid']['revision_id']
 
     with pytest.raises(PIDInvalidAction):
         deposit.edit()
-    assert 'draft' == deposit['_deposit']['status']
+    assert 'draft' == deposit.status
 
     deposit['title'] = 'Revision 1'
     deposit.publish()
-    assert 'published' == deposit['_deposit']['status']
+    assert 'published' == deposit.status
     assert 3 == deposit.revision_id
     assert 0 == deposit['_deposit']['pid']['revision_id']
 
     deposit = deposit.edit()
-    assert 'draft' == deposit['_deposit']['status']
+    assert 'draft' == deposit.status
     assert 4 == deposit.revision_id
     assert 1 == deposit['_deposit']['pid']['revision_id']
 
@@ -110,7 +110,7 @@ def test_delete(app, db, fake_schemas, location):
     deposit = Deposit.create({})
     pid = deposit.pid
     assert deposit['_deposit']['id']
-    assert 'draft' == deposit['_deposit']['status']
+    assert 'draft' == deposit.status
     assert 0 == deposit.revision_id
 
     deposit.delete()
