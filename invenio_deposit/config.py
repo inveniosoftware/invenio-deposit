@@ -174,6 +174,9 @@ DEPOSIT_UI_INDEX_TEMPLATE = 'invenio_deposit/index.html'
 DEPOSIT_UI_NEW_TEMPLATE = 'invenio_deposit/edit.html'
 """Template for a new deposit page."""
 
+DEPOSIT_UI_TOMBSTONE_TEMPLATE = 'invenio_deposit/tombstone.html'
+"""Template for a tombstone deposit page."""
+
 DEPOSIT_UI_JSTEMPLATE_ACTIONS = \
     'node_modules/invenio-records-js/dist/templates/actions.html'
 """Template for <invenio-records-actions> defined by `invenio-records-js`."""

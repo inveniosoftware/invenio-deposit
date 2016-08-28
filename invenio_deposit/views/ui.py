@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 from flask import Blueprint, current_app, render_template
 from flask_login import login_required
+from invenio_pidstore.errors import PIDDeletedError
 
 
 def create_blueprint(endpoints):
@@ -47,6 +48,15 @@ def create_blueprint(endpoints):
         template_folder='../templates',
         url_prefix='',
     )
+
+    @blueprint.errorhandler(PIDDeletedError)
+    def tombstone_errorhandler(error):
+        """Render tombstone page."""
+        return render_template(
+            current_app.config['DEPOSIT_UI_TOMBSTONE_TEMPLATE'],
+            pid=error.pid,
+            record=error.record or {},
+        ), 410
 
     for endpoint, options in (endpoints or {}).items():
         blueprint.add_url_rule(**create_url_rule(endpoint, **options))

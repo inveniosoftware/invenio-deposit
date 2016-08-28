@@ -43,6 +43,8 @@ from flask_cli import FlaskCLI
 from flask_oauthlib.provider import OAuth2Provider
 from flask_security import login_user
 from helpers import fill_oauth2_headers, make_pdf_fixture
+from invenio_access import InvenioAccess
+from invenio_access.models import ActionUsers
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_assets import InvenioAssets
@@ -60,7 +62,9 @@ from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
+from invenio_records_ui import InvenioRecordsUI
 from invenio_search import InvenioSearch, current_search, current_search_client
+from invenio_search_ui import InvenioSearchUI
 from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -70,7 +74,7 @@ from invenio_deposit.scopes import write_scope
 
 
 @pytest.yield_fixture()
-def app(request):
+def app():
     """Flask application fixture."""
     instance_path = tempfile.mkdtemp()
     app_ = Flask(__name__, instance_path=instance_path)
@@ -84,6 +88,7 @@ def app(request):
         SQLALCHEMY_DATABASE_URI=os.environ.get(
             'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
         SQLALCHEMY_TRACK_MODIFICATIONS=True,
+        SQLALCHEMY_ECHO=False,
         TESTING=True,
         WTF_CSRF_ENABLED=False,
         DEPOSIT_SEARCH_API='/api/search',
@@ -100,6 +105,7 @@ def app(request):
     InvenioDB(app_)
     Breadcrumbs(app_)
     InvenioAccounts(app_)
+    InvenioAccess(app_)
     app_.register_blueprint(accounts_blueprint)
     InvenioAssets(app_)
     InvenioJSONSchemas(app_)
@@ -110,6 +116,8 @@ def app(request):
     InvenioPIDStore(app_)
     InvenioIndexer(app_)
     InvenioDeposit(app_)
+    InvenioSearchUI(app_)
+    InvenioRecordsUI(app_)
     InvenioFilesREST(app_)
     OAuth2Provider(app_)
     InvenioOAuth2Server(app_)
@@ -123,23 +131,36 @@ def app(request):
     shutil.rmtree(instance_path)
 
 
+@pytest.yield_fixture()
+def test_client(app):
+    """Test client."""
+    with app.test_client() as client_:
+        yield client_
+
+
 @pytest.fixture()
-def users(app):
+def users(app, db):
     """Create users."""
-    with db_.session.begin_nested():
+    with db.session.begin_nested():
         datastore = app.extensions['security'].datastore
         user1 = datastore.create_user(email='info@inveniosoftware.org',
                                       password='tester', active=True)
         user2 = datastore.create_user(email='test@inveniosoftware.org',
                                       password='tester2', active=True)
-    db_.session.commit()
+        admin = datastore.create_user(email='admin@inveniosoftware.org',
+                                      password='tester3', active=True)
+        # Assign deposit-admin-access to admin only.
+        db.session.add(ActionUsers(
+            action='deposit-admin-access', user=admin
+        ))
+    db.session.commit()
     return [user1, user2]
 
 
 @pytest.fixture()
-def client(app, users):
+def client(app, users, db):
     """Create client."""
-    with db_.session.begin_nested():
+    with db.session.begin_nested():
         # create resource_owner -> client_1
         client_ = Client(
             client_id='client_test_u1c1',
@@ -151,15 +172,15 @@ def client(app, users):
             _redirect_uris='',
             _default_scopes='',
         )
-        db_.session.add(client_)
-    db_.session.commit()
+        db.session.add(client_)
+    db.session.commit()
     return client_
 
 
 @pytest.fixture()
-def write_token_user_1(app, client, users):
+def write_token_user_1(app, client, users, db):
     """Create token."""
-    with db_.session.begin_nested():
+    with db.session.begin_nested():
         token_ = Token(
             client=client,
             user=users[0],
@@ -170,15 +191,15 @@ def write_token_user_1(app, client, users):
             is_internal=True,
             _scopes=write_scope.id,
         )
-        db_.session.add(token_)
-    db_.session.commit()
+        db.session.add(token_)
+    db.session.commit()
     return token_
 
 
 @pytest.fixture()
-def write_token_user_2(app, client, users):
+def write_token_user_2(app, client, users, db):
     """Create token."""
-    with db_.session.begin_nested():
+    with db.session.begin_nested():
         token_ = Token(
             client=client,
             user=users[1],
@@ -189,8 +210,8 @@ def write_token_user_2(app, client, users):
             is_internal=True,
             _scopes=write_scope.id,
         )
-        db_.session.add(token_)
-    db_.session.commit()
+        db.session.add(token_)
+    db.session.commit()
     return token_
 
 
@@ -236,19 +257,19 @@ def es(app):
 
 
 @pytest.fixture()
-def location(app):
+def location(app, db):
     """Create default location."""
     tmppath = tempfile.mkdtemp()
-    with db_.session.begin_nested():
+    with db.session.begin_nested():
         Location.query.delete()
         loc = Location(name='local', uri=tmppath, default=True)
-        db_.session.add(loc)
-    db_.session.commit()
+        db.session.add(loc)
+    db.session.commit()
     return location
 
 
 @pytest.fixture()
-def deposit(app, es, users, location):
+def deposit(app, es, users, location, db):
     """New deposit with files."""
     record = {
         'title': 'fuu'
@@ -257,20 +278,20 @@ def deposit(app, es, users, location):
         login_user(users[0])
         deposit = Deposit.create(record)
         deposit.commit()
-        db_.session.commit()
+        db.session.commit()
     sleep(2)
     return deposit
 
 
 @pytest.fixture()
-def files(app, es, deposit):
+def files(app, es, deposit, db):
     """Add a file to the deposit."""
     content = b'### Testing textfile ###'
     stream = BytesIO(content)
     key = 'hello.txt'
     deposit.files[key] = stream
     deposit.commit()
-    db_.session.commit()
+    db.session.commit()
     return list(deposit.files)
 
 

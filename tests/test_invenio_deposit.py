@@ -98,7 +98,7 @@ def test_init():
         current_deposit.init_app
 
 
-def test_view(app):
+def test_template(app):
     """Test view."""
     with app.test_request_context():
         _check_template()
