@@ -549,10 +549,13 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
             assert file_1 == data[0]['id']
             assert file_2 == data[1]['id']
 
+            # Edit again
+            res = client.post(links['edit'], data=None, headers=json_headers)
+            assert res.status_code == 201
+
             # Save new title:
             res = client.patch(links['self'], data=json.dumps([
-                {'op': 'replace', 'path': '/title', 'value': 'Revision 2'},
-                ]),
+                {'op': 'replace', 'path': '/title', 'value': 'Revision 2'}, ]),
                 headers=[('Content-Type', 'application/json-patch+json'),
                          ('Accept', 'application/json')]
             )

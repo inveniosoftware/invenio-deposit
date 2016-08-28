@@ -101,6 +101,7 @@ def test_simple_flow(app, db, fake_schemas, location):
     assert 5 == deposit.revision_id
 
     deposit = deposit.discard()
+    assert 'published' == deposit.status
     assert 'Revision 1' == deposit['title']
     assert 6 == deposit.revision_id
 

@@ -416,7 +416,6 @@ class Deposit(Record):
 
         .. code-block:: python
 
-            deposit['_deposit']['status'] = 'draft'
             deposit['$schema'] = deposit_schema_from_record_schema
 
         #. The signal :data:`invenio_records.signals.after_record_update` is
@@ -436,7 +435,6 @@ class Deposit(Record):
 
             _, record = self.fetch_published()
             self.model.json = record.model.json
-            self.model.json['_deposit']['status'] = 'draft'
             self.model.json['$schema'] = self.build_deposit_schema(record)
 
             flag_modified(self.model, 'json')
