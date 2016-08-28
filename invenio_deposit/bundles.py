@@ -81,7 +81,7 @@ js_dependecies_uploader = NpmBundle(
     'node_modules/ng-file-upload/dist/ng-file-upload-all.js',
     'node_modules/invenio-files-js/dist/invenio-files-js.js',
     npm={
-        'invenio-files-js': '~0.0.1',
+        'invenio-files-js': '~0.0.2',
         'ng-file-upload': '~12.0.4',
         'underscore': '~1.8.3',
     }
@@ -95,7 +95,7 @@ js_dependecies_schema_form = NpmBundle(
     'node_modules/invenio-records-js/dist/invenio-records-js.js',
     npm={
         'angular-schema-form': '~0.8.13',
-        'invenio-records-js': '~0.0.3',
+        'invenio-records-js': '~0.0.4',
         'objectpath': '~1.2.1',
         'tv4': '~1.2.7',
     }
