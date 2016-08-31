@@ -36,7 +36,7 @@ from invenio_db import db
 from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records_rest.utils import obj_or_import_string
-from invenio_records_rest.views import \
+from invenio_records_rest.views import create_error_handlers, \
     create_url_rules as records_rest_url_rules
 from invenio_records_rest.views import need_record_permission, pass_record
 from invenio_rest import ContentNegotiatedMethodView
@@ -69,9 +69,7 @@ def create_blueprint(endpoints):
     blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
         status=403, message='Invalid action'
     ))
-    blueprint.errorhandler(ValidationError)(create_api_errorhandler(
-        status=400, message='Validation error'
-    ))
+    create_error_handlers(blueprint)
 
     for endpoint, options in (endpoints or {}).items():
         options = deepcopy(options)
