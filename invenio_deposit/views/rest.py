@@ -37,6 +37,7 @@ from invenio_oauth2server import require_api_auth, require_oauth_scopes
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records_rest.utils import obj_or_import_string
 from invenio_records_rest.views import \
+    create_error_handlers as records_rest_error_handlers, \
     create_url_rules as records_rest_url_rules
 from invenio_records_rest.views import need_record_permission, pass_record
 from invenio_rest import ContentNegotiatedMethodView
@@ -53,6 +54,14 @@ from ..search import DepositSearch
 from ..signals import post_action
 
 
+def create_error_handlers(blueprint):
+    """Create error handlers on blueprint."""
+    blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
+        status=403, message='Invalid action'
+    ))
+    records_rest_error_handlers(blueprint)
+
+
 def create_blueprint(endpoints):
     """Create Invenio-Deposit-REST blueprint.
 
@@ -66,12 +75,7 @@ def create_blueprint(endpoints):
         __name__,
         url_prefix='',
     )
-    blueprint.errorhandler(PIDInvalidAction)(create_api_errorhandler(
-        status=403, message='Invalid action'
-    ))
-    blueprint.errorhandler(ValidationError)(create_api_errorhandler(
-        status=400, message='Validation error'
-    ))
+    create_error_handlers(blueprint)
 
     for endpoint, options in (endpoints or {}).items():
         options = deepcopy(options)
