@@ -31,8 +31,6 @@ css = Bundle(
     'node_modules/ui-select/dist/select.css',
     'node_modules/jqueryui/jquery-ui.css',
     'node_modules/rr-ng-ckeditor/ng-ckeditor.css',
-    'node_modules/pickadate/lib/themes/classic.css',
-    'node_modules/pickadate/lib/themes/classic.date.css',
     filters='cleancss',
     output='gen/deposit.%(version)s.css',
 )
@@ -50,17 +48,6 @@ js_dependencies_ui_sortable = NpmBundle(
     'node_modules/angular-ui-sortable/dist/sortable.js',
     npm={
         'angular-ui-sortable': '~0.14.3',
-    }
-)
-
-js_dependencies_datepicker = NpmBundle(
-    'node_modules/pickadate/lib/picker.js',
-    'node_modules/pickadate/lib/picker.date.js',
-    'node_modules/pickadate/lib/legacy.js',
-    'node_modules/angular-schema-form-datepicker/bootstrap-datepicker.js',
-    npm={
-        'angular-schema-form-datepicker': '~0.4.0',
-        'pickadate': '~3.5.6',
     }
 )
 
@@ -141,7 +128,6 @@ js_dependecies = NpmBundle(
     js_dependecies_autocomplete,
     js_dependencies_ui_sortable,
     js_dependencies_ckeditor,
-    js_dependencies_datepicker,
     filters='jsmin',
     output='gen/deposit.dependencies.%(version)s.js',
 )
