@@ -33,6 +33,7 @@ from time import sleep
 import pytest
 from flask import url_for
 from flask_security import url_for_security
+from invenio_accounts.testutils import login_user_via_view
 from invenio_search import current_search
 from six import BytesIO
 
@@ -169,6 +170,28 @@ def test_delete_deposit_users(app, db, es, users, location, deposit,
                 headers=json_headers
             )
             assert res.status_code == status
+
+
+def test_links_html_link_missing(app, db, es, location, fake_schemas, users,
+                                 json_headers):
+    """Test if the html key from links is missing."""
+    app.config['DEPOSIT_UI_ENDPOINT'] = None
+
+    with app.test_request_context():
+        with app.test_client() as client:
+            login_user_via_view(
+                client,
+                users[0].email,
+                'tester',
+            )
+            # try create deposit as logged in user
+            res = client.post(url_for('invenio_deposit_rest.depid_list'),
+                              data=json.dumps({}), headers=json_headers)
+            assert res.status_code == 201
+
+            data = json.loads(res.data.decode('utf-8'))
+            links = data['links']
+            assert 'html' not in links
 
 
 def test_delete_deposit_by_good_oauth2_token(app, db, es, users, location,
@@ -431,6 +454,9 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
             data = json.loads(res.data.decode('utf-8'))
             deposit = data['metadata']
             links = data['links']
+
+            # Check if links['html'] exists
+            assert 'html' in links
 
             sleep(1)
 

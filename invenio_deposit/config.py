@@ -168,6 +168,9 @@ The structure of the dictionary is as follows:
     }
 """
 
+DEPOSIT_UI_ENDPOINT = '{scheme}://{host}/deposit/{pid_value}'
+"""The UI endpoint for depositions with pid."""
+
 DEPOSIT_UI_INDEX_TEMPLATE = 'invenio_deposit/index.html'
 """Template for the index page."""
 
