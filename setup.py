@@ -63,17 +63,17 @@ setup_requires = [
 ]
 
 install_requires = [
-    'Flask>=0.11.1',
     'Flask-BabelEx>=0.9.2',
     'Flask-Login>=0.3.2',
+    'Flask>=0.11.1',
     'SQLAlchemy-Continuum>=1.2.1',
-    'SQLAlchemy-Utils[encrypted]>=0.31.0',
+    'SQLAlchemy-Utils[encrypted]>=0.32.6',
     'dictdiffer>=0.5.0.post1',
     'elasticsearch-dsl>=2.0.0',
     'invenio-assets>=1.0.0b2',
-    'invenio-db[versioning]>=1.0.0b1',
-    'invenio-files-rest>=1.0.0a12',
-    'invenio-indexer>=1.0.0a6',
+    'invenio-db[versioning]>=1.0.0b2',
+    'invenio-files-rest>=1.0.0a11',
+    'invenio-indexer>=1.0.0a7',
     'invenio-jsonschemas>=1.0.0a3',
     'invenio-oauth2server>=1.0.0a10',
     'invenio-records-files>=1.0.0a6',

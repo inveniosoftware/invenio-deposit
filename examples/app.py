@@ -28,45 +28,30 @@
 Installation proccess
 ---------------------
 
-First preapare all static files:
+Make sure that ``ElasticSearch`` and ``RabbitMQ`` servers are running.
+
+Run the demo:
 
 .. code-block:: console
 
+   $ pip install -e .[all]
    $ cd examples
-   $ npm install -g node-sass clean-css requirejs uglify-js
-   $ pip install -r requirements.txt
-   $ flask -a app.py npm
-   $ cd static ; npm install ; cd ..
-   $ flask -a app.py collect -v
-   $ flask -a app.py assets build
+   $ ./app-setup.sh
+   $ ./app-fixtures.sh
 
-Make sure that ``elasticsearch`` server is running:
+Run the server:
 
 .. code-block:: console
 
-   $ elasticsearch
+   $ FLASK_APP=app.py flask run --debugger -p 5000
 
-   ... version[2.0.0] ...
+Visit your favorite browser on `http://localhost:5000/search`
 
-Create demo records
-
-.. code-block:: console
-
-   $ mkdir instance
-   $ flask -a app.py db init
-   $ flask -a app.py db create
-   $ flask -a app.py index init
-   $ flask -a app.py users create info@inveniosoftware.org --password 123456 -a
-   $ flask -a app.py fixtures records
-
-Start the server
+To be able to uninstall the example app:
 
 .. code-block:: console
 
-   $ flask -a app.py --debug run
-
-Visit your favorite browser on `http://localhost:5000/search
-<http://localhost:5000/deposit>`_.
+    $ ./app-teardown.sh
 
 """
 
@@ -76,9 +61,9 @@ import os
 from os.path import dirname, join
 
 import jinja2
-from flask import Flask, current_app
+from flask import Flask, cli, current_app
 from flask_babelex import Babel
-from flask_cli import FlaskCLI, with_appcontext
+from invenio_access import InvenioAccess
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_admin import InvenioAdmin
@@ -86,6 +71,7 @@ from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
+from invenio_i18n import InvenioI18N
 from invenio_indexer import InvenioIndexer
 from invenio_indexer.api import RecordIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
@@ -95,6 +81,7 @@ from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.facets import terms_filter
+from invenio_records_rest.utils import PIDConverter
 from invenio_records_ui import InvenioRecordsUI
 from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch
@@ -113,9 +100,9 @@ app.config.update(
     CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
     CELERY_RESULT_BACKEND='cache',
     JSONSCHEMAS_HOST='localhost:5000',
+    JSONSCHEMAS_URL_SCHEME='http',
     REST_ENABLE_CORS=True,
     SECRET_KEY='changeme',
-    SERVER_NAME='localhost:5000',
     SQLALCHEMY_TRACK_MODIFICATIONS=True,
     DEPOSIT_SEARCH_API='/deposits',
     RECORDS_REST_FACETS=dict(
@@ -135,12 +122,13 @@ app.config.update(
     RECORDS_UI_DEFAULT_PERMISSION_FACTORY=None,
     SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                       'sqlite:///app.db'),
+    SEARCH_UI_SEARCH_API='/deposits',
+    SEARCH_UI_JSTEMPLATE_RESULTS='templates/app/deposit.html',
     DATADIR=join(dirname(__file__), 'data/upload'),
     OAUTH2SERVER_CACHE_TYPE='simple',
     OAUTHLIB_INSECURE_TRANSPORT=True,
 )
 
-FlaskCLI(app)
 Babel(app)
 
 # Set jinja loader to first grab templates from the app's folder.
@@ -149,14 +137,23 @@ app.jinja_loader = jinja2.ChoiceLoader([
     app.jinja_loader
 ])
 
+app.url_map.converters['pid'] = PIDConverter
+
 InvenioDB(app)
+InvenioI18N(app)
 InvenioTheme(app)
 InvenioJSONSchemas(app)
 InvenioAccounts(app)
+InvenioAccess(app)
 InvenioRecords(app)
 InvenioRecordsUI(app)
+
+InvenioRecordsREST(app)
+InvenioDeposit(app)
+InvenioDepositREST(app)
+
 search = InvenioSearch(app)
-# search.register_mappings('testrecords', 'data')
+
 InvenioSearchUI(app)
 InvenioREST(app)
 InvenioIndexer(app)
@@ -164,14 +161,10 @@ InvenioPIDStore(app)
 InvenioAdmin(app)
 InvenioOAuth2Server(app)
 
-InvenioRecordsREST(app)
 InvenioFilesREST(app)
 
 assets = InvenioAssets(app)
 assets.env.register('invenio_search_ui_search_js', js)
-
-InvenioDeposit(app)
-InvenioDepositREST(app)
 
 app.register_blueprint(accounts_blueprint)
 
@@ -185,7 +178,7 @@ def fixtures():
 
 
 @fixtures.command()
-@with_appcontext
+@cli.with_appcontext
 def records():
     """Load records."""
     import pkg_resources
@@ -217,7 +210,7 @@ def records():
 
 
 @fixtures.command()
-@with_appcontext
+@cli.with_appcontext
 def location():
     """Load default location."""
     d = current_app.config['DATADIR']

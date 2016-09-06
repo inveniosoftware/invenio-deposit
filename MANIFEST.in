@@ -40,7 +40,11 @@ recursive-include docs *.bat
 recursive-include docs *.py
 recursive-include docs *.rst
 recursive-include docs Makefile
+recursive-include examples/static/templates/app *.html
+recursive-exclude examples/static *
+exclude examples/static
 recursive-include examples *.gitkeep
+recursive-include examples *.sh
 recursive-include invenio_deposit *.html
 recursive-include invenio_deposit *.js
 recursive-include invenio_deposit *.json

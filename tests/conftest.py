@@ -83,6 +83,7 @@ def app():
         CELERY_CACHE_BACKEND='memory',
         CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
         CELERY_RESULT_BACKEND='cache',
+        JSONSCHEMAS_URL_SCHEME='http',
         SECRET_KEY='CHANGE_ME',
         SECURITY_PASSWORD_SALT='CHANGE_ME_ALSO',
         SQLALCHEMY_DATABASE_URI=os.environ.get(
@@ -227,7 +228,7 @@ def db(app):
 
 
 @pytest.fixture()
-def fake_schemas(app, tmpdir):
+def fake_schemas(app, es, tmpdir):
     """Fake schema."""
     schemas = tmpdir.mkdir('schemas')
     empty_schema = '{"title": "Empty"}'

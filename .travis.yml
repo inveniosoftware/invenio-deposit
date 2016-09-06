@@ -33,6 +33,7 @@ sudo: false
 services:
   - postgresql
   - redis
+  - rabbitmq
 
 language: python
 

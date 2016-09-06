@@ -60,8 +60,8 @@ target/
 
 # Examples
 examples/instance/
-examples/static/
 examples/*.db
+examples/static/node_modules/
 examples/data/upload/*
 
 # temporary db
