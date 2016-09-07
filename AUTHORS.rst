@@ -29,6 +29,7 @@ Module for depositing record metadata and uploading files.
 
 - Adrian Pawel Baran <adrian.pawel.baran@cern.ch>
 - Adrian-Tudor Panescu <adrian.tudor.panescu@cern.ch>
+- Alizee Pace <alizee.pace@gmail.com>
 - Charalampos Tzovanakis <drjova@cern.ch>
 - Dimitrios Semitsoglou-Tsiapos <dsemitso@cern.ch>
 - Dinos Kousidis <konstantinos.kousidis@cern.ch>
