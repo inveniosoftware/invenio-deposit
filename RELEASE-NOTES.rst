@@ -1,8 +1,8 @@
 ==========================
- Invenio-Deposit v1.0.0a4
+ Invenio-Deposit v1.0.0a5
 ==========================
 
-Invenio-Deposit v1.0.0a4 was released on September 1, 2016.
+Invenio-Deposit v1.0.0a5 was released on September 8, 2016.
 
 About
 -----
@@ -19,7 +19,7 @@ What's new
 Installation
 ------------
 
-   $ pip install invenio-deposit==1.0.0a4
+   $ pip install invenio-deposit==1.0.0a5
 
 Documentation
 -------------
