@@ -22,6 +22,8 @@
 # waive the privileges and immunities granted to it by virtue of its status
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
+"""Sphinx configuration."""
+
 from __future__ import print_function
 
 import os
@@ -248,25 +250,25 @@ htmlhelp_basename = 'invenio-deposit_namedoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 
-# Latex figure (float) alignment
-#'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    #'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'invenio-deposit.tex', u'invenio-deposit Documentation',
-   u'CERN', 'manual'),
+    (master_doc, 'invenio-deposit.tex', u'invenio-deposit Documentation',
+     u'CERN', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -309,9 +311,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'invenio-deposit', u'Invenio-Deposit Documentation',
-   author, 'invenio-deposit', 'Module for depositing record metadata and uploading files.',
-   'Miscellaneous'),
+    (master_doc, 'invenio-deposit', u'Invenio-Deposit Documentation',
+     author, 'invenio-deposit', 'Module for depositing record metadata and uploading files.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -335,21 +337,26 @@ intersphinx_mapping = {
         'http://flask.pocoo.org/docs/0.11', None
     ),
     'Flask-Principal': (
+        # NOTE readthedocs version is currently broken
         'https://pythonhosted.org/Flask-Principal', None
     ),
-    'invenio-pidstore': ('https://pythonhosted.org/invenio-pidstore', None),
-    'invenio-records': ('https://pythonhosted.org/invenio-records', None),
+    'invenio-pidstore': (
+        'https://invenio-pidstore.readthedocs.io/en/latest/', None
+    ),
+    'invenio-records': (
+        'https://invenio-records.readthedocs.io/en/latest/', None
+    ),
     'invenio-records-rest': (
-        'https://pythonhosted.org/invenio-records-rest', None
+        'https://invenio-records-rest.readthedocs.io/en/latest/', None
     ),
     'invenio-records-files': (
-        'https://pythonhosted.org/invenio-records-files', None
+        'https://invenio-records-files.readthedocs.io/en/latest/', None
     ),
     'invenio-files-rest': (
-        'https://pythonhosted.org/invenio-files-rest', None
+        'https://invenio-files-rest.readthedocs.io/en/latest/', None
     ),
     'invenio-access': (
-        'https://pythonhosted.org/invenio-access', None
+        'https://invenio-access.readthedocs.io/en/latest/', None
     ),
 }
 
