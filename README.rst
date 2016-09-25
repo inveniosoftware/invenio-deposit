@@ -46,4 +46,4 @@ Module for depositing record metadata and uploading files.
 *This is an experimental developer preview release.*
 
 * Free software: GPLv2 license
-* Documentation: https://pythonhosted.org/invenio-deposit/
+* Documentation: https://invenio-deposit.readthedocs.io/

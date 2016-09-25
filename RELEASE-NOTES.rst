@@ -24,7 +24,7 @@ Installation
 Documentation
 -------------
 
-   http://pythonhosted.org/invenio-deposit/
+   http://invenio-deposit.readthedocs.io/
 
 Happy hacking and thanks for flying Invenio-Deposit.
 
