@@ -86,7 +86,7 @@ def test_init():
     # check that current_deposit cannot be resolved
     with app.app_context():
         with pytest.raises(KeyError):
-            current_deposit.init_app
+            current_deposit.app
 
     ext = InvenioDeposit()
     assert 'invenio-deposit' not in app.extensions
@@ -95,7 +95,7 @@ def test_init():
 
     # check that current_deposit resolves correctly
     with app.app_context():
-        current_deposit.init_app
+        current_deposit.app
 
 
 def test_template(app):

@@ -26,9 +26,14 @@
 
 from __future__ import absolute_import, print_function
 
-from flask import Blueprint, current_app, render_template
+from copy import deepcopy
+
+from flask import Blueprint, current_app, render_template, request
 from flask_login import login_required
 from invenio_pidstore.errors import PIDDeletedError
+from invenio_records_ui.signals import record_viewed
+
+from ..proxies import current_deposit
 
 
 def create_blueprint(endpoints):
@@ -59,6 +64,9 @@ def create_blueprint(endpoints):
         ), 410
 
     for endpoint, options in (endpoints or {}).items():
+        options = deepcopy(options)
+        _ = options.pop('jsonschema', None)
+        _ = options.pop('schemaform', None)
         blueprint.add_url_rule(**create_url_rule(endpoint, **options))
 
     @blueprint.route('/deposit')
@@ -71,9 +79,34 @@ def create_blueprint(endpoints):
     @login_required
     def new():
         """Create new deposit."""
+        deposit_type = request.values.get('type')
         return render_template(
             current_app.config['DEPOSIT_UI_NEW_TEMPLATE'],
             record={'_deposit': {'id': None}},
+            jsonschema=current_deposit.jsonschemas[deposit_type],
+            schemaform=current_deposit.schemaforms[deposit_type],
         )
 
     return blueprint
+
+
+def default_view_method(pid, record, template=None):
+    """Default view method.
+
+    Sends ``record_viewed`` signal and renders template.
+    """
+    record_viewed.send(
+        current_app._get_current_object(),
+        pid=pid,
+        record=record,
+    )
+
+    deposit_type = request.values.get('type')
+
+    return render_template(
+        template,
+        pid=pid,
+        record=record,
+        jsonschema=current_deposit.jsonschemas[deposit_type],
+        schemaform=current_deposit.schemaforms[deposit_type],
+    )

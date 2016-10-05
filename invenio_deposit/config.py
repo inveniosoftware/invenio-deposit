@@ -150,6 +150,7 @@ DEPOSIT_RECORDS_UI_ENDPOINTS = {
         'route': '/deposit/<pid_value>',
         'template': 'invenio_deposit/edit.html',
         'record_class': 'invenio_deposit.api:Deposit',
+        'view_imp': 'invenio_deposit.views.ui.default_view_method',
     },
 }
 """Basic deposit UI endpoints configuration.
@@ -161,9 +162,12 @@ The structure of the dictionary is as follows:
     DEPOSIT_RECORDS_UI_ENDPOINTS = {
         '<pid-type>': {
             'pid_type': '<pid-type>',
-            'route': '/path/to/deposit/<pid_value>',
+            'route': '/unique/path/to/deposit/<pid_value>',
             'template': 'invenio_deposit/edit.html',
             'record_class': 'mypackage.api:MyDeposit',
+            'view_imp': 'mypackage.views.view_method',
+            'jsonschema' 'path/to/jsonschema/deposit.json',
+            'schemaform': 'path/to/schema/form.json',
         }
     }
 """

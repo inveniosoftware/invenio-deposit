@@ -26,13 +26,48 @@
 
 from __future__ import absolute_import, print_function
 
+from collections import defaultdict
+
 from invenio_records_rest import utils
+from werkzeug.utils import cached_property
 
 from . import config
 from .cli import deposit as cmd
 from .receivers import index_deposit_after_publish
 from .signals import post_action
 from .views import rest, ui
+
+
+class _DepositState(object):
+    """Deposit state."""
+
+    def __init__(self, app):
+        """Initialize state."""
+        self.app = app
+
+    @cached_property
+    def jsonschemas(self):
+        """Load deposit JSON schemas."""
+        _jsonschemas = {
+            k: v['jsonschema']
+            for k, v in self.app.config['DEPOSIT_RECORDS_UI_ENDPOINTS'].items()
+            if 'jsonschema' in v
+        }
+        return defaultdict(
+            lambda: self.app.config['DEPOSIT_DEFAULT_JSONSCHEMA'], _jsonschemas
+        )
+
+    @cached_property
+    def schemaforms(self):
+        """Load deposit schema forms."""
+        _schemaforms = {
+            k: v['schemaform']
+            for k, v in self.app.config['DEPOSIT_RECORDS_UI_ENDPOINTS'].items()
+            if 'schemaform' in v
+        }
+        return defaultdict(
+            lambda: self.app.config['DEPOSIT_DEFAULT_SCHEMAFORM'], _schemaforms
+        )
 
 
 class InvenioDeposit(object):
@@ -56,7 +91,7 @@ class InvenioDeposit(object):
         app.register_blueprint(ui.create_blueprint(
             app.config['DEPOSIT_RECORDS_UI_ENDPOINTS']
         ))
-        app.extensions['invenio-deposit'] = self
+        app.extensions['invenio-deposit'] = _DepositState(app)
         if app.config['DEPOSIT_REGISTER_SIGNALS']:
             post_action.connect(index_deposit_after_publish, sender=app,
                                 weak=False)
@@ -113,7 +148,7 @@ class InvenioDepositREST(object):
                 )
 
         app.register_blueprint(blueprint)
-        app.extensions['invenio-deposit-rest'] = self
+        app.extensions['invenio-deposit-rest'] = _DepositState(app)
         if app.config['DEPOSIT_REGISTER_SIGNALS']:
             post_action.connect(index_deposit_after_publish, sender=app,
                                 weak=False)
