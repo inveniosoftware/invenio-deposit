@@ -26,6 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
+from copy import deepcopy
+
 import pytest
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.errors import MissingModelError
@@ -100,10 +102,19 @@ def test_simple_flow(app, db, fake_schemas, location):
     deposit.commit()
     assert 5 == deposit.revision_id
 
+    (_, record) = deposit.fetch_published()
+    record_schema_before = record['$schema']
+    record_json = deepcopy(record.model.json)
+
     deposit = deposit.discard()
     assert 'published' == deposit.status
     assert 'Revision 1' == deposit['title']
     assert 6 == deposit.revision_id
+
+    (_, record) = deposit.fetch_published()
+    record_schema_after = record['$schema']
+    assert record_schema_before == record_schema_after
+    assert record_json == record.model.json
 
 
 def test_delete(app, db, fake_schemas, location):

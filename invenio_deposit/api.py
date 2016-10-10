@@ -26,6 +26,7 @@
 
 import uuid
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import partial, wraps
 
 from dictdiffer import patch
@@ -434,7 +435,7 @@ class Deposit(Record):
             before_record_update.send(self)
 
             _, record = self.fetch_published()
-            self.model.json = record.model.json
+            self.model.json = deepcopy(record.model.json)
             self.model.json['$schema'] = self.build_deposit_schema(record)
 
             flag_modified(self.model, 'json')
