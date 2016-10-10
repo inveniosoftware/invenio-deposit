@@ -25,7 +25,6 @@
 """Links for record serialization."""
 
 from flask import current_app, request, url_for
-
 from invenio_records_rest.links import default_links_factory
 
 

@@ -26,6 +26,8 @@
 
 from __future__ import absolute_import, print_function
 
+from invenio_records_rest import utils
+
 from . import config
 from .cli import deposit as cmd
 from .receivers import index_deposit_after_publish
@@ -93,9 +95,24 @@ class InvenioDepositREST(object):
         :param app: An instance of :class:`flask.Flask`.
         """
         self.init_config(app)
-        app.register_blueprint(rest.create_blueprint(
+        blueprint = rest.create_blueprint(
             app.config['DEPOSIT_REST_ENDPOINTS']
-        ))
+        )
+
+        @blueprint.record_once
+        def extend_default_endpoint_prefixes(_):
+            """TODO."""
+            # FIXME remove hasattr() after 1.0.0a7 is released
+            if hasattr(utils, 'build_default_endpoint_prefixes'):
+                endpoint_prefixes = utils.build_default_endpoint_prefixes(
+                    app.config['DEPOSIT_REST_ENDPOINTS']
+                )
+                current_records_rest = app.extensions['invenio-records-rest']
+                current_records_rest.default_endpoint_prefixes.update(
+                    endpoint_prefixes
+                )
+
+        app.register_blueprint(blueprint)
         app.extensions['invenio-deposit-rest'] = self
         if app.config['DEPOSIT_REGISTER_SIGNALS']:
             post_action.connect(index_deposit_after_publish, sender=app,
