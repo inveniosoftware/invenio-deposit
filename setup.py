@@ -108,6 +108,9 @@ setup(
     include_package_data=True,
     platforms='any',
     entry_points={
+        'flask.commands': [
+            'deposit = invenio_deposit.cli:deposit',
+        ],
         'invenio_base.apps': [
             'invenio_deposit = invenio_deposit:InvenioDeposit',
         ],

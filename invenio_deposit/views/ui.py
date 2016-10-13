@@ -65,8 +65,8 @@ def create_blueprint(endpoints):
 
     for endpoint, options in (endpoints or {}).items():
         options = deepcopy(options)
-        _ = options.pop('jsonschema', None)
-        _ = options.pop('schemaform', None)
+        options.pop('jsonschema', None)
+        options.pop('schemaform', None)
         blueprint.add_url_rule(**create_url_rule(endpoint, **options))
 
     @blueprint.route('/deposit')

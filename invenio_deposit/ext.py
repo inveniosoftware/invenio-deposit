@@ -32,7 +32,6 @@ from invenio_records_rest import utils
 from werkzeug.utils import cached_property
 
 from . import config
-from .cli import deposit as cmd
 from .receivers import index_deposit_after_publish
 from .signals import post_action
 from .views import rest, ui
@@ -81,13 +80,12 @@ class InvenioDeposit(object):
     def init_app(self, app):
         """Flask application initialization.
 
-        Initialize the CLI and all UI endpoints.
-        Connect all signals if `DEPOSIT_REGISTER_SIGNALS` is ``True``.
+        Initialize the UI endpoints.  Connect all signals if
+        `DEPOSIT_REGISTER_SIGNALS` is ``True``.
 
         :param app: An instance of :class:`flask.Flask`.
         """
         self.init_config(app)
-        app.cli.add_command(cmd)
         app.register_blueprint(ui.create_blueprint(
             app.config['DEPOSIT_RECORDS_UI_ENDPOINTS']
         ))
@@ -124,8 +122,8 @@ class InvenioDepositREST(object):
     def init_app(self, app):
         """Flask application initialization.
 
-        Initialize the CLI and all REST endpoints.
-        Connect all signals if `DEPOSIT_REGISTER_SIGNALS` is True.
+        Initialize the REST endpoints.  Connect all signals if
+        `DEPOSIT_REGISTER_SIGNALS` is True.
 
         :param app: An instance of :class:`flask.Flask`.
         """

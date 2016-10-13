@@ -43,7 +43,6 @@ from invenio_records_rest.views import \
 from invenio_records_rest.views import need_record_permission, pass_record
 from invenio_rest import ContentNegotiatedMethodView
 from invenio_rest.views import create_api_errorhandler
-from jsonschema.exceptions import ValidationError
 from webargs import fields
 from webargs.flaskparser import use_kwargs
 from werkzeug.utils import secure_filename
