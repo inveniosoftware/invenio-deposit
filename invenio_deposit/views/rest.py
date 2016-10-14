@@ -212,7 +212,7 @@ class DepositActionResource(ContentNegotiatedMethodView):
         :param record: Record object resolved from the pid.
         :param action: The action to execute.
         """
-        getattr(record, action)(pid=pid)
+        record = getattr(record, action)(pid=pid)
 
         db.session.commit()
         # Refresh the PID and record metadata

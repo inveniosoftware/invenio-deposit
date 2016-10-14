@@ -540,6 +540,8 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
             assert res.status_code == 403
 
             res = client.post(links['edit'], data=None, headers=json_headers)
+            deposit = json.loads(res.data.decode('utf-8'))
+            assert deposit['metadata']['_deposit']['status'] == 'draft'
             assert res.status_code == 201
 
             # It should not be possible to delete previously published deposit:
