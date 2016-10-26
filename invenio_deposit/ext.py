@@ -134,16 +134,23 @@ class InvenioDepositREST(object):
 
         @blueprint.record_once
         def extend_default_endpoint_prefixes(_):
-            """TODO."""
-            # FIXME remove hasattr() after 1.0.0a7 is released
-            if hasattr(utils, 'build_default_endpoint_prefixes'):
-                endpoint_prefixes = utils.build_default_endpoint_prefixes(
-                    app.config['DEPOSIT_REST_ENDPOINTS']
+            """Extend redirects between PID types."""
+            endpoint_prefixes = utils.build_default_endpoint_prefixes(
+                app.config['DEPOSIT_REST_ENDPOINTS']
+            )
+            current_records_rest = app.extensions['invenio-records-rest']
+            overlap = set(endpoint_prefixes.keys()) & set(
+                current_records_rest.default_endpoint_prefixes
+            )
+            if overlap:
+                raise RuntimeError(
+                    'Deposit wants to override endpoint prefixes {0}.'.format(
+                        ', '.join(overlap)
+                    )
                 )
-                current_records_rest = app.extensions['invenio-records-rest']
-                current_records_rest.default_endpoint_prefixes.update(
-                    endpoint_prefixes
-                )
+            current_records_rest.default_endpoint_prefixes.update(
+                endpoint_prefixes
+            )
 
         app.register_blueprint(blueprint)
         app.extensions['invenio-deposit-rest'] = _DepositState(app)

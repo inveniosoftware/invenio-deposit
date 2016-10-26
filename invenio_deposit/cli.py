@@ -30,7 +30,7 @@ import sys
 
 import click
 from flask import current_app
-from flask_cli import with_appcontext
+from flask.cli import with_appcontext
 from invenio_pidstore import current_pidstore
 
 

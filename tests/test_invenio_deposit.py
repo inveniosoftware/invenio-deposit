@@ -28,11 +28,12 @@
 from __future__ import absolute_import, print_function
 
 import pytest
+from copy import deepcopy
 from flask import Flask, render_template_string
-from flask_cli import FlaskCLI
+from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
 
-from invenio_deposit import InvenioDeposit, bundles
+from invenio_deposit import InvenioDeposit, InvenioDepositREST, bundles
 from invenio_deposit.proxies import current_deposit
 
 
@@ -74,13 +75,11 @@ def test_bundles():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
     ext = InvenioDeposit(app)
     assert 'invenio-deposit' in app.extensions
 
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
 
     # check that current_deposit cannot be resolved
@@ -96,6 +95,25 @@ def test_init():
     # check that current_deposit resolves correctly
     with app.app_context():
         current_deposit.app
+
+
+def test_conflict_in_endpoint_prefixes():
+    """Test conflict in endpoint prefixes."""
+    app = Flask('testapp')
+    app.url_map.converters['pid'] = PIDConverter
+    InvenioRecordsREST(app)
+    ext = InvenioDepositREST()
+    ext.init_config(app)
+
+    endpoints = app.config['RECORDS_REST_ENDPOINTS']
+    deposit_endpoints = deepcopy(app.config['DEPOSIT_REST_ENDPOINTS'])
+    deposit_endpoints['recid'] = endpoints['recid']
+    app.config['DEPOSIT_REST_ENDPOINTS'] = deposit_endpoints
+
+    # check endpoint profixes
+    with pytest.raises(RuntimeError) as err:
+        ext.init_app(app)
+    assert 'recid' in str(err)
 
 
 def test_template(app):
