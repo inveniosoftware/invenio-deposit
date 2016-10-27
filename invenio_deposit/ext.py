@@ -29,12 +29,13 @@ from __future__ import absolute_import, print_function
 from collections import defaultdict
 
 from invenio_records_rest import utils
+from pkg_resources import DistributionNotFound, get_distribution
 from werkzeug.utils import cached_property
 
 from . import config
 from .receivers import index_deposit_after_publish
 from .signals import post_action
-from .views import rest, ui
+from .views import rest, rest_sse, ui
 
 
 class _DepositState(object):
@@ -150,6 +151,47 @@ class InvenioDepositREST(object):
         if app.config['DEPOSIT_REGISTER_SIGNALS']:
             post_action.connect(index_deposit_after_publish, sender=app,
                                 weak=False)
+
+    def init_config(self, app):
+        """Initialize configuration.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
+        for k in dir(config):
+            if k.startswith('DEPOSIT_'):
+                app.config.setdefault(k, getattr(config, k))
+
+
+class InvenioDepositSSE(object):
+    """Invenio-Deposit SSE extension."""
+
+    def __init__(self, app=None):
+        """Extension initialization.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
+        # Check if InvenioSSE is installed
+        try:
+            get_distribution('invenio-sse')
+        except DistributionNotFound:
+            raise RuntimeError('InvenioSSE is not installed.')
+
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
+        """Flask application initialization.
+
+        Initialize the REST endpoints for SSE.
+
+        :param app: An instance of :class:`flask.Flask`.
+        """
+        self.init_config(app)
+        blueprint = rest_sse.create_blueprint(
+            app.config['DEPOSIT_REST_ENDPOINTS']
+        )
+
+        app.register_blueprint(blueprint)
 
     def init_config(self, app):
         """Initialize configuration.

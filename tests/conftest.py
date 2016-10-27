@@ -50,6 +50,7 @@ from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_assets import InvenioAssets
 from invenio_db import db as db_
 from invenio_db import InvenioDB
+from invenio_deposit.ext import InvenioDepositSSE
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
@@ -65,6 +66,7 @@ from invenio_records_rest.utils import PIDConverter
 from invenio_records_ui import InvenioRecordsUI
 from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_search_ui import InvenioSearchUI
+from invenio_sse import InvenioSSE
 from six import BytesIO
 from sqlalchemy_utils.functions import create_database, database_exists
 
@@ -125,6 +127,8 @@ def app():
     InvenioOAuth2ServerREST(app_)
     app_.register_blueprint(oauth2server_settings_blueprint)
     InvenioDepositREST(app_)
+    InvenioSSE(app_)
+    InvenioDepositSSE(app_)
 
     with app_.app_context():
         yield app_
