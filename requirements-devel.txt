@@ -33,3 +33,4 @@
 -e git+git://github.com/inveniosoftware/invenio-rest.git#egg=invenio-rest
 -e git+git://github.com/inveniosoftware/invenio-search-ui.git#egg=invenio-search-ui
 -e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+-e git+git://github.com/egabancho/invenio-sse.git#egg=invenio-sse
