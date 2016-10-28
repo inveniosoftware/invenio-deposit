@@ -29,7 +29,6 @@ from __future__ import absolute_import, print_function
 
 import pytest
 from flask import Flask, render_template_string
-from flask_cli import FlaskCLI
 from invenio_records_rest.utils import PIDConverter
 
 from invenio_deposit import InvenioDeposit, bundles
@@ -74,13 +73,11 @@ def test_bundles():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
     ext = InvenioDeposit(app)
     assert 'invenio-deposit' in app.extensions
 
     app = Flask('testapp')
-    FlaskCLI(app)
     app.url_map.converters['pid'] = PIDConverter
 
     # check that current_deposit cannot be resolved
