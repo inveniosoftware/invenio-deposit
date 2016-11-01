@@ -34,18 +34,19 @@ import pytest
 from flask import url_for
 from flask_security import url_for_security
 from invenio_accounts.testutils import login_user_via_view
+from invenio_db import db
 from invenio_search import current_search
 from six import BytesIO
 
 from invenio_deposit.api import Deposit
 
 
-def test_publish_merge_conflict(app, db, es, users, location, deposit,
+def test_publish_merge_conflict(api, es, users, location, deposit,
                                 json_headers, fake_schemas):
     """Test publish with merge conflicts."""
-    with app.test_request_context():
-        with app.test_client() as client:
-            user_info = dict(email=users[0].email, password='tester')
+    with api.test_request_context():
+        with api.test_client() as client:
+            user_info = dict(email=users[0]['email'], password='tester')
             # login
             res = client.post(url_for_security('login'), data=user_info)
 
@@ -94,12 +95,12 @@ def test_publish_merge_conflict(app, db, es, users, location, deposit,
     # user that not have permissions
     (dict(email='test@inveniosoftware.org', password='tester2'), 403),
 ])
-def test_edit_deposit_users(app, db, es, users, location, deposit,
+def test_edit_deposit_users(api, es, users, location, deposit,
                             json_headers, user_info, status):
     """Test edit deposit by the owner."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
-        with app.test_client() as client:
+    with api.test_request_context():
+        with api.test_client() as client:
             if user_info:
                 # login
                 res = client.post(url_for_security('login'), data=user_info)
@@ -112,14 +113,14 @@ def test_edit_deposit_users(app, db, es, users, location, deposit,
             assert res.status_code == status
 
 
-def test_edit_deposit_by_good_oauth2_token(app, db, es, users, location,
+def test_edit_deposit_by_good_oauth2_token(api, es, users, location,
                                            deposit, write_token_user_1,
                                            oauth2_headers_user_1):
     """Test edit deposit with a correct oauth2 token."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
+    with api.test_request_context():
         # with oauth2
-        with app.test_client() as client:
+        with api.test_client() as client:
             res = client.put(
                 url_for('invenio_deposit_rest.depid_item',
                         pid_value=deposit_id),
@@ -129,14 +130,14 @@ def test_edit_deposit_by_good_oauth2_token(app, db, es, users, location,
             assert res.status_code == 200
 
 
-def test_edit_deposit_by_bad_oauth2_token(app, db, es, users, location,
+def test_edit_deposit_by_bad_oauth2_token(api, es, users, location,
                                           deposit, write_token_user_2,
                                           oauth2_headers_user_2):
     """Test edit deposit with a wrong oauth2 token."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
+    with api.test_request_context():
         # with oauth2
-        with app.test_client() as client:
+        with api.test_client() as client:
             res = client.put(
                 url_for('invenio_deposit_rest.depid_item',
                         pid_value=deposit_id),
@@ -154,12 +155,12 @@ def test_edit_deposit_by_bad_oauth2_token(app, db, es, users, location,
     # user that not have permissions
     (dict(email='test@inveniosoftware.org', password='tester2'), 403),
 ])
-def test_delete_deposit_users(app, db, es, users, location, deposit,
+def test_delete_deposit_users(api, es, users, location, deposit,
                               json_headers, user_info, status):
     """Test delete deposit by users."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
-        with app.test_client() as client:
+    with api.test_request_context():
+        with api.test_client() as client:
             if user_info:
                 # login
                 res = client.post(url_for_security('login'), data=user_info)
@@ -172,16 +173,16 @@ def test_delete_deposit_users(app, db, es, users, location, deposit,
             assert res.status_code == status
 
 
-def test_links_html_link_missing(app, db, es, location, fake_schemas, users,
-                                 json_headers):
+def test_links_html_link_missing(api, es, location, fake_schemas,
+                                 users, json_headers):
     """Test if the html key from links is missing."""
-    app.config['DEPOSIT_UI_ENDPOINT'] = None
+    api.config['DEPOSIT_UI_ENDPOINT'] = None
 
-    with app.test_request_context():
-        with app.test_client() as client:
+    with api.test_request_context():
+        with api.test_client() as client:
             login_user_via_view(
                 client,
-                users[0].email,
+                users[0]['email'],
                 'tester',
             )
             # try create deposit as logged in user
@@ -194,14 +195,14 @@ def test_links_html_link_missing(app, db, es, location, fake_schemas, users,
             assert 'html' not in links
 
 
-def test_delete_deposit_by_good_oauth2_token(app, db, es, users, location,
+def test_delete_deposit_by_good_oauth2_token(api, es, users, location,
                                              deposit, write_token_user_1,
                                              oauth2_headers_user_1):
     """Test delete deposit with a good oauth2 token."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
+    with api.test_request_context():
         # with oauth2
-        with app.test_client() as client:
+        with api.test_client() as client:
             res = client.delete(
                 url_for('invenio_deposit_rest.depid_item',
                         pid_value=deposit_id),
@@ -211,14 +212,14 @@ def test_delete_deposit_by_good_oauth2_token(app, db, es, users, location,
             assert res.status_code == 204
 
 
-def test_delete_deposit_by_bad_oauth2_token(app, db, es, users, location,
+def test_delete_deposit_by_bad_oauth2_token(api, es, users, location,
                                             deposit, write_token_user_2,
                                             oauth2_headers_user_2):
     """Test delete deposit with a bad oauth2 token."""
     deposit_id = deposit['_deposit']['id']
-    with app.test_request_context():
+    with api.test_request_context():
         # with oauth2
-        with app.test_client() as client:
+        with api.test_client() as client:
             res = client.delete(
                 url_for('invenio_deposit_rest.depid_item',
                         pid_value=deposit_id),
@@ -228,12 +229,12 @@ def test_delete_deposit_by_bad_oauth2_token(app, db, es, users, location,
             assert res.status_code == 403
 
 
-def test_deposition_file_operations(app, db, es, location, users,
+def test_deposition_file_operations(api, es, location, users,
                                     write_token_user_1, pdf_file, pdf_file2,
                                     pdf_file2_samename, oauth2_headers_user_1):
     """Test deposit file operations."""
-    with app.test_request_context():
-        with app.test_client() as client:
+    with api.test_request_context():
+        with api.test_client() as client:
             # create deposit
             res = client.post(url_for('invenio_deposit_rest.depid_list'),
                               data=json.dumps({}),
@@ -424,17 +425,17 @@ def test_deposition_file_operations(app, db, es, location, users,
             assert res.status_code == 410
 
 
-def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
+def test_simple_rest_flow(api, es, location, fake_schemas, users,
                           json_headers):
     """Test simple flow using REST API."""
-    app.config['RECORDS_REST_ENDPOINTS']['recid'][
+    api.config['RECORDS_REST_ENDPOINTS']['recid'][
         'read_permission_factory_imp'] = \
         'invenio_records_rest.utils:allow_all'
-    app.config['RECORDS_REST_DEFAULT_READ_PERMISSION_FACTORY'] = \
+    api.config['RECORDS_REST_DEFAULT_READ_PERMISSION_FACTORY'] = \
         'invenio_records_rest.utils:allow_all'
 
-    with app.test_request_context():
-        with app.test_client() as client:
+    with api.test_request_context():
+        with api.test_client() as client:
             # try create deposit as anonymous user (failing)
             res = client.post(url_for('invenio_deposit_rest.depid_list'),
                               data=json.dumps({}), headers=json_headers)
@@ -442,7 +443,7 @@ def test_simple_rest_flow(app, db, es, location, fake_schemas, users,
 
             # login
             client.post(url_for_security('login'), data=dict(
-                email=users[0].email,
+                email=users[0]['email'],
                 password="tester"
             ))
 

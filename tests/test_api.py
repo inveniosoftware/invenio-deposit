@@ -29,6 +29,7 @@ from __future__ import absolute_import, print_function
 from copy import deepcopy
 
 import pytest
+from invenio_db import db
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.errors import MissingModelError
 from jsonschema.exceptions import RefResolutionError
@@ -39,7 +40,7 @@ from invenio_deposit.api import Deposit
 from invenio_deposit.errors import MergeConflict
 
 
-def test_schemas(app, db, fake_schemas):
+def test_schemas(app, fake_schemas):
     """Test schema URL transformations."""
     deposit = Deposit.create({})
     assert 'http://localhost/schemas/deposits/deposit-v1.0.0.json' == \
@@ -59,7 +60,7 @@ def test_schemas(app, db, fake_schemas):
         })
 
 
-def test_simple_flow(app, db, fake_schemas, location):
+def test_simple_flow(app, fake_schemas, location):
     """Test simple flow of deposit states through its lifetime."""
     deposit = Deposit.create({})
     assert deposit['_deposit']['id']
@@ -117,7 +118,7 @@ def test_simple_flow(app, db, fake_schemas, location):
     assert record_json == record.model.json
 
 
-def test_delete(app, db, fake_schemas, location):
+def test_delete(app, fake_schemas, location):
     """Test simple delete."""
     deposit = Deposit.create({})
     pid = deposit.pid
@@ -134,7 +135,7 @@ def test_delete(app, db, fake_schemas, location):
         deposit.publish(pid=pid)
 
 
-def test_files_property(app, db, fake_schemas, location):
+def test_files_property(app, fake_schemas, location):
     """Test deposit files property."""
     with pytest.raises(MissingModelError):
         Deposit({}).files
@@ -199,7 +200,7 @@ def test_files_property(app, db, fake_schemas, location):
     assert 'hello.txt' in deposit.files
 
 
-def test_publish_revision_changed_mergeable(app, db, location, fake_schemas):
+def test_publish_revision_changed_mergeable(app, location, fake_schemas):
     """Try to Publish and someone change the deposit in the while."""
     # create a deposit
     deposit = Deposit.create({"metadata": {"title": "title-1"}})
@@ -234,7 +235,7 @@ def test_publish_revision_changed_mergeable(app, db, location, fake_schemas):
     assert deposit['$schema'] == 'http://localhost/schemas/deposit-v1.0.0.json'
 
 
-def test_publish_revision_changed_not_mergeable(app, db, location,
+def test_publish_revision_changed_not_mergeable(app, location,
                                                 fake_schemas):
     """Try to Publish and someone change the deposit in the while."""
     # create a deposit

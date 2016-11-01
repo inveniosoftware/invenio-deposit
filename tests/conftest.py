@@ -47,8 +47,7 @@ from invenio_access.models import ActionUsers
 from invenio_accounts import InvenioAccounts
 from invenio_accounts.views import blueprint as accounts_blueprint
 from invenio_assets import InvenioAssets
-from invenio_db import db as db_
-from invenio_db import InvenioDB
+from invenio_db import InvenioDB, db
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
 from invenio_indexer import InvenioIndexer
@@ -62,83 +61,126 @@ from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
 from invenio_records_ui import InvenioRecordsUI
+from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_search_ui import InvenioSearchUI
-from six import BytesIO
-from sqlalchemy_utils.functions import create_database, database_exists
+from six import BytesIO, get_method_self
+from sqlalchemy import inspect
+from sqlalchemy_utils.functions import create_database, database_exists, \
+    drop_database
+from werkzeug.wsgi import DispatcherMiddleware
 
 from invenio_deposit import InvenioDeposit, InvenioDepositREST
 from invenio_deposit.api import Deposit
 from invenio_deposit.scopes import write_scope
 
 
+def object_as_dict(obj):
+    """Make a dict from SQLAlchemy object."""
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
+
+
 @pytest.yield_fixture()
-def app():
+def base_app(request):
     """Flask application fixture."""
     instance_path = tempfile.mkdtemp()
-    app_ = Flask(__name__, instance_path=instance_path)
-    app_.config.update(
-        CELERY_ALWAYS_EAGER=True,
-        CELERY_CACHE_BACKEND='memory',
-        CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
-        CELERY_RESULT_BACKEND='cache',
-        JSONSCHEMAS_URL_SCHEME='http',
-        SECRET_KEY='CHANGE_ME',
-        SECURITY_PASSWORD_SALT='CHANGE_ME_ALSO',
-        SQLALCHEMY_DATABASE_URI=os.environ.get(
-            'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
-        SQLALCHEMY_TRACK_MODIFICATIONS=True,
-        SQLALCHEMY_ECHO=False,
-        TESTING=True,
-        WTF_CSRF_ENABLED=False,
-        DEPOSIT_SEARCH_API='/api/search',
-        SECURITY_PASSWORD_HASH='plaintext',
-        SECURITY_PASSWORD_SCHEMES=['plaintext'],
-        SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
-        OAUTHLIB_INSECURE_TRANSPORT=True,
-        OAUTH2_CACHE_TYPE='simple',
-    )
-    app_.url_map.converters['pid'] = PIDConverter
-    Babel(app_)
-    FlaskCeleryExt(app_)
-    InvenioDB(app_)
-    Breadcrumbs(app_)
-    InvenioAccounts(app_)
-    InvenioAccess(app_)
-    app_.register_blueprint(accounts_blueprint)
-    InvenioAssets(app_)
-    InvenioJSONSchemas(app_)
-    InvenioSearch(app_)
-    InvenioRecords(app_)
-    app_.url_map.converters['pid'] = PIDConverter
-    InvenioRecordsREST(app_)
-    InvenioPIDStore(app_)
-    InvenioIndexer(app_)
-    InvenioDeposit(app_)
-    InvenioSearchUI(app_)
-    InvenioRecordsUI(app_)
-    InvenioFilesREST(app_)
-    OAuth2Provider(app_)
-    InvenioOAuth2Server(app_)
-    InvenioOAuth2ServerREST(app_)
-    app_.register_blueprint(oauth2server_settings_blueprint)
-    InvenioDepositREST(app_)
 
-    with app_.app_context():
-        yield app_
+    def init_app(app_):
+        app_.config.update(
+            CELERY_ALWAYS_EAGER=True,
+            CELERY_CACHE_BACKEND='memory',
+            CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
+            CELERY_RESULT_BACKEND='cache',
+            JSONSCHEMAS_URL_SCHEME='http',
+            SECRET_KEY='CHANGE_ME',
+            SECURITY_PASSWORD_SALT='CHANGE_ME_ALSO',
+            SQLALCHEMY_DATABASE_URI=os.environ.get(
+                'SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db'),
+            SQLALCHEMY_TRACK_MODIFICATIONS=True,
+            SQLALCHEMY_ECHO=False,
+            TESTING=True,
+            WTF_CSRF_ENABLED=False,
+            DEPOSIT_SEARCH_API='/api/search',
+            SECURITY_PASSWORD_HASH='plaintext',
+            SECURITY_PASSWORD_SCHEMES=['plaintext'],
+            SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
+            OAUTHLIB_INSECURE_TRANSPORT=True,
+            OAUTH2_CACHE_TYPE='simple',
+        )
+        app_.url_map.converters['pid'] = PIDConverter
+        Babel(app_)
+        FlaskCeleryExt(app_)
+        Breadcrumbs(app_)
+        OAuth2Provider(app_)
+        InvenioDB(app_)
+        InvenioAccounts(app_)
+        InvenioAccess(app_)
+        InvenioIndexer(app_)
+        InvenioJSONSchemas(app_)
+        InvenioOAuth2Server(app_)
+        InvenioFilesREST(app_)
+        InvenioPIDStore(app_)
+        InvenioRecords(app_)
+        InvenioSearch(app_)
 
-    shutil.rmtree(instance_path)
+    api_app = Flask('testapiapp', instance_path=instance_path)
+    init_app(api_app)
+    InvenioREST(api_app)
+    InvenioOAuth2ServerREST(api_app)
+    InvenioRecordsREST(api_app)
+    InvenioDepositREST(api_app)
+
+    app = Flask('testapp', instance_path=instance_path)
+    init_app(app)
+    app.register_blueprint(accounts_blueprint)
+    app.register_blueprint(oauth2server_settings_blueprint)
+    InvenioAssets(app)
+    InvenioSearchUI(app)
+    InvenioRecordsUI(app)
+    InvenioDeposit(app)
+    app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+        '/api': api_app.wsgi_app
+    })
+
+    with app.app_context():
+        if str(db.engine.url) != 'sqlite://' and \
+           not database_exists(str(db.engine.url)):
+            create_database(str(db.engine.url))
+        db.create_all()
+
+    yield app
+
+    with app.app_context():
+        if str(db.engine.url) != 'sqlite://':
+            drop_database(str(db.engine.url))
+        shutil.rmtree(instance_path)
 
 
 @pytest.yield_fixture()
-def test_client(app):
+def app(base_app):
+    """Yield the REST API application in its context."""
+    with base_app.app_context():
+        yield base_app
+
+
+@pytest.yield_fixture()
+def api(base_app):
+    """Yield the REST API application in its context."""
+    api = get_method_self(base_app.wsgi_app.mounts['/api'])
+    with api.app_context():
+        yield api
+
+
+@pytest.yield_fixture()
+def test_client(base_app):
     """Test client."""
-    with app.test_client() as client_:
+    with base_app.test_client() as client_:
         yield client_
 
 
 @pytest.fixture()
-def users(app, db):
+def users(app):
     """Create users."""
     with db.session.begin_nested():
         datastore = app.extensions['security'].datastore
@@ -153,11 +195,11 @@ def users(app, db):
             action='deposit-admin-access', user=admin
         ))
     db.session.commit()
-    return [user1, user2]
+    return [object_as_dict(user1), object_as_dict(user2)]
 
 
 @pytest.fixture()
-def client(app, users, db):
+def client(app, users):
     """Create client."""
     with db.session.begin_nested():
         # create resource_owner -> client_1
@@ -167,7 +209,7 @@ def client(app, users, db):
             name='client_test_u1c1',
             description='',
             is_confidential=False,
-            user=users[0],
+            user_id=users[0]['id'],
             _redirect_uris='',
             _default_scopes='',
         )
@@ -177,12 +219,12 @@ def client(app, users, db):
 
 
 @pytest.fixture()
-def write_token_user_1(app, client, users, db):
+def write_token_user_1(app, client, users):
     """Create token."""
     with db.session.begin_nested():
         token_ = Token(
             client=client,
-            user=users[0],
+            user_id=users[0]['id'],
             access_token='dev_access_1',
             refresh_token='dev_refresh_1',
             expires=datetime.datetime.now() + datetime.timedelta(hours=10),
@@ -196,12 +238,12 @@ def write_token_user_1(app, client, users, db):
 
 
 @pytest.fixture()
-def write_token_user_2(app, client, users, db):
+def write_token_user_2(app, client, users):
     """Create token."""
     with db.session.begin_nested():
         token_ = Token(
             client=client,
-            user=users[1],
+            user_id=users[1]['id'],
             access_token='dev_access_2',
             refresh_token='dev_refresh_2',
             expires=datetime.datetime.now() + datetime.timedelta(hours=10),
@@ -214,19 +256,8 @@ def write_token_user_2(app, client, users, db):
     return token_
 
 
-@pytest.yield_fixture()
-def db(app):
-    """Database fixture."""
-    if not database_exists(str(db_.engine.url)):
-        create_database(str(db_.engine.url))
-    db_.create_all()
-    yield db_
-    db_.session.remove()
-    db_.drop_all()
-
-
 @pytest.fixture()
-def fake_schemas(app, es, tmpdir):
+def fake_schemas(app, api, es, tmpdir):
     """Fake schema."""
     schemas = tmpdir.mkdir('schemas')
     empty_schema = '{"title": "Empty"}'
@@ -240,6 +271,7 @@ def fake_schemas(app, es, tmpdir):
         schema.write(empty_schema)
 
     app.extensions['invenio-jsonschemas'].register_schemas_dir(schemas.strpath)
+    api.extensions['invenio-jsonschemas'].register_schemas_dir(schemas.strpath)
 
 
 @pytest.yield_fixture()
@@ -256,7 +288,7 @@ def es(app):
 
 
 @pytest.fixture()
-def location(app, db):
+def location(app):
     """Create default location."""
     tmppath = tempfile.mkdtemp()
     with db.session.begin_nested():
@@ -268,13 +300,14 @@ def location(app, db):
 
 
 @pytest.fixture()
-def deposit(app, es, users, location, db):
+def deposit(app, es, users, location):
     """New deposit with files."""
     record = {
         'title': 'fuu'
     }
     with app.test_request_context():
-        login_user(users[0])
+        datastore = app.extensions['security'].datastore
+        login_user(datastore.find_user(email=users[0]['email']))
         deposit = Deposit.create(record)
         deposit.commit()
         db.session.commit()
@@ -283,7 +316,7 @@ def deposit(app, es, users, location, db):
 
 
 @pytest.fixture()
-def files(app, es, deposit, db):
+def files(app, deposit):
     """Add a file to the deposit."""
     content = b'### Testing textfile ###'
     stream = BytesIO(content)
@@ -314,7 +347,7 @@ def pdf_file2_samename(app):
 
 
 @pytest.fixture()
-def json_headers(app):
+def json_headers():
     """JSON headers."""
     return [('Content-Type', 'application/json'),
             ('Accept', 'application/json')]

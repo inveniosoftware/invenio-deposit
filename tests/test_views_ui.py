@@ -28,11 +28,12 @@ from __future__ import absolute_import, print_function
 
 from flask import url_for
 from invenio_accounts.testutils import login_user_via_session
+from invenio_db import db
 
 
-def test_index_new(app, test_client, users):
+def test_index_new(base_app, test_client, users):
     """Test index view."""
-    with app.test_request_context():
+    with base_app.test_request_context():
         index_url = url_for('invenio_deposit_ui.index')
         new_url = url_for('invenio_deposit_ui.new')
 
@@ -41,14 +42,14 @@ def test_index_new(app, test_client, users):
         assert res.status_code == 302
         assert '/login/' in res.location
 
-    login_user_via_session(test_client, user=users[0])
+    login_user_via_session(test_client, email=users[0]['email'])
     for u in [index_url, new_url]:
         assert test_client.get(u).status_code == 200
 
 
-def test_edit(app, test_client, users, deposit, db):
+def test_edit(base_app, test_client, users, deposit):
     """Test edit view."""
-    with app.test_request_context():
+    with base_app.test_request_context():
         edit_url = url_for(
             'invenio_deposit_ui.depid', pid_value=deposit.pid.pid_value)
 

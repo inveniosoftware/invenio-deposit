@@ -27,8 +27,9 @@
 
 from __future__ import absolute_import, print_function
 
-import pytest
 from copy import deepcopy
+
+import pytest
 from flask import Flask, render_template_string
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
@@ -116,7 +117,7 @@ def test_conflict_in_endpoint_prefixes():
     assert 'recid' in str(err)
 
 
-def test_template(app):
+def test_template(base_app):
     """Test view."""
-    with app.test_request_context():
+    with base_app.test_request_context():
         _check_template()

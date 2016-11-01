@@ -136,7 +136,7 @@ class InvenioDepositREST(object):
         def extend_default_endpoint_prefixes(_):
             """Extend redirects between PID types."""
             endpoint_prefixes = utils.build_default_endpoint_prefixes(
-                app.config['DEPOSIT_REST_ENDPOINTS']
+                dict(app.config['DEPOSIT_REST_ENDPOINTS'])
             )
             current_records_rest = app.extensions['invenio-records-rest']
             overlap = set(endpoint_prefixes.keys()) & set(
