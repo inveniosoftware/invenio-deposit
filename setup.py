@@ -32,17 +32,18 @@ readme = open('README.rst').read()
 history = open('CHANGES.rst').read()
 
 tests_require = [
+    'Flask-CeleryExt>=0.2.2',
     'check-manifest>=0.25',
     'coverage>=4.0',
-    'invenio-accounts>=1.0.0a15',
-    'invenio-access>=1.0.0a9',
+    'invenio-access>=1.0.0a11',
+    'invenio-accounts>=1.0.0b1',
     'isort>=4.2.2',
     'psycopg2>=2.6.1',
     'pydocstyle>=1.0.0',
     'pytest-cache>=1.0',
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
-    'pytest>=2.8.0',
+    'pytest>=3.0.4',
     'reportlab>=3.3.0',
 ]
 
@@ -69,19 +70,20 @@ install_requires = [
     'SQLAlchemy-Continuum>=1.2.1',
     'SQLAlchemy-Utils[encrypted]>=0.32.6',
     'dictdiffer>=0.5.0.post1',
-    'elasticsearch-dsl>=2.0.0,<5.0.0',
+    'elasticsearch>=2.0.0,<3.0.0',
+    'elasticsearch-dsl>=2.0.0,<3.0.0',
     'invenio-assets>=1.0.0b2',
-    'invenio-db[versioning]>=1.0.0b2',
-    'invenio-files-rest>=1.0.0a11',
-    'invenio-indexer>=1.0.0a7',
+    'invenio-db[versioning]>=1.0.0b3',
+    'invenio-files-rest>=1.0.0a14',
+    'invenio-indexer>=1.0.0a8',
     'invenio-jsonschemas>=1.0.0a3',
     'invenio-oauth2server>=1.0.0a12',
-    'invenio-records-files>=1.0.0a6',
+    'invenio-records-files>=1.0.0a8',
     'invenio-records-rest>=1.0.0a17',
-    'invenio-records-ui>=1.0.0a7',
-    'invenio-records>=1.0.0a17',
+    'invenio-records-ui>=1.0.0a8',
+    'invenio-records>=1.0.0b1',
     'invenio-search-ui>=1.0.0a5',
-    'invenio-search>=1.0.0a7',
+    'invenio-search>=1.0.0a9',
 ]
 
 packages = find_packages()
