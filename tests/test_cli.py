@@ -1,8 +1,7 @@
-#!/usr/bin/env sh
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016 CERN.
+# Copyright (C) 2016 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -24,9 +23,13 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 
-pydocstyle invenio_deposit tests docs && \
-isort -rc -c -df && \
-check-manifest --ignore ".travis-*" && \
-sphinx-build -qnNW docs docs/_build/html && \
-python setup.py test && \
-sphinx-build -qnNW -b doctest docs docs/_build/doctest
+"""Test CLI for Deposit."""
+
+from __future__ import absolute_import, print_function
+
+from invenio_deposit.cli import deposit
+
+
+def test_cli():
+    """Test Deposit CLI."""
+    assert deposit  # Make sure the deposit is importable

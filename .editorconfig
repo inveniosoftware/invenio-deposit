@@ -39,6 +39,7 @@ indent_size = 4
 known_first_party = invenio_deposit
 multi_line_output = 2
 default_section = THIRDPARTY
+skip = .eggs
 
 # RST files (used by sphinx)
 [*.rst]
