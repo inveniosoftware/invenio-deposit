@@ -132,8 +132,11 @@ class InvenioDepositREST(object):
             app.config['DEPOSIT_REST_ENDPOINTS']
         )
 
-        @blueprint.record_once
-        def extend_default_endpoint_prefixes(_):
+        # FIXME: This is a temporary fix. This means that
+        # invenio-records-rest's endpoint_prefixes cannot be used before
+        # the first request or in other processes, ex: Celery tasks.
+        @app.before_first_request
+        def extend_default_endpoint_prefixes():
             """Extend redirects between PID types."""
             endpoint_prefixes = utils.build_default_endpoint_prefixes(
                 dict(app.config['DEPOSIT_REST_ENDPOINTS'])

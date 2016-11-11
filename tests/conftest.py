@@ -108,7 +108,6 @@ def base_app(request):
             OAUTHLIB_INSECURE_TRANSPORT=True,
             OAUTH2_CACHE_TYPE='simple',
         )
-        app_.url_map.converters['pid'] = PIDConverter
         Babel(app_)
         FlaskCeleryExt(app_)
         Breadcrumbs(app_)
@@ -125,20 +124,25 @@ def base_app(request):
         InvenioSearch(app_)
 
     api_app = Flask('testapiapp', instance_path=instance_path)
+    api_app.url_map.converters['pid'] = PIDConverter
+    # initialize InvenioDeposit first in order to detect any invalid dependency
+    InvenioDepositREST(api_app)
+
     init_app(api_app)
     InvenioREST(api_app)
     InvenioOAuth2ServerREST(api_app)
     InvenioRecordsREST(api_app)
-    InvenioDepositREST(api_app)
 
     app = Flask('testapp', instance_path=instance_path)
+    app.url_map.converters['pid'] = PIDConverter
+    # initialize InvenioDeposit first in order to detect any invalid dependency
+    InvenioDeposit(app)
     init_app(app)
     app.register_blueprint(accounts_blueprint)
     app.register_blueprint(oauth2server_settings_blueprint)
     InvenioAssets(app)
     InvenioSearchUI(app)
     InvenioRecordsUI(app)
-    InvenioDeposit(app)
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
         '/api': api_app.wsgi_app
     })
