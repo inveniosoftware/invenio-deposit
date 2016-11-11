@@ -6,21 +6,21 @@ cd $DIR
 export FLASK_APP=app.py
 
 # clean environment
-[ -e "$DIR/instance" ] && rm $DIR/instance -Rf
-[ -h "$DIR/static/.DS_Store" ] && rm $DIR/static/.DS_Store -Rf
-[ -e "$DIR/static/.webassets-cache" ] && rm $DIR/static/.webassets-cache -Rf
-[ -e "$DIR/static/admin" ] && rm $DIR/static/admin -Rf
-[ -e "$DIR/static/bootstrap" ] && rm $DIR/static/bootstrap -Rf
-[ -e "$DIR/static/gen" ] && rm $DIR/static/gen -Rf
-[ -e "$DIR/static/images" ] && rm $DIR/static/images -Rf
-[ -e "$DIR/static/js" ] && rm $DIR/static/js -Rf
-[ -e "$DIR/static/json" ] && rm $DIR/static/json -Rf
-[ -e "$DIR/static/node_modules" ] && rm $DIR/static/node_modules -Rf
-[ -e "$DIR/static/package.json" ] && rm $DIR/static/package.json -Rf
-[ -e "$DIR/static/scss" ] && rm $DIR/static/scss -Rf
-[ -e "$DIR/static/templates/invenio_deposit" ] && rm $DIR/static/templates/invenio_deposit -Rf
-[ -e "$DIR/static/templates/invenio_search_ui" ] && rm $DIR/static/templates/invenio_search_ui -Rf
-[ -e "$DIR/static/vendor" ] && rm $DIR/static/vendor -Rf
+[ -e "$DIR/instance" ] && rm -Rf $DIR/instance
+[ -h "$DIR/static/.DS_Store" ] && rm -Rf $DIR/static/.DS_Store
+[ -e "$DIR/static/.webassets-cache" ] && rm -Rf $DIR/static/.webassets-cache
+[ -e "$DIR/static/admin" ] && rm -Rf $DIR/static/admin
+[ -e "$DIR/static/bootstrap" ] && rm -Rf $DIR/static/bootstrap
+[ -e "$DIR/static/gen" ] && rm -Rf $DIR/static/gen
+[ -e "$DIR/static/images" ] && rm -Rf $DIR/static/images
+[ -e "$DIR/static/js" ] && rm -Rf $DIR/static/js
+[ -e "$DIR/static/json" ] && rm -Rf $DIR/static/json
+[ -e "$DIR/static/node_modules" ] && rm -Rf $DIR/static/node_modules
+[ -e "$DIR/static/package.json" ] && rm -Rf $DIR/static/package.json
+[ -e "$DIR/static/scss" ] && rm -Rf $DIR/static/scss
+[ -e "$DIR/static/templates/invenio_deposit" ] && rm -Rf $DIR/static/templates/invenio_deposit
+[ -e "$DIR/static/templates/invenio_search_ui" ] && rm -Rf $DIR/static/templates/invenio_search_ui
+[ -e "$DIR/static/vendor" ] && rm -Rf $DIR/static/vendor
 
 # Delete the database
 flask db drop --yes-i-know
