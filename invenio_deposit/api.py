@@ -142,7 +142,11 @@ class Deposit(Record):
 
     @property
     def pid(self):
-        """Return an instance of deposit PID."""
+        """Return an instance of deposit PID.
+
+        :returns: An instance of deposit PID.
+        :rtype: ``invenio_pidstore.models.PersistentIdentifier``
+        """
         pid = self.deposit_fetcher(self.id, self)
         return PersistentIdentifier.get(pid.pid_type,
                                         pid.pid_value)
@@ -161,7 +165,7 @@ class Deposit(Record):
         """Convert record schema to a valid deposit schema.
 
         :param record: The record used to build deposit schema.
-        :returns: The absolute URL to the schema or `None`.
+        :returns: The absolute URL to the schema or ``None``.
         """
         schema_path = current_jsonschemas.url_to_path(record['$schema'])
         schema_prefix = current_app.config['DEPOSIT_JSONSCHEMAS_PREFIX']
@@ -171,7 +175,16 @@ class Deposit(Record):
             )
 
     def fetch_published(self):
-        """Return a tuple with PID and published record."""
+        """Return a tuple with PID and published record.
+
+        Returned tuple contains an instance of
+        ``invenio_pidstore.models.PersistentIdentifier`` as first element and
+        and an instance of ``invenio_records.api.Record`` (or derivative class)
+        as the second element.
+
+        :returns: Published PID and Record.
+        :rtype: tuple
+        """
         pid_type = self['_deposit']['pid']['type']
         pid_value = self['_deposit']['pid']['value']
 
@@ -378,7 +391,7 @@ class Deposit(Record):
 
         #. The deposit index is updated.
 
-        Status required: `published`.
+        Status required: ``published``.
 
         .. note:: the process fails if the pid has status
             :attr:`invenio_pidstore.models.PIDStatus.REGISTERED`.
@@ -504,7 +517,11 @@ class Deposit(Record):
 
     @property
     def status(self):
-        """Property for accessing deposit status."""
+        """Property for accessing deposit status.
+
+        :returns: Either ``'draft'`` or ``'published'``
+        :rtype: str
+        """
         return self['_deposit']['status']
 
     @property
