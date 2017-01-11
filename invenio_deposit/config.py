@@ -222,3 +222,6 @@ DEPOSIT_FORM_TEMPLATES = {
 
 DEPOSIT_RESPONSE_MESSAGES = {}
 """Alerts shown when actions are completed on deposit."""
+
+DEPOSIT_RECORD_INDEX_ON_NEW_PUBLISH = True
+"""Index a record when the deposit is published."""

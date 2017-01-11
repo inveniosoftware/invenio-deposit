@@ -28,6 +28,7 @@ from __future__ import absolute_import, print_function
 
 from collections import defaultdict
 
+from invenio_indexer.api import RecordIndexer
 from invenio_records_rest import utils
 from werkzeug.utils import cached_property
 
@@ -67,6 +68,12 @@ class _DepositState(object):
         return defaultdict(
             lambda: self.app.config['DEPOSIT_DEFAULT_SCHEMAFORM'], _schemaforms
         )
+
+    @cached_property
+    def indexer(self):
+        """Load indexer."""
+        if self.app.config['DEPOSIT_RECORD_INDEX_ON_NEW_PUBLISH']:
+            return RecordIndexer()
 
 
 class InvenioDeposit(object):
