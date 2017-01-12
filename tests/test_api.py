@@ -32,7 +32,8 @@ import pytest
 from invenio_db import db
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.errors import MissingModelError
-from jsonschema.exceptions import RefResolutionError
+from invenio_records.validators import PartialDraft4Validator
+from jsonschema.exceptions import RefResolutionError, ValidationError
 from six import BytesIO
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -266,3 +267,12 @@ def test_publish_revision_changed_not_mergeable(app, location,
     deposit.commit()
     with pytest.raises(MergeConflict):
         deposit.publish()
+
+
+def test_create_with_partial_validation(app, jsonresolver_required_fields):
+    """Test the creation passing special parameters to the create."""
+    with pytest.raises(ValidationError):
+        Deposit.create({})
+    deposit = Deposit.create({}, validator=PartialDraft4Validator)
+    schema = 'http://localhost/schemas/deposits/deposit-v1.0.0.json'
+    assert deposit['$schema'] == schema
