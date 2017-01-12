@@ -79,6 +79,7 @@ install_requires = [
     'invenio-records-files>=1.0.0a8',
     'invenio-records-rest>=1.0.0b5',
     'invenio-records-ui>=1.0.0a8',
+    'invenio-records>=1.0.0b4',
     'invenio-search-ui>=1.0.0a5',
     'invenio-search>=1.0.0a11',
 ]
