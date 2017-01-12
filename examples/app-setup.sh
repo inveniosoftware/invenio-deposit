@@ -29,5 +29,6 @@ flask db init
 flask db create
 
 # Create indices
+flask index destroy --yes-i-know --force
 flask index init
 flask index queue init
