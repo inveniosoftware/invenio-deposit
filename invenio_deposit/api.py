@@ -47,6 +47,8 @@ from invenio_records_files.models import RecordsBuckets
 from sqlalchemy.orm.attributes import flag_modified
 from werkzeug.local import LocalProxy
 
+from invenio_deposit.signals import after_record_publish, before_record_publish
+
 from .errors import MergeConflict
 from .fetchers import deposit_fetcher as default_deposit_fetcher
 from .minters import deposit_minter as default_deposit_minter
@@ -335,14 +337,21 @@ class Deposit(Record):
         if not pid.is_registered():
             raise PIDInvalidAction()
 
+        before_record_publish.send(current_app._get_current_object(),
+                                   record=self)
+
         self['_deposit']['status'] = 'published'
 
         if self['_deposit'].get('pid') is None:  # First publishing
-            self._publish_new(id_=id_)
+            record = self._publish_new(id_=id_)
         else:  # Update after edit
             record = self._publish_edited()
             record.commit()
         self.commit()
+
+        after_record_publish.send(current_app._get_current_object(),
+                                  record=record, deposit=self)
+
         return self
 
     def _prepare_edit(self, record):

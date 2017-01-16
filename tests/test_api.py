@@ -38,6 +38,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from invenio_deposit.api import Deposit
 from invenio_deposit.errors import MergeConflict
+from invenio_deposit.signals import after_record_publish, before_record_publish
 
 
 def test_schemas(app, fake_schemas):
@@ -266,3 +267,32 @@ def test_publish_revision_changed_not_mergeable(app, location,
     deposit.commit()
     with pytest.raises(MergeConflict):
         deposit.publish()
+
+
+def test_signal_record_publishing(app, fake_schemas, location):
+    """Test that signals are sent before and after publishing a record."""
+    records_before_publish = []
+    records_after_publish = []
+
+    def before_publish_signal_status(*args, **kwargs):
+        records_before_publish.append(kwargs['record'].id)
+        return kwargs['record']
+
+    def after_publish_signal_status(*args, **kwargs):
+        deposit = kwargs['deposit']
+        record = kwargs['record']
+        records_after_publish.extend((deposit.id, record.id))
+        return (deposit, record)
+
+    before_record_publish.connect(before_publish_signal_status)
+    after_record_publish.connect(after_publish_signal_status)
+
+    deposit = Deposit.create({})
+    deposit.commit()
+    db.session.commit()
+
+    deposit.publish()
+    db.session.commit()
+
+    assert deposit.id in records_before_publish
+    assert deposit.id in records_after_publish
