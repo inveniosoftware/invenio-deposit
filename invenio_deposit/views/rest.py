@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -52,6 +52,7 @@ from ..errors import FileAlreadyExists, WrongFile
 from ..scopes import write_scope
 from ..search import DepositSearch
 from ..signals import post_action
+from ..utils import extract_actions_from_class
 
 
 def create_error_handlers(blueprint):
@@ -147,8 +148,9 @@ def create_blueprint(endpoints):
         )
 
         blueprint.add_url_rule(
-            '{0}/actions/<any(publish,edit,discard):action>'.format(
-                options['item_route']
+            '{0}/actions/<any({1}):action>'.format(
+                options['item_route'],
+                ','.join(extract_actions_from_class(record_class)),
             ),
             view_func=deposit_actions,
             methods=['POST'],

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -50,6 +50,7 @@ from werkzeug.local import LocalProxy
 from .errors import MergeConflict
 from .fetchers import deposit_fetcher as default_deposit_fetcher
 from .minters import deposit_minter as default_deposit_minter
+from .utils import mark_as_action
 
 current_jsonschemas = LocalProxy(
     lambda: current_app.extensions['invenio-jsonschemas']
@@ -298,6 +299,7 @@ class Deposit(Record):
         return record
 
     @has_status
+    @mark_as_action
     def publish(self, pid=None, id_=None):
         """Publish a deposit.
 
@@ -359,6 +361,7 @@ class Deposit(Record):
 
     @has_status(status='published')
     @index
+    @mark_as_action
     def edit(self, pid=None):
         """Edit deposit.
 
@@ -405,6 +408,7 @@ class Deposit(Record):
 
     @has_status
     @index
+    @mark_as_action
     def discard(self, pid=None):
         """Discard deposit changes.
 
