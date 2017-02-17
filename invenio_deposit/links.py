@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2016 CERN.
+# Copyright (C) 2016, 2017 CERN.
 #
 # Invenio is free software; you can redistribute it
 # and/or modify it under the terms of the GNU General Public License as
@@ -24,8 +24,12 @@
 
 """Links for record serialization."""
 
-from flask import current_app, request, url_for
+from flask import current_app, has_request_context, request, url_for
 from invenio_records_rest.links import default_links_factory
+from invenio_records_rest.proxies import current_records_rest
+
+from .api import Deposit
+from .utils import extract_actions_from_class
 
 
 def deposit_links_factory(pid):
@@ -50,7 +54,10 @@ def deposit_links_factory(pid):
 
     def _url(name, **kwargs):
         """URL builder."""
-        endpoint = '.{0}_{1}'.format(pid.pid_type, name)
+        endpoint = '.{0}_{1}'.format(
+            current_records_rest.default_endpoint_prefixes[pid.pid_type],
+            name,
+        )
         return url_for(endpoint, pid_value=pid.pid_value, _external=True,
                        **kwargs)
 
@@ -64,6 +71,10 @@ def deposit_links_factory(pid):
             pid_value=pid.pid_value,
         )
 
-    for action in ('publish', 'edit', 'discard'):
+    deposit_cls = Deposit
+    if 'pid_value' in request.view_args:
+        deposit_cls = request.view_args['pid_value'].data[1].__class__
+
+    for action in extract_actions_from_class(deposit_cls):
         links[action] = _url('actions', action=action)
     return links
