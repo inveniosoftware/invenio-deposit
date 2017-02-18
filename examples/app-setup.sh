@@ -14,7 +14,7 @@ mkdir $DIR/instance
 
 # Install specific dependencies
 pip install -r requirements.txt
-npm install -g node-sass clean-css@3 requirejs uglify-js
+npm install -g node-sass clean-css clean-css-cli requirejs uglify-js
 
 # Install assets
 flask npm

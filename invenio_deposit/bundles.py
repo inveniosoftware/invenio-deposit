@@ -31,7 +31,7 @@ css = Bundle(
     'node_modules/ui-select/dist/select.css',
     'node_modules/jqueryui/jquery-ui.css',
     'node_modules/rr-ng-ckeditor/ng-ckeditor.css',
-    filters='cleancss',
+    filters='cleancssurl',
     output='gen/deposit.%(version)s.css',
 )
 
