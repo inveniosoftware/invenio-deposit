@@ -340,11 +340,15 @@ class Deposit(Record):
         self['_deposit']['status'] = 'published'
 
         if self['_deposit'].get('pid') is None:  # First publishing
-            self._publish_new(id_=id_)
+            record = self._publish_new(id_=id_)
         else:  # Update after edit
             record = self._publish_edited()
             record.commit()
         self.commit()
+
+        if current_app.config['DEPOSIT_RECORD_INDEX_ON_NEW_PUBLISH']:
+            self.indexer.index(record)
+
         return self
 
     def _prepare_edit(self, record):

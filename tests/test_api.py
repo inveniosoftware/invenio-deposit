@@ -23,13 +23,16 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 """Test the API."""
-
 from __future__ import absolute_import, print_function
 
+import unittest
+from contextlib import contextmanager
 from copy import deepcopy
 
 import pytest
+from flask import current_app, template_rendered
 from invenio_db import db
+from invenio_indexer.signals import before_record_index
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_records.errors import MissingModelError
 from jsonschema.exceptions import RefResolutionError
@@ -266,3 +269,25 @@ def test_publish_revision_changed_not_mergeable(app, location,
     deposit.commit()
     with pytest.raises(MergeConflict):
         deposit.publish()
+
+
+def test_index_record_after_publishing(app, fake_schemas, location):
+    """Test that records after publishing are indexed."""
+    record_ids = set()
+
+    def check_received_index_status(sender, json=None, record=None, **kwargs):
+        record_ids.add(record.id)
+        return record
+
+    before_record_index.connect(check_received_index_status)
+
+    deposit = Deposit.create({})
+    deposit.commit()
+    db.session.commit()
+
+    deposit.publish()
+    published_record_id = deposit.fetch_published()[1].id
+    db.session.commit()
+
+    if current_app.config['DEPOSIT_RECORD_INDEX_ON_NEW_PUBLISH']:
+        assert published_record_id in record_ids
