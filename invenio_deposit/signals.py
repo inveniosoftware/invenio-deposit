@@ -50,3 +50,9 @@ Example subscriber:
     from invenio_deposit.signals import post_action
     post_action.connect(listener)
 """
+
+before_record_publish = _signals.signal('before-record-publish')
+"""Signal is sent before a record is published."""
+
+after_record_publish = _signals.signal('after-record-publish')
+"""Signal sent after a record is published."""
