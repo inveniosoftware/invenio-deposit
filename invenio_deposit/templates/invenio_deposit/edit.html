@@ -34,6 +34,7 @@
 {%- endblock javascript %}
 
 {%- block page_body %}
+  {%- set _jwt = jwt_token() -%}
   <div class="container">
     <div class="row">
       <div class="col-md-12">
@@ -45,7 +46,7 @@
               initialization="{{ config.DEPOSIT_SEARCH_API }}"
             {% endif %}
             response-params='{{ config.DEPOSIT_RESPONSE_MESSAGES | tojson }}'
-            extra-params='{"headers":{"Content-Type": "application/json"}}'
+            extra-params='{"headers":{"Content-Type": "application/json", "Authorization": "Bearer {{ _jwt }}" }}'
             form="{{ url_for('static', filename=schemaform) }}"
             record='{{ record | tojson }}'
             schema="{{ url_for('invenio_jsonschemas.get_schema', schema_path=jsonschema) }}">
@@ -72,7 +73,7 @@
             {% else %}
               initialization="{{ config.DEPOSIT_SEARCH_API }}"
             {% endif %}
-            extra-params='{"headers":{"Content-Type": "application/json"}}'
+            extra-params='{"headers":{"Content-Type": "application/json", "Authorization": "Bearer {{ _jwt }}"}}'
           >
             <invenio-files-upload-zone
               template="{{ url_for('static', filename='node_modules/invenio-files-js/dist/templates/upload.html') }}">
