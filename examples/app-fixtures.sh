@@ -15,5 +15,5 @@ export FLASK_APP=app.py
 flask users create info@inveniosoftware.org -a --password 123456
 
 # Load fixtures
+flask files location default /tmp --default
 flask fixtures records
-flask fixtures location

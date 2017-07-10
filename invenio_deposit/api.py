@@ -243,7 +243,10 @@ class Deposit(Record):
 
             data['_deposit']['created_by'] = creator_id
 
-        return super(Deposit, cls).create(data, id_=id_)
+        deposit = super(Deposit, cls).create(data, id_=id_)
+        # FIXME create the bucket!
+        deposit.files.bucket
+        return deposit
 
     @contextmanager
     def _process_files(self, record_id, data):

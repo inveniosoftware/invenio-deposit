@@ -50,6 +50,7 @@ from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
+from invenio_files_rest.views import blueprint as files_rest_blueprint
 from invenio_indexer import InvenioIndexer
 from invenio_jsonschemas import InvenioJSONSchemas
 from invenio_oauth2server import InvenioOAuth2Server, InvenioOAuth2ServerREST
@@ -107,6 +108,7 @@ def base_app(request):
             SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
             OAUTHLIB_INSECURE_TRANSPORT=True,
             OAUTH2_CACHE_TYPE='simple',
+            ACCOUNTS_JWT_ENABLE=False,
         )
         Babel(app_)
         FlaskCeleryExt(app_)
@@ -118,10 +120,10 @@ def base_app(request):
         InvenioIndexer(app_)
         InvenioJSONSchemas(app_)
         InvenioOAuth2Server(app_)
-        InvenioFilesREST(app_)
         InvenioPIDStore(app_)
         InvenioRecords(app_)
         InvenioSearch(app_)
+        InvenioFilesREST(app_)
 
     api_app = Flask('testapiapp', instance_path=instance_path)
     api_app.url_map.converters['pid'] = PIDConverter
@@ -132,6 +134,8 @@ def base_app(request):
     InvenioREST(api_app)
     InvenioOAuth2ServerREST(api_app)
     InvenioRecordsREST(api_app)
+
+    api_app.register_blueprint(files_rest_blueprint)
 
     app = Flask('testapp', instance_path=instance_path)
     app.url_map.converters['pid'] = PIDConverter

@@ -24,12 +24,24 @@
 
 """Links for record serialization."""
 
-from flask import current_app, has_request_context, request, url_for
+from flask import current_app, request, url_for
 from invenio_records_rest.links import default_links_factory
 from invenio_records_rest.proxies import current_records_rest
 
 from .api import Deposit
 from .utils import extract_actions_from_class
+
+
+def _bucket_link_factory(pid):
+    """Add the bucket link."""
+    try:
+        record = Deposit.get_record(pid.get_assigned_object())
+        bucket = record.files.bucket
+
+        return url_for('invenio_files_rest.bucket_api',
+                       bucket_id=bucket.id, _external=True)
+    except AttributeError:
+        return None
 
 
 def deposit_links_factory(pid):
@@ -62,6 +74,10 @@ def deposit_links_factory(pid):
                        **kwargs)
 
     links['files'] = _url('files')
+
+    bucket_link = _bucket_link_factory(pid)
+    if bucket_link is not None:
+        links['bucket'] = bucket_link
 
     ui_endpoint = current_app.config.get('DEPOSIT_UI_ENDPOINT')
     if ui_endpoint is not None:

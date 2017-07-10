@@ -30,13 +30,13 @@ from invenio_records_rest.utils import check_elasticsearch
 from .utils import check_oauth2_scope_write, \
     check_oauth2_scope_write_elasticsearch
 
-DEPOSIT_SEARCH_API = '/api/deposits'
+DEPOSIT_SEARCH_API = '/api/deposits/'
 """URL of search endpoint for deposits."""
 
 DEPOSIT_RECORDS_API = '/api/deposits/{pid_value}'
 """URL of record endpoint for deposits."""
 
-DEPOSIT_FILES_API = '/api/files'
+DEPOSIT_FILES_API = '/api/files/'
 """URL of files endpoints for uploading."""
 
 DEPOSIT_PID_MINTER = 'recid'

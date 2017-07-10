@@ -30,6 +30,8 @@ Installation proccess
 
 Make sure that ``ElasticSearch`` and ``RabbitMQ`` servers are running.
 
+Note: make sure to install the mapper-attachments plugin for ElasticSearch.
+
 Run the demo:
 
 .. code-block:: console
@@ -71,6 +73,7 @@ from invenio_assets import InvenioAssets
 from invenio_db import InvenioDB, db
 from invenio_files_rest import InvenioFilesREST
 from invenio_files_rest.models import Location
+from invenio_files_rest.views import blueprint as files_rest_blueprint
 from invenio_i18n import InvenioI18N
 from invenio_indexer import InvenioIndexer
 from invenio_indexer.api import RecordIndexer
@@ -104,7 +107,7 @@ app.config.update(
     REST_ENABLE_CORS=True,
     SECRET_KEY='changeme',
     SQLALCHEMY_TRACK_MODIFICATIONS=True,
-    DEPOSIT_SEARCH_API='/deposits',
+    DEPOSIT_SEARCH_API='/deposits/',
     RECORDS_REST_FACETS=dict(
         deposits=dict(
             aggs=dict(
@@ -122,11 +125,12 @@ app.config.update(
     RECORDS_UI_DEFAULT_PERMISSION_FACTORY=None,
     SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI',
                                       'sqlite:///app.db'),
-    SEARCH_UI_SEARCH_API='/deposits',
+    SEARCH_UI_SEARCH_API='/deposits/',
     SEARCH_UI_JSTEMPLATE_RESULTS='templates/app/deposit.html',
     DATADIR=join(dirname(__file__), 'data/upload'),
     OAUTH2SERVER_CACHE_TYPE='simple',
     OAUTHLIB_INSECURE_TRANSPORT=True,
+    ACCOUNTS_JWT_ENABLE=False,
 )
 
 Babel(app)
@@ -170,6 +174,8 @@ app.register_blueprint(accounts_blueprint)
 
 app.register_blueprint(settings_blueprint)
 app.register_blueprint(server_blueprint)
+
+app.register_blueprint(files_rest_blueprint)
 
 
 @app.cli.group()
