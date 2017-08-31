@@ -269,7 +269,7 @@ def test_publish_revision_changed_not_mergeable(app, location,
         deposit.publish()
 
 
-def test_create_with_partial_validation(app, jsonresolver_required_fields):
+def test_create_with_partial_validation(app, jsonresolver_required_fields, es):
     """Test the creation passing special parameters to the create."""
     with pytest.raises(ValidationError):
         Deposit.create({})
