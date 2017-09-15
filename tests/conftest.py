@@ -88,6 +88,7 @@ def base_app(request):
 
     def init_app(app_):
         app_.config.update(
+            ACCOUNTS_JWT_ENABLE=False,
             CELERY_ALWAYS_EAGER=True,
             CELERY_CACHE_BACKEND='memory',
             CELERY_EAGER_PROPAGATES_EXCEPTIONS=True,
