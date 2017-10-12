@@ -64,10 +64,10 @@ setup_requires = [
 ]
 
 install_requires = [
-    'Flask-BabelEx>=0.9.2',
+    'Flask-BabelEx>=0.9.3',
     'Flask-Login>=0.3.2',
     'Flask>=0.11.1',
-    'SQLAlchemy-Continuum>=1.2.1',
+    'SQLAlchemy-Continuum>=1.3',
     'SQLAlchemy-Utils[encrypted]>=0.32.6',
     'dictdiffer>=0.5.0.post1',
     'elasticsearch>=2.0.0,<3.0.0',

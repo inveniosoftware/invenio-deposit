@@ -392,7 +392,8 @@ class Deposit(Record):
         pid = pid or self.pid
 
         with db.session.begin_nested():
-            before_record_update.send(self)
+            before_record_update.send(
+                current_app._get_current_object(), record=self)
 
             record_pid, record = self.fetch_published()
             assert PIDStatus.REGISTERED == record_pid.status
@@ -403,7 +404,8 @@ class Deposit(Record):
             flag_modified(self.model, 'json')
             db.session.merge(self.model)
 
-        after_record_update.send(self)
+        after_record_update.send(
+            current_app._get_current_object(), record=self)
         return self.__class__(self.model.json, model=self.model)
 
     @has_status
@@ -436,7 +438,8 @@ class Deposit(Record):
         pid = pid or self.pid
 
         with db.session.begin_nested():
-            before_record_update.send(self)
+            before_record_update.send(
+                current_app._get_current_object(), record=self)
 
             _, record = self.fetch_published()
             self.model.json = deepcopy(record.model.json)
@@ -445,7 +448,8 @@ class Deposit(Record):
             flag_modified(self.model, 'json')
             db.session.merge(self.model)
 
-        after_record_update.send(self)
+        after_record_update.send(
+            current_app._get_current_object(), record=self)
         return self.__class__(self.model.json, model=self.model)
 
     @has_status

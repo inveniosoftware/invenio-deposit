@@ -107,6 +107,7 @@ def base_app(request):
             SECURITY_DEPRECATED_PASSWORD_SCHEMES=[],
             OAUTHLIB_INSECURE_TRANSPORT=True,
             OAUTH2_CACHE_TYPE='simple',
+            ACCOUNTS_JWT_ENABLE=False,
         )
         Babel(app_)
         FlaskCeleryExt(app_)
