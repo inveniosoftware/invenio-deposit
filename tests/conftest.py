@@ -64,6 +64,9 @@ from invenio_records_ui import InvenioRecordsUI
 from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_search_ui import InvenioSearchUI
+from jsonresolver import JSONResolver
+from jsonresolver.contrib.jsonref import json_loader_factory
+from jsonresolver.contrib.jsonschema import ref_resolver_factory
 from six import BytesIO, get_method_self
 from sqlalchemy import inspect
 from sqlalchemy_utils.functions import create_database, database_exists, \
@@ -374,3 +377,19 @@ def oauth2_headers_user_2(app, json_headers, write_token_user_2):
     It uses the token associated with the second user.
     """
     return fill_oauth2_headers(json_headers, write_token_user_2)
+
+
+@pytest.fixture()
+def jsonresolver_required_fields(app):
+    """Configure a jsonresolver to simulate required fields."""
+    resolver = JSONResolver(plugins=['demo.json_resolver_required_fields'])
+    backup_ref = app.extensions['invenio-records'].ref_resolver_cls
+    backup_json = app.extensions['invenio-records'].loader_cls
+    app.extensions[
+        'invenio-records'
+    ].ref_resolver_cls = ref_resolver_factory(resolver)
+    app.extensions['invenio-records'].loader_cls = json_loader_factory(
+        resolver)
+    yield app
+    app.extensions['invenio-records'].loader_cls = backup_json
+    app.extensions['invenio-records'].ref_resolver_cls = backup_ref
