@@ -112,6 +112,9 @@ def create_blueprint(endpoints):
         options.setdefault('record_class', Deposit)
         record_class = obj_or_import_string(options['record_class'])
 
+        # backward compatibility for indexer class
+        options.setdefault('indexer_class', None)
+
         for rule in records_rest_url_rules(endpoint, **options):
             blueprint.add_url_rule(**rule)
 

@@ -32,7 +32,6 @@ readme = open('README.rst').read()
 history = open('CHANGES.rst').read()
 
 tests_require = [
-    'Flask-CeleryExt>=0.2.2',
     'check-manifest>=0.25',
     'coverage>=4.0',
     'invenio-access>=1.0.0a11',
@@ -75,15 +74,13 @@ install_requires = [
     'invenio-assets>=1.0.0b6',
     'invenio-db[versioning]>=1.0.0b3',
     'invenio-files-rest>=1.0.0a14',
-    'invenio-indexer>=1.0.0a8',
     'invenio-jsonschemas>=1.0.0a3',
     'invenio-oauth2server>=1.0.0a12',
     'invenio-records-files>=1.0.0a8',
-    'invenio-records-rest>=1.0.0a17',
+    'invenio-records-rest>=1.0.0b5',
     'invenio-records-ui>=1.0.0a8',
-    'invenio-records>=1.0.0b1',
     'invenio-search-ui>=1.0.0a5',
-    'invenio-search>=1.0.0a9',
+    'invenio-search>=1.0.0a11',
 ]
 
 packages = find_packages()

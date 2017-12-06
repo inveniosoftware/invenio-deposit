@@ -73,6 +73,7 @@ DEPOSIT_REST_ENDPOINTS = {
                                  ':json_v1_search'),
         },
         'list_route': '/deposits/',
+        'indexer_class': None,
         'item_route': '/deposits/<{0}:pid_value>'.format(_PID),
         'file_list_route': '/deposits/<{0}:pid_value>/files'.format(_PID),
         'file_item_route':
