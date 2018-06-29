@@ -2,6 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+     {{ webpack['manifest.js'] }}
+     {{ webpack['vendor.js'] }}
   </head>
   <body>
     {%- block page_body %}{%- endblock page_body %}

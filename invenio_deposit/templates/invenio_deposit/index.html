@@ -25,12 +25,14 @@
 
 {%- block css %}
     {{ super() }}
-    {% assets "invenio_search_ui_search_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets %}
+    {{ webpack['search_ui_theme.css'] }}
+    {# assets "invenio_search_ui_search_css" %}<link href="{{ ASSET_URL }}" rel="stylesheet">{% endassets #}
 {%- endblock css %}
 
 {%- block javascript %}
   {{ super() }}
-  {% assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets %}
+  {{ webpack['search_ui_app.js'] }}
+  {# assets "invenio_search_ui_search_js" %}<script src="{{ ASSET_URL }}"></script>{% endassets #}
 {%- endblock javascript %}
 
 {%- block body_inner %}

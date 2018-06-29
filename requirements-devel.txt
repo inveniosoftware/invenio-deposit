@@ -31,5 +31,7 @@
 -e git+git://github.com/inveniosoftware/invenio-records-ui.git#egg=invenio-records-ui
 -e git+git://github.com/inveniosoftware/invenio-records.git#egg=invenio-records
 -e git+git://github.com/inveniosoftware/invenio-rest.git#egg=invenio-rest
--e git+git://github.com/inveniosoftware/invenio-search-ui.git#egg=invenio-search-ui
 -e git+git://github.com/inveniosoftware/invenio-search.git#egg=invenio-search
+-e git+git://github.com/inveniosoftware/invenio-search-ui.git@webpack#egg=invenio-search-ui
+-e git+https://github.com/inveniosoftware/invenio-assets.git@webpack#egg=invenio-assets
+-e git+git://github.com/inveniosoftware/invenio-theme.git@webpack#egg=invenio-theme

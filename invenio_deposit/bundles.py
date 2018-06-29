@@ -26,6 +26,7 @@
 
 from flask_assets import Bundle
 from invenio_assets import NpmBundle
+from flask_webpackext import WebpackBundle
 
 css = Bundle(
     'node_modules/ui-select/dist/select.css',
@@ -137,3 +138,36 @@ js = Bundle(
     filters='jsmin',
     output='gen/deposit.%(version)s.js',
 )
+
+deposit = WebpackBundle(
+    __name__,
+    'assets',
+    entry={
+        'deposit_app': './js/invenio_deposit/app.js',
+        'deposit_theme': './scss/invenio_deposit/theme.scss',
+    },
+    dependencies={
+        'jquery': '~3.2.1',
+        'jqueryui': '~1.11.1',
+        'angular-ui-sortable': '~0.14.3',
+        'angular-schema-form-ckeditor':
+            'git://github.com/webcanvas/angular-schema-form-ckeditor'
+            '.git#b213fa934759a18b1436e23bfcbd9f0f730f1296',
+        'ckeditor': '~4.5.10',
+        'rr-ng-ckeditor': '~0.2.1',
+        'invenio-files-js': '~0.0.2',
+        'ng-file-upload': '~12.0.4',
+        'underscore': '~1.8.3',
+        'angular-schema-form': '~0.8.13',
+        'invenio-records-js': '~0.0.8',
+        'objectpath': '~1.2.1',
+        'tv4': '~1.2.7',
+        'angular-animate': '~1.4.8',
+        'angular-sanitize': '~1.4.10',
+        'angular-schema-form-dynamic-select': '~0.13.1',
+        'angular-strap': '~2.3.9',
+        'angular-translate': '~2.11.0',
+        'angular-underscore': '~0.0.3',
+        'ui-select': '~0.18.1',
+        'almond': '~0.3.1'
+    })

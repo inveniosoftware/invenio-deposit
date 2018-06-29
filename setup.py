@@ -66,7 +66,7 @@ install_requires = [
     'Flask-BabelEx>=0.9.3',
     'Flask-Login>=0.3.2',
     'Flask>=0.11.1',
-    'SQLAlchemy-Continuum>=1.3',
+    'SQLAlchemy-Continuum>=1.3,<1.3.5',
     'SQLAlchemy-Utils[encrypted]>=0.32.6',
     'dictdiffer>=0.5.0.post1',
     'elasticsearch>=2.0.0,<3.0.0',
@@ -107,6 +107,9 @@ setup(
     include_package_data=True,
     platforms='any',
     entry_points={
+        'console_scripts': [
+            'deposit = invenio_app.cli:cli',
+        ],
         'flask.commands': [
             'deposit = invenio_deposit.cli:deposit',
         ],
@@ -126,6 +129,9 @@ setup(
             'invenio_deposit_dependencies_js = invenio_deposit.bundles:'
             'js_dependecies',
         ],
+        'invenio_assets.webpack': {
+            'invenio_deposit = invenio_deposit.bundles:deposit'
+        },
         'invenio_i18n.translations': [
             'messages = invenio_deposit',
         ],
