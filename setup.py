@@ -51,6 +51,19 @@ extras_require = {
         'Sphinx>=1.5.1',
     ],
     'tests': tests_require,
+    # Elasticsearch version
+    'elasticsearch2': [
+        'elasticsearch>=2.0.0,<3.0.0',
+        'elasticsearch-dsl>=2.0.0,<3.0.0',
+    ],
+    'elasticsearch5': [
+        'elasticsearch>=5.0.0,<6.0.0',
+        'elasticsearch-dsl>=5.1.0,<6.0.0',
+    ],
+    'elasticsearch6': [
+        'elasticsearch>=6.0.0,<7.0.0',
+        'elasticsearch-dsl>=6.0.0,<6.2.0',
+    ],
 }
 
 extras_require['all'] = []
@@ -69,8 +82,6 @@ install_requires = [
     'SQLAlchemy-Continuum>=1.3',
     'SQLAlchemy-Utils[encrypted]>=0.32.6',
     'dictdiffer>=0.5.0.post1',
-    'elasticsearch>=2.0.0,<3.0.0',
-    'elasticsearch-dsl>=2.0.0,<3.0.0',
     'invenio-assets>=1.0.0b6',
     'invenio-db[versioning]>=1.0.0b3',
     'invenio-files-rest>=1.0.0a14',

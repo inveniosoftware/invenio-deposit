@@ -43,21 +43,28 @@ matrix:
 cache:
   - pip
 
-env:
-  - REQUIREMENTS=lowest ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=release ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=devel ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  global:
+    - ES2_DOWNLOAD_URL="https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.4.2/elasticsearch-2.4.2.tar.gz"
+    - ES5_DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.4.tar.gz"
+    - ES6_DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.2.0.tar.gz"
+    - ES_HOST=127.0.0.1
+    - SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  matrix:
+    - REQUIREMENTS=lowest EXTRAS=all,elasticsearch2 ES_URL=$ES2_DOWNLOAD_URL
+    - REQUIREMENTS=lowest EXTRAS=all,elasticsearch5 ES_URL=$ES5_DOWNLOAD_URL
+    - REQUIREMENTS=release EXTRAS=all,elasticsearch2 ES_URL=$ES2_DOWNLOAD_URL DEPLOY=true
+    - REQUIREMENTS=release EXTRAS=all,elasticsearch5 ES_URL=$ES5_DOWNLOAD_URL
+    - REQUIREMENTS=release EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
+    - REQUIREMENTS=devel EXTRAS=all,elasticsearch5 ES_URL=$ES5_DOWNLOAD_URL
+    - REQUIREMENTS=devel EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
 
 python:
   - "2.7"
-  # - "3.3"
-  # - "3.4"
   - "3.5"
 
 before_install:
   - "mkdir /tmp/elasticsearch"
-  - "wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1"
-  - "/tmp/elasticsearch/bin/plugin install -b mapper-attachments"
+   - "wget -O - $ES_URL | tar xz --directory=/tmp/elasticsearch --strip-components=1"
   - "/tmp/elasticsearch/bin/elasticsearch &"
   - "sleep 20"
   - "travis_retry pip install --upgrade pip setuptools py"
