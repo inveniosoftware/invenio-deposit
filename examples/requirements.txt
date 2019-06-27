@@ -30,3 +30,4 @@ invenio-i18n>=1.0.0b1
 invenio-pidstore>=1.0.0a9
 invenio-rest[cors]>=1.0.0a9
 invenio-theme>=1.0.0a17
+urllib3>=1.21.1,<1.25

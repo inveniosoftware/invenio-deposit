@@ -335,7 +335,7 @@ nitpick_ignore = [('py:class', 'Record'),
 intersphinx_mapping = {
     'https://docs.python.org/': None,
     'Flask': (
-        'http://flask.pocoo.org/docs/0.11', None
+        'http://flask.pocoo.org/docs/1.0/', None
     ),
     'Flask-Principal': (
         # NOTE readthedocs version is currently broken
