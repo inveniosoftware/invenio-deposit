@@ -354,7 +354,7 @@ class DepositFileResource(ContentNegotiatedMethodView):
     @use_kwargs(get_args)
     @pass_record
     @need_record_permission('read_permission_factory')
-    def get(self, pid, record, key, version_id, **kwargs):
+    def get(self, pid, record, key, version_id=None, **kwargs):
         """Get file.
 
         Permission required: `read_permission_factory`.
