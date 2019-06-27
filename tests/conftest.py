@@ -60,7 +60,10 @@ from invenio_pidstore import InvenioPIDStore
 from invenio_records import InvenioRecords
 from invenio_records_rest import InvenioRecordsREST
 from invenio_records_rest.utils import PIDConverter
+from invenio_records_rest.views import \
+    create_blueprint_from_app as records_rest_bp
 from invenio_records_ui import InvenioRecordsUI
+from invenio_records_ui.views import create_blueprint_from_app as records_ui_bp
 from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch, current_search, current_search_client
 from invenio_search_ui import InvenioSearchUI
@@ -144,6 +147,8 @@ def base_app(request):
     InvenioAssets(app)
     InvenioSearchUI(app)
     InvenioRecordsUI(app)
+    app.register_blueprint(records_ui_bp(app))
+    app.register_blueprint(records_rest_bp(app))
     app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
         '/api': api_app.wsgi_app
     })
@@ -173,6 +178,7 @@ def app(base_app):
 def api(base_app):
     """Yield the REST API application in its context."""
     api = get_method_self(base_app.wsgi_app.mounts['/api'])
+    api.register_blueprint(records_rest_bp(api))
     with api.app_context():
         yield api
 
