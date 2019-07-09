@@ -46,15 +46,34 @@ tests_require = [
     'reportlab>=3.3.0',
 ]
 
+invenio_search_version = '1.0.0'
+
 extras_require = {
     'docs': [
         'Sphinx>=1.5.1',
     ],
+    'elasticsearch2': [
+        'invenio-search[elasticsearch2]>={}'.format(invenio_search_version),
+    ],
+    'elasticsearch5': [
+        'invenio-search[elasticsearch5]>={}'.format(invenio_search_version),
+    ],
+    'elasticsearch6': [
+        'invenio-search[elasticsearch6]>={}'.format(invenio_search_version),
+    ],
+    'elasticsearch7': [
+        'invenio-search[elasticsearch7]>={}'.format(invenio_search_version),
+    ],
     'tests': tests_require,
 }
 
+
 extras_require['all'] = []
-for reqs in extras_require.values():
+for name, reqs in extras_require.items():
+    if name in (
+            'mysql', 'postgresql', 'sqlite', 'elasticsearch2',
+            'elasticsearch5', 'elasticsearch6', 'elasticsearch7'):
+        continue
     extras_require['all'].extend(reqs)
 
 setup_requires = [
@@ -69,8 +88,6 @@ install_requires = [
     'SQLAlchemy-Continuum>=1.3,<1.3.5',
     'SQLAlchemy-Utils[encrypted]>=0.33',
     'dictdiffer>=0.5.0.post1',
-    'elasticsearch>=2.0.0,<3.0.0',
-    'elasticsearch-dsl>=2.0.0,<3.0.0',
     'invenio-assets>=1.0.0',
     'invenio-db[versioning]>=1.0.1',
     'invenio-files-rest>=1.0.0a14',
@@ -80,7 +97,6 @@ install_requires = [
     'invenio-records-rest>=1.1.0',
     'invenio-records-ui>=1.0.1',
     'invenio-search-ui>=1.0.0a5',
-    'invenio-search>=1.0.0a11',
 ]
 
 packages = find_packages()
