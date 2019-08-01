@@ -1,26 +1,10 @@
 # -*- coding: utf-8 -*-
 #
 # This file is part of Invenio.
-# Copyright (C) 2015, 2016, 2017 CERN.
+# Copyright (C) 2015-2019 CERN.
 #
-# Invenio is free software; you can redistribute it
-# and/or modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation; either version 2 of the
-# License, or (at your option) any later version.
-#
-# Invenio is distributed in the hope that it will be
-# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Invenio; if not, write to the
-# Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-# MA 02111-1307, USA.
-#
-# In applying this license, CERN does not
-# waive the privileges and immunities granted to it by virtue of its status
-# as an Intergovernmental Organization or submit itself to any jurisdiction.
+# Invenio is free software; you can redistribute it and/or modify it
+# under the terms of the MIT License; see LICENSE file for more details.
 
 """Module for depositing record metadata and uploading files."""
 
@@ -34,12 +18,11 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
-    'invenio-access>=1.0.0a11',
+    'invenio-access>=1.0.0',
     'invenio-accounts>=1.0.0',
     'invenio-db[postgresql]>=1.0.1',
     'isort>=4.2.2',
     'pydocstyle>=1.0.0',
-    'pytest-cache>=1.0',
     'pytest-cov>=1.8.0',
     'pytest-pep8>=1.0.6',
     'pytest>=3.0.4',
@@ -73,14 +56,14 @@ install_requires = [
     'elasticsearch-dsl>=2.0.0,<3.0.0',
     'invenio-assets>=1.0.0',
     'invenio-db[versioning]>=1.0.1',
-    'invenio-files-rest>=1.0.0a14',
-    'invenio-jsonschemas>=1.0.0a3',
+    'invenio-files-rest>=1.0.0',
+    'invenio-jsonschemas>=1.0.0',
     'invenio-oauth2server>=1.0.3',
-    'invenio-records-files>=1.0.0a8',
+    'invenio-records-files>=1.0.0',
     'invenio-records-rest>=1.1.0',
     'invenio-records-ui>=1.0.1',
-    'invenio-search-ui>=1.0.0a5',
-    'invenio-search>=1.0.0a11',
+    'invenio-search-ui>=1.0.0',
+    'invenio-search>=1.0.0',
 ]
 
 packages = find_packages()
@@ -98,7 +81,7 @@ setup(
     description=__doc__,
     long_description=readme + '\n\n' + history,
     keywords='invenio deposit upload',
-    license='GPLv2',
+    license='MIT',
     author='CERN',
     author_email='info@inveniosoftware.org',
     url='https://github.com/inveniosoftware/invenio-deposit',
@@ -153,7 +136,7 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
