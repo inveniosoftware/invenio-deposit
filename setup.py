@@ -34,7 +34,7 @@ history = open('CHANGES.rst').read()
 tests_require = [
     'check-manifest>=0.25',
     'coverage>=4.0',
-    'invenio-access>=1.0.0a11',
+    'invenio-access>=1.0.0',
     'invenio-accounts>=1.0.0',
     'invenio-db[postgresql]>=1.0.1',
     'isort>=4.2.2',
@@ -46,7 +46,7 @@ tests_require = [
     'reportlab>=3.3.0',
 ]
 
-invenio_search_version = '1.0.0'
+invenio_search_version = '1.2.0'
 
 extras_require = {
     'docs': [
@@ -71,7 +71,7 @@ extras_require = {
 extras_require['all'] = []
 for name, reqs in extras_require.items():
     if name in (
-            'mysql', 'postgresql', 'sqlite', 'elasticsearch2',
+            'sqlite', 'elasticsearch2',
             'elasticsearch5', 'elasticsearch6', 'elasticsearch7'):
         continue
     extras_require['all'].extend(reqs)
@@ -85,16 +85,16 @@ install_requires = [
     'Flask-BabelEx>=0.9.3',
     'Flask-Login>=0.3.2',
     'Flask>=0.11.1',
-    'SQLAlchemy-Continuum>=1.3,<1.3.5',
+    'SQLAlchemy-Continuum>=1.3.6',
     'SQLAlchemy-Utils[encrypted]>=0.33',
     'dictdiffer>=0.5.0.post1',
-    'invenio-assets>=1.0.0',
+    'invenio-assets>=1.1.0',
     'invenio-db[versioning]>=1.0.1',
-    'invenio-files-rest>=1.0.0a14',
+    'invenio-files-rest>=1.0.1',
     'invenio-jsonschemas>=1.0.0a3',
     'invenio-oauth2server>=1.0.3',
-    'invenio-records-files>=1.0.0a8',
-    'invenio-records-rest>=1.1.0',
+    'invenio-records-files>=1.0.0',
+    'invenio-records-rest>=1.5.0',
     'invenio-records-ui>=1.0.1',
     'invenio-search-ui>=1.0.0a5',
 ]
