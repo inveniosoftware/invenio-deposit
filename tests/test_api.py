@@ -40,7 +40,7 @@ from invenio_deposit.api import Deposit
 from invenio_deposit.errors import MergeConflict
 
 
-def test_schemas(app, fake_schemas):
+def test_schemas(app, fake_schemas, location):
     """Test schema URL transformations."""
     deposit = Deposit.create({})
     assert 'http://localhost/schemas/deposits/deposit-v1.0.0.json' == \

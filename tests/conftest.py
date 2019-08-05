@@ -66,6 +66,7 @@ from invenio_records_ui import InvenioRecordsUI
 from invenio_records_ui.views import create_blueprint_from_app as records_ui_bp
 from invenio_rest import InvenioREST
 from invenio_search import InvenioSearch, current_search, current_search_client
+from invenio_search.errors import IndexAlreadyExistsError
 from invenio_search_ui import InvenioSearchUI
 from six import BytesIO, get_method_self
 from sqlalchemy import inspect
@@ -290,7 +291,7 @@ def es(app):
     """Elasticsearch fixture."""
     try:
         list(current_search.create())
-    except RequestError:
+    except (RequestError, IndexAlreadyExistsError):
         list(current_search.delete(ignore=[404]))
         list(current_search.create(ignore=[400]))
     current_search_client.indices.refresh()

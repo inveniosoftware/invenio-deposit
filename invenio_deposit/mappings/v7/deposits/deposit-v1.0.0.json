@@ -31,7 +31,7 @@
               "type": "integer"
           },
           "status": {
-            "type": "text"
+            "type": "keyword"
           }
         }
       },

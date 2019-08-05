@@ -23,6 +23,9 @@
 # as an Intergovernmental Organization or submit itself to any jurisdiction.
 
 addons:
+  apt:
+    packages:
+      - rabbitmq-server
   postgresql: 9.4
 
 notifications:
@@ -32,43 +35,59 @@ sudo: false
 
 services:
   - postgresql
-  - redis
-  - rabbitmq
+  - redis-server
 
 language: python
 
 matrix:
   fast_finish: true
+  allow_failures:
+    - env: REQUIREMENTS=devel EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
+    - env: REQUIREMENTS=devel EXTRAS=all,elasticsearch7 ES_URL=$ES7_DOWNLOAD_URL
 
 cache:
   - pip
 
 env:
-  - REQUIREMENTS=lowest ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=release ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
-  - REQUIREMENTS=devel ES_HOST=127.0.0.1 ES_VERSION=2.2.0 SQLALCHEMY_DATABASE_URI="postgresql+psycopg2://postgres@localhost:5432/invenio"
+  global:
+    - ES5_DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.6.4.tar.gz"
+    - ES6_DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.2.tar.gz"
+    - ES7_DOWNLOAD_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.3.0-linux-x86_64.tar.gz"
+  matrix:
+  - REQUIREMENTS=lowest EXTRAS=all,elasticsearch5 ES_URL=$ES5_DOWNLOAD_URL
+  - REQUIREMENTS=lowest EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
+  - REQUIREMENTS=release EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
+  - REQUIREMENTS=release EXTRAS=all,elasticsearch7 ES_URL=$ES7_DOWNLOAD_URL DEPLOY=true
+  - REQUIREMENTS=devel EXTRAS=all,elasticsearch6 ES_URL=$ES6_DOWNLOAD_URL
+  - REQUIREMENTS=devel EXTRAS=all,elasticsearch7 ES_URL=$ES7_DOWNLOAD_URL
+
 
 python:
   - "2.7"
-  # - "3.3"
-  # - "3.4"
   - "3.5"
 
 before_install:
   - "mkdir /tmp/elasticsearch"
-  - "wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1"
-  - "/tmp/elasticsearch/bin/plugin install -b mapper-attachments"
-  - "/tmp/elasticsearch/bin/elasticsearch &"
-  - "sleep 20"
+  - "wget -O - $ES_URL | tar xz --directory=/tmp/elasticsearch --strip-components=1"
+  - "if [ ${ES_URL} == ${ES2_DOWNLOAD_URL} ]; then /tmp/elasticsearch/bin/plugin install -b mapper-attachments; fi"
+  - "/tmp/elasticsearch/bin/elasticsearch > /tmp/local-es.log &"
   - "travis_retry pip install --upgrade pip setuptools py"
   - "travis_retry pip install twine wheel coveralls requirements-builder"
-  - "requirements-builder -e all --level=min setup.py > .travis-lowest-requirements.txt"
-  - "requirements-builder -e all --level=pypi setup.py > .travis-release-requirements.txt"
-  - "requirements-builder -e all --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
+  - "requirements-builder --level=min setup.py > .travis-lowest-requirements.txt"
+  - "requirements-builder --level=pypi setup.py > .travis-release-requirements.txt"
+  - "requirements-builder --level=dev --req requirements-devel.txt setup.py > .travis-devel-requirements.txt"
 
 install:
   - "travis_retry pip install -r .travis-${REQUIREMENTS}-requirements.txt"
-  - "travis_retry pip install -e .[all]"
+  - "travis_retry pip install -e .[${EXTRAS}]"
+  - "pip freeze"
+
+
+before_script:
+  # Allow ES to start
+  - sleep 5
+  - curl http://127.0.0.1:9200 && echo "Elasticsearch is up!" || cat /tmp/local-es.log
+
 
 script:
   - "./run-tests.sh"
@@ -84,5 +103,5 @@ deploy:
   distributions: "compile_catalog sdist bdist_wheel"
   on:
     tags: true
-    python: "2.7"
-    condition: $REQUIREMENTS = release
+    python: "3.5"
+    condition: $DEPLOY = true

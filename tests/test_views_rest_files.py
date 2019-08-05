@@ -37,7 +37,7 @@ from six import BytesIO
 from invenio_deposit.api import Deposit
 
 
-def test_created_by_population(api, users):
+def test_created_by_population(api, users, location):
     """Test created_by gets populated correctly."""
     record = {
         'title': 'fuu'
