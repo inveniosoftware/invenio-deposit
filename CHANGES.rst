@@ -25,6 +25,10 @@
 Changes
 =======
 
+Version 1.0.0a10 (release 2019-10-02)
+
+- Adds support for ES 5,6 and 7.
+
 Version 1.0.0a9 (release 2017-12-06)
 
 - Refactoring for Invenio 3.
