@@ -54,8 +54,8 @@ extras_require = {
 extras_require['all'] = []
 for name, reqs in extras_require.items():
     if name in (
-            'sqlite', 'elasticsearch2',
-            'elasticsearch5', 'elasticsearch6', 'elasticsearch7'):
+            'elasticsearch2', 'elasticsearch5', 'elasticsearch6',
+            'elasticsearch7'):
         continue
     extras_require['all'].extend(reqs)
 
@@ -136,9 +136,6 @@ setup(
         ],
         'invenio_jsonschemas.schemas': [
             'deposits = invenio_deposit.jsonschemas',
-        ],
-        'invenio_search.mappings': [
-            'deposits = invenio_deposit.mappings',
         ],
         'invenio_oauth2server.scopes': [
             'deposit_write = invenio_deposit.scopes:write_scope',
