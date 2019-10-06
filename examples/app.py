@@ -137,6 +137,7 @@ InvenioDeposit(app)
 InvenioDepositREST(app)
 
 search = InvenioSearch(app)
+search.register_mappings('deposits', 'invenio_deposit.mappings')
 
 InvenioSearchUI(app)
 InvenioREST(app)
