@@ -25,6 +25,7 @@ from invenio_pidstore import current_pidstore
 from invenio_pidstore.errors import PIDInvalidAction
 from invenio_pidstore.models import PersistentIdentifier, PIDStatus
 from invenio_pidstore.resolver import Resolver
+from invenio_records.api import RecordRevision
 from invenio_records.signals import after_record_update, before_record_update
 from invenio_records_files.api import Record
 from invenio_records_files.models import RecordsBuckets
@@ -171,7 +172,13 @@ class Deposit(Record):
     def merge_with_published(self):
         """Merge changes with latest published version."""
         pid, first = self.fetch_published()
-        lca = first.revisions[self['_deposit']['pid']['revision_id']]
+        # Fetch last common ancestor from when the published record was
+        # originally edited from.
+        # NOTE: revision_id = version_id - 1
+        lca_version_id = self['_deposit']['pid']['revision_id'] + 1
+        lca = RecordRevision(
+            first.model.versions.filter_by(version_id=lca_version_id).one())
+
         # ignore _deposit and $schema field
         args = [lca.dumps(), first.dumps(), self.dumps()]
         for arg in args:
