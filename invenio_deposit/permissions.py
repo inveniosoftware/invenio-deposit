@@ -41,7 +41,7 @@ def admin_permission_factory():
     """
     try:
         pkg_resources.get_distribution('invenio-access')
-        from invenio_access.permissions import DynamicPermission as Permission
+        from invenio_access.permissions import Permission
     except pkg_resources.DistributionNotFound:
         from flask_principal import Permission
 
